@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JDeodrantPlusBlackbox
-Bundle-SymbolicName: JDeodrantPlusBlackbox
+Bundle-SymbolicName: JDeodorantPlusBlackbox
 Bundle-Version: 1.0.0.qualifier
 Automatic-Module-Name: JDeodrantPlusBlackbox
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

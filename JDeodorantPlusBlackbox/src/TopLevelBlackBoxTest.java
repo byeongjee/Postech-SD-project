@@ -23,7 +23,7 @@ public class TopLevelBlackBoxTest {
 	}
 
 	@Test
-	public void testOpenJDeodrantPlusTab() {
+	public void testOpenJDeodorantPlusTab() {
 		openSpeculativeGeneralityTab();
 		bot.viewByTitle("Speculative Generality");
 	}
