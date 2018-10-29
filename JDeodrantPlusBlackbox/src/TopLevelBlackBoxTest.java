@@ -31,4 +31,11 @@ public class TopLevelBlackBoxTest {
 	private void openSpeculativeGeneralityTab() {
 		bot.menu("Bad Smells").menu("Speculative Generality").click();
 	}
+	
+	private void openPackageExplorer() {
+		bot.menu("Window").menu("Show View").menu("Other...").click();
+		SWTBotShell dialog = bot.shell("Show View");
+		dialog.activate();
+		bot.tree().getTreeItem("Java").expand().getNode("Package Explorer").doubleClick();
+	}
 }
