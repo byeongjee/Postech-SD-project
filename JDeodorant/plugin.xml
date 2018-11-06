@@ -16,6 +16,22 @@
             </separator>
          </menu>
          <action
+               label="Long Parameter List"
+               icon="icons/repair.png"
+               class="gr.uom.java.jdeodorant.refactoring.actions.BadSmellsMenu"
+               tooltip="Duplicated Code"
+               menubarPath="BadSmellsMenu/sampleGroup"
+               id="gr.uom.java.jdeodorant.actions.LongParameterList">
+         </action>
+         <action
+               label="Message Chain"
+               icon="icons/repair.png"
+               class="gr.uom.java.jdeodorant.refactoring.actions.BadSmellsMenu"
+               tooltip="Duplicated Code"
+               menubarPath="BadSmellsMenu/sampleGroup"
+               id="gr.uom.java.jdeodorant.actions.MessageChain">
+         </action>
+         <action
                label="Speculative Generality"
                icon="icons/repair.png"
                class="gr.uom.java.jdeodorant.refactoring.actions.BadSmellsMenu"
@@ -112,6 +128,20 @@
             icon="icons/repair.png"
             id="gr.uom.java.jdeodorant.views.SpeculativeGenerality"
             name="Speculative Generality">
+      </view>
+      <view
+            category="gr.uom.java.jdeodorant"
+            class="gr.uom.java.jdeodorant.refactoring.views.MessageChain"
+            icon="icons/repair.png"
+            id="gr.uom.java.jdeodorant.views.MessageChain"
+            name="Message Chain">
+      </view>
+      <view
+            category="gr.uom.java.jdeodorant"
+            class="gr.uom.java.jdeodorant.refactoring.views.LongParameterList"
+            icon="icons/repair.png"
+            id="gr.uom.java.jdeodorant.views.LongParameterList"
+            name="Long Parameter List">
       </view>
       <view
             category="gr.uom.java.jdeodorant"

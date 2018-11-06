@@ -25,6 +25,7 @@ public class TopLevelBlackBoxTest {
 	@Test
 	public void testOpenLongMethodTab() {
 		bot.menu("Bad Smells").menu("Long Method").click();
+		bot.viewByTitle("Long Method");
 	}
 
 	@Test
