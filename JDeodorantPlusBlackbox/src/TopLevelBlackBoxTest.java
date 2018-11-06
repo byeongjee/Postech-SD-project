@@ -21,6 +21,11 @@ public class TopLevelBlackBoxTest {
 	public static void afterClass() {
 		bot.resetWorkbench();
 	}
+	
+	@Test
+	public void testOpenLongMethodTab() {
+		bot.menu("Bad Smells").menu("Long Method").click();
+	}
 
 	@Test
 	public void testOpenJDeodorantPlusTab() {

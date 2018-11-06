@@ -49,7 +49,7 @@ public class BadSmellsMenu implements IWorkbenchWindowActionDelegate {
 				page.showView("gr.uom.java.jdeodorant.views.DuplicatedCode");
 			}
 			else if(action.getId().equals("gr.uom.java.jdeodorant.actions.SpeculativeGenerality")) {
-				System.out.println("New Menu Success");
+				page.showView("gr.uom.java.jdeodorant.views.SpeculativeGenerality");
 			}
 		} catch (PartInitException e) {
 			e.printStackTrace();

@@ -108,6 +108,13 @@
       </view>
       <view
             category="gr.uom.java.jdeodorant"
+            class="gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality"
+            icon="icons/repair.png"
+            id="gr.uom.java.jdeodorant.views.SpeculativeGenerality"
+            name="Speculative Generality">
+      </view>
+      <view
+            category="gr.uom.java.jdeodorant"
             class="gr.uom.java.jdeodorant.refactoring.views.CodeSmellVisualization"
             icon="icons/repair.png"
             id="gr.uom.java.jdeodorant.views.CodeSmellVisualization"
