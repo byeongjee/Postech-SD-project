@@ -707,7 +707,9 @@ public class LongMethod extends ViewPart {
 						}
 					}
 				});
-			}
+			}//아마 UI 관련 코드로 예상된다. 대부분의 smell code가 동일하게 가지고 있음
+			
+			
 			final SystemObject systemObject = ASTReader.getSystemObject();
 			if(systemObject != null) {
 				final Set<ClassObject> classObjectsToBeExamined = new LinkedHashSet<ClassObject>();
@@ -735,6 +737,9 @@ public class LongMethod extends ViewPart {
 				else {
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
 				}
+				//각각의 단위별로 ClassObject를 받아오는 부분이다.
+				
+				
 				final List<ASTSliceGroup> extractedSliceGroups = new ArrayList<ASTSliceGroup>();
 
 				ps.busyCursorWhile(new IRunnableWithProgress() {
