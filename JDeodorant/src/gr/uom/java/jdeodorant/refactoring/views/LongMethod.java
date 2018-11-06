@@ -521,7 +521,7 @@ public class LongMethod extends ViewPart {
 					editor.horizontalAlignment = SWT.RIGHT;
 				    editor.grabHorizontal = true;
 				    editor.minimumWidth = 50;
-					editor.setEditor(button, item1);
+					editor.setEditor(button, item1, 6);
 				}
 				//evolutionAnalysisAction.setEnabled(true);
 			}
