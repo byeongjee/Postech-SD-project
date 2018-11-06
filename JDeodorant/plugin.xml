@@ -16,6 +16,14 @@
             </separator>
          </menu>
          <action
+               label="Speculative Generality"
+               icon="icons/repair.png"
+               class="gr.uom.java.jdeodorant.refactoring.actions.BadSmellsMenu"
+               tooltip="Duplicated Code"
+               menubarPath="BadSmellsMenu/sampleGroup"
+               id="gr.uom.java.jdeodorant.actions.SpeculativeGenerality">
+         </action>
+         <action
                class="gr.uom.java.jdeodorant.refactoring.actions.BadSmellsMenu"
                icon="icons/repair.png"
                id="gr.uom.java.jdeodorant.actions.FeatureEnvy"
