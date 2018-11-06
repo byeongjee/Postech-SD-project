@@ -21,17 +21,32 @@ public class TopLevelBlackBoxTest {
 	public static void afterClass() {
 		bot.resetWorkbench();
 	}
+	
+	@Test
+	public void testOpenLongMethodTab() {
+		bot.menu("Bad Smells").menu("Long Method").click();
+		bot.viewByTitle("Long Method");
+	}
 
 	@Test
-	public void testOpenJDeodorantPlusTab() {
-		openSpeculativeGeneralityTab();
+	public void testOpenSpeculativeGeneralityTab() {
+		bot.menu("Bad Smells").menu("Speculative Generality").click();
 		bot.viewByTitle("Speculative Generality");
 	}
 	
-	private void openSpeculativeGeneralityTab() {
-		bot.menu("Bad Smells").menu("Speculative Generality").click();
+	@Test
+	public void testOpenMessageChainTab() {
+		bot.menu("Bad Smells").menu("Message Chain").click();
+		bot.viewByTitle("Message Chain");
 	}
 	
+	@Test
+	public void testOpenLongParameterListTab() {
+		bot.menu("Bad Smells").menu("Long Parameter List").click();
+		bot.viewByTitle("Long Parameter List");
+	}
+	
+
 	private void openPackageExplorer() {
 		bot.menu("Window").menu("Show View").menu("Other...").click();
 		SWTBotShell dialog = bot.shell("Show View");

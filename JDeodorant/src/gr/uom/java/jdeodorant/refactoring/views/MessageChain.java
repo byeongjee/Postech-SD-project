@@ -24,7 +24,6 @@ import gr.uom.java.ast.CompilationErrorDetectedException;
 import gr.uom.java.ast.CompilationUnitCache;
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.SystemObject;
-import gr.uom.java.ast.TypeObject;
 import gr.uom.java.ast.decomposition.cfg.CFG;
 import gr.uom.java.ast.decomposition.cfg.PDG;
 import gr.uom.java.ast.decomposition.cfg.PDGObjectSliceUnion;
@@ -103,13 +102,8 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.IProgressService;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-/**
- * Detect Code Smell of Speculative Generality
- * @author 이재엽, 이주용
- *
- */
-public class SpeculativeGenerality extends ViewPart {
-	private static final String MESSAGE_DIALOG_TITLE = "Speculative Generality";
+public class MessageChain extends ViewPart {
+	private static final String MESSAGE_DIALOG_TITLE = "Message Chain";
 	private TreeViewer treeViewer;
 	private Action identifyBadSmellsAction;
 	private Action applyRefactoringAction;
@@ -124,7 +118,6 @@ public class SpeculativeGenerality extends ViewPart {
 	private IType selectedType;
 	private IMethod selectedMethod;
 	private ASTSliceGroup[] sliceGroupTable;
-	private ClassObject[] classObjectTable; // Exp : real-one
 	//private MethodEvolution methodEvolution;
 	
 	class ViewContentProvider implements ITreeContentProvider {
@@ -133,11 +126,11 @@ public class SpeculativeGenerality extends ViewPart {
 		public void dispose() {
 		}
 		public Object[] getElements(Object parent) {
-			if(classObjectTable!=null) {
-				return classObjectTable;
+			if(sliceGroupTable!=null) {
+				return sliceGroupTable;
 			}
 			else {
-				return new ClassObject[] {};
+				return new ASTSliceGroup[] {};
 			}
 		}
 		public Object[] getChildren(Object arg) {
@@ -481,7 +474,7 @@ public class SpeculativeGenerality extends ViewPart {
 			public void run() {
 				activeProject = selectedProject;
 				CompilationUnitCache.getInstance().clearCache();
-				// ToDo :: sliceGroupTable = getTable();
+				sliceGroupTable = getTable();
 				treeViewer.setContentProvider(new ViewContentProvider());
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
@@ -502,7 +495,44 @@ public class SpeculativeGenerality extends ViewPart {
 		saveResultsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 			getImageDescriptor(ISharedImages.IMG_ETOOL_SAVE_EDIT));
 		saveResultsAction.setEnabled(false);
-
+		
+		/*evolutionAnalysisAction = new Action() {
+			public void run() {
+				methodEvolution = null;
+				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+				if(selection.getFirstElement() instanceof ASTSlice) {
+					final ASTSlice slice = (ASTSlice)selection.getFirstElement();
+					try {
+						IWorkbench wb = PlatformUI.getWorkbench();
+						IProgressService ps = wb.getProgressService();
+						ps.busyCursorWhile(new IRunnableWithProgress() {
+							public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+								ProjectEvolution projectEvolution = new ProjectEvolution(selectedProject);
+								if(projectEvolution.getProjectEntries().size() > 1) {
+									methodEvolution = new MethodEvolution(projectEvolution, (IMethod)slice.getSourceMethodDeclaration().resolveBinding().getJavaElement(), monitor);
+								}
+							}
+						});
+						if(methodEvolution != null) {
+							EvolutionDialog dialog = new EvolutionDialog(getSite().getWorkbenchWindow(), methodEvolution, "Method Evolution", false);
+							dialog.open();
+						}
+						else
+							MessageDialog.openInformation(getSite().getShell(), "Method Evolution",
+							"Method evolution analysis cannot be performed, since only a single version of the examined project is loaded in the workspace.");
+					} catch (InvocationTargetException e) {
+						e.printStackTrace();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		evolutionAnalysisAction.setToolTipText("Evolution Analysis");
+		evolutionAnalysisAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+			getImageDescriptor(ISharedImages.IMG_OBJ_ELEMENT));
+		evolutionAnalysisAction.setEnabled(false);*/
+		
 		applyRefactoringAction = new Action() {
 			public void run() {
 				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
@@ -654,8 +684,8 @@ public class SpeculativeGenerality extends ViewPart {
 		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(selectionListener);
 	}
 
-	private ClassObject[] getTable() {
-		ClassObject[] table = null;
+	private ASTSliceGroup[] getTable() {
+		ASTSliceGroup[] table = null;
 		try {
 			IWorkbench wb = PlatformUI.getWorkbench();
 			IProgressService ps = wb.getProgressService();
@@ -678,9 +708,10 @@ public class SpeculativeGenerality extends ViewPart {
 					}
 				});
 			}
-			SystemObject systemObject = ASTReader.getSystemObject();
+			final SystemObject systemObject = ASTReader.getSystemObject();
 			if(systemObject != null) {
-				Set<ClassObject> classObjectsToBeExamined = new LinkedHashSet<ClassObject>();
+				final Set<ClassObject> classObjectsToBeExamined = new LinkedHashSet<ClassObject>();
+				final Set<AbstractMethodDeclaration> methodObjectsToBeExamined = new LinkedHashSet<AbstractMethodDeclaration>();
 				if(selectedPackageFragmentRoot != null) {
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragmentRoot));
 				}
@@ -688,23 +719,64 @@ public class SpeculativeGenerality extends ViewPart {
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragment));
 				}
 				else if(selectedCompilationUnit != null) {
-					// ToDo :: Not Allowed!!!
+					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedCompilationUnit));
 				}
 				else if(selectedType != null) {
-					// ToDo :: Not Allowed!!!
+					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedType));
+				}
+				else if(selectedMethod != null) {
+					AbstractMethodDeclaration methodObject = systemObject.getMethodObject(selectedMethod);
+					if(methodObject != null) {
+						ClassObject declaringClass = systemObject.getClassObject(methodObject.getClassName());
+						if(declaringClass != null && !declaringClass.isEnum() && !declaringClass.isInterface() && methodObject.getMethodBody() != null)
+							methodObjectsToBeExamined.add(methodObject);
+					}
 				}
 				else {
-					// ToDo :: Not Allowed!!!
+					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
 				}
+				final List<ASTSliceGroup> extractedSliceGroups = new ArrayList<ASTSliceGroup>();
 
-				final Set<String> classNamesToBeExamined = new LinkedHashSet<String>();
-				for(ClassObject classObject : classObjectsToBeExamined) {
-					if(!classObject.isEnum() && !classObject.isInterface() && !classObject.isGeneratedByParserGenenator())
-						classNamesToBeExamined.add(classObject.getName());
+				ps.busyCursorWhile(new IRunnableWithProgress() {
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						if(!classObjectsToBeExamined.isEmpty()) {
+							int workSize = 0;
+							for(ClassObject classObject : classObjectsToBeExamined) {
+								workSize += classObject.getNumberOfMethods();
+							}
+							monitor.beginTask("Identification of Extract Method refactoring opportunities", workSize);
+							for(ClassObject classObject : classObjectsToBeExamined) {
+								if(!classObject.isEnum() && !classObject.isInterface() && !classObject.isGeneratedByParserGenenator()) {
+									ListIterator<MethodObject> methodIterator = classObject.getMethodIterator();
+									while(methodIterator.hasNext()) {
+										if(monitor.isCanceled())
+											throw new OperationCanceledException();
+										MethodObject methodObject = methodIterator.next();
+										processMethod(extractedSliceGroups,classObject, methodObject);
+										monitor.worked(1);
+									}
+								}
+							}
+						}
+						else if(!methodObjectsToBeExamined.isEmpty()) {
+							int workSize = methodObjectsToBeExamined.size();
+							monitor.beginTask("Identification of Extract Method refactoring opportunities", workSize);
+							for(AbstractMethodDeclaration methodObject : methodObjectsToBeExamined) {
+								if(monitor.isCanceled())
+									throw new OperationCanceledException();
+								ClassObject classObject = systemObject.getClassObject(methodObject.getClassName());
+								processMethod(extractedSliceGroups, classObject, methodObject);
+								monitor.worked(1);
+							}
+						}
+						monitor.done();
+					}
+				});
+
+				table = new ASTSliceGroup[extractedSliceGroups.size()];
+				for(int i=0; i<extractedSliceGroups.size(); i++) {
+					table[i] = extractedSliceGroups.get(i);
 				}
-				
-				table=processMethod(classObjectsToBeExamined);			
-
 			}
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
@@ -714,58 +786,85 @@ public class SpeculativeGenerality extends ViewPart {
 			MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), MESSAGE_DIALOG_TITLE,
 					"Compilation errors were detected in the project. Fix the errors before using JDeodorant.");
 		}
-		return table;	
+		return table;
 	}
 
-	/**
-	 *  Examine the class objects
-	 * @param classObjectsToBeExamined
-	 * @return Array of ClassObject
-	 */
-	private ClassObject[] processMethod(final Set<ClassObject> classObjectsToBeExamined){	
-		final List<ClassObject> classObjectswithSG = new ArrayList<ClassObject>();
-		
-		for(ClassObject targetClass : classObjectsToBeExamined) {
-			if(targetClass.isAbstract()) {
-				int childOfTargetNum = 0;
-				
-				for(ClassObject childCandidate : classObjectsToBeExamined) {
-					if(childCandidate.getSuperclass().getClassType().equals(targetClass.getName())){
-						childOfTargetNum++;
-					}
-					if(childOfTargetNum >= 2)
-						break;
-				}
-				if(childOfTargetNum < 2) {
-					classObjectswithSG.add(targetClass);
-				}
-			}
-			else if(targetClass.isInterface()) {
-				int childOfTargetNum = 0;
-				
-				for(ClassObject childCandidate : classObjectsToBeExamined) {
-					ListIterator<TypeObject> myIter=childCandidate.getInterfaceIterator();
-					while(myIter.hasNext()) {
-						//
-						if(myIter.next().getClassType().equals(targetClass.getName())) {
-							childOfTargetNum++;
-							break;
+	private void processMethod(final List<ASTSliceGroup> extractedSliceGroups, ClassObject classObject, AbstractMethodDeclaration methodObject) {
+		if(methodObject.getMethodBody() != null) {
+			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+			int minimumMethodSize = store.getInt(PreferenceConstants.P_MINIMUM_METHOD_SIZE);
+			StatementExtractor statementExtractor = new StatementExtractor();
+			int numberOfStatements = statementExtractor.getTotalNumberOfStatements(methodObject.getMethodBody().getCompositeStatement().getStatement());
+			if(numberOfStatements >= minimumMethodSize) {
+				ITypeRoot typeRoot = classObject.getITypeRoot();
+				CompilationUnitCache.getInstance().lock(typeRoot);
+				CFG cfg = new CFG(methodObject);
+				PDG pdg = new PDG(cfg, classObject.getIFile(), classObject.getFieldsAccessedInsideMethod(methodObject), null);
+				for(VariableDeclaration declaration : pdg.getVariableDeclarationsInMethod()) {
+					PlainVariable variable = new PlainVariable(declaration);
+					PDGSliceUnionCollection sliceUnionCollection = new PDGSliceUnionCollection(pdg, variable);
+					double sumOfExtractedStatementsInGroup = 0.0;
+					double sumOfDuplicatedStatementsInGroup = 0.0;
+					double sumOfDuplicationRatioInGroup = 0.0;
+					int maximumNumberOfExtractedStatementsInGroup = 0;
+					int groupSize = sliceUnionCollection.getSliceUnions().size();
+					ASTSliceGroup sliceGroup = new ASTSliceGroup();
+					for(PDGSliceUnion sliceUnion : sliceUnionCollection.getSliceUnions()) {
+						ASTSlice slice = new ASTSlice(sliceUnion);
+						if(!slice.isVariableCriterionDeclarationStatementIsDeeperNestedThanExtractedMethodInvocationInsertionStatement()) {
+							int numberOfExtractedStatements = slice.getNumberOfSliceStatements();
+							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
+							double duplicationRatio = (double)numberOfDuplicatedStatements/(double)numberOfExtractedStatements;
+							sumOfExtractedStatementsInGroup += numberOfExtractedStatements;
+							sumOfDuplicatedStatementsInGroup += numberOfDuplicatedStatements;
+							sumOfDuplicationRatioInGroup += duplicationRatio;
+							if(numberOfExtractedStatements > maximumNumberOfExtractedStatementsInGroup)
+								maximumNumberOfExtractedStatementsInGroup = numberOfExtractedStatements;
+							sliceGroup.addCandidate(slice);
 						}
 					}
-					if(childOfTargetNum >= 2)
-						break;
+					if(!sliceGroup.getCandidates().isEmpty()) {
+						sliceGroup.setAverageNumberOfExtractedStatementsInGroup(sumOfExtractedStatementsInGroup/(double)groupSize);
+						sliceGroup.setAverageNumberOfDuplicatedStatementsInGroup(sumOfDuplicatedStatementsInGroup/(double)groupSize);
+						sliceGroup.setAverageDuplicationRatioInGroup(sumOfDuplicationRatioInGroup/(double)groupSize);
+						sliceGroup.setMaximumNumberOfExtractedStatementsInGroup(maximumNumberOfExtractedStatementsInGroup);
+						extractedSliceGroups.add(sliceGroup);
+					}
 				}
-				if(childOfTargetNum < 2) {
-					classObjectswithSG.add(targetClass);
+				for(VariableDeclaration declaration : pdg.getVariableDeclarationsAndAccessedFieldsInMethod()) {
+					PlainVariable variable = new PlainVariable(declaration);
+					PDGObjectSliceUnionCollection objectSliceUnionCollection = new PDGObjectSliceUnionCollection(pdg, variable);
+					double sumOfExtractedStatementsInGroup = 0.0;
+					double sumOfDuplicatedStatementsInGroup = 0.0;
+					double sumOfDuplicationRatioInGroup = 0.0;
+					int maximumNumberOfExtractedStatementsInGroup = 0;
+					int groupSize = objectSliceUnionCollection.getSliceUnions().size();
+					ASTSliceGroup sliceGroup = new ASTSliceGroup();
+					for(PDGObjectSliceUnion objectSliceUnion : objectSliceUnionCollection.getSliceUnions()) {
+						ASTSlice slice = new ASTSlice(objectSliceUnion);
+						if(!slice.isVariableCriterionDeclarationStatementIsDeeperNestedThanExtractedMethodInvocationInsertionStatement()) {
+							int numberOfExtractedStatements = slice.getNumberOfSliceStatements();
+							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
+							double duplicationRatio = (double)numberOfDuplicatedStatements/(double)numberOfExtractedStatements;
+							sumOfExtractedStatementsInGroup += numberOfExtractedStatements;
+							sumOfDuplicatedStatementsInGroup += numberOfDuplicatedStatements;
+							sumOfDuplicationRatioInGroup += duplicationRatio;
+							if(numberOfExtractedStatements > maximumNumberOfExtractedStatementsInGroup)
+								maximumNumberOfExtractedStatementsInGroup = numberOfExtractedStatements;
+							sliceGroup.addCandidate(slice);
+						}
+					}
+					if(!sliceGroup.getCandidates().isEmpty()) {
+						sliceGroup.setAverageNumberOfExtractedStatementsInGroup(sumOfExtractedStatementsInGroup/(double)groupSize);
+						sliceGroup.setAverageNumberOfDuplicatedStatementsInGroup(sumOfDuplicatedStatementsInGroup/(double)groupSize);
+						sliceGroup.setAverageDuplicationRatioInGroup(sumOfDuplicationRatioInGroup/(double)groupSize);
+						sliceGroup.setMaximumNumberOfExtractedStatementsInGroup(maximumNumberOfExtractedStatementsInGroup);
+						extractedSliceGroups.add(sliceGroup);
+					}
 				}
+				CompilationUnitCache.getInstance().releaseLock();
 			}
 		}
-		
-		ClassObject[] res = new ClassObject[classObjectswithSG.size()];
-		for(int i=0;i<classObjectswithSG.size();i++) {
-			res[i]=classObjectswithSG.get(i);
-		}
-		return res;
 	}
 
 	private void saveResults() {

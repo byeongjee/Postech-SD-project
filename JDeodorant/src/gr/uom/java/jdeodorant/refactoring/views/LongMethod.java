@@ -83,8 +83,10 @@ import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
@@ -349,6 +351,32 @@ public class LongMethod extends ViewPart {
 		column5.setText("Rate it!");
 		column5.setResizable(true);
 		column5.pack();
+		
+		TreeColumn column6 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+		column6.setText("Do Refactoring");
+		column6.setResizable(true);
+		column6.pack();
+		
+		/*
+		Tree tree = treeViewer.getTree();
+		TreeItem[] items = tree.getItems();
+		
+		for(int i = 0; i < items.length; i++) {
+			TreeEditor editor = new TreeEditor(tree);
+			
+			TreeItem item = items[i];
+			
+			Button button = new Button(tree, SWT.PUSH);
+			
+			button.setText("TEST");
+			button.setSize(16, 16);
+			button.pack();
+			
+			editor.horizontalAlignment = SWT.RIGHT;
+		    editor.grabHorizontal = true;
+		    editor.minimumWidth = 50;
+			editor.setEditor(button, item);
+		}*/
 		treeViewer.expandAll();
 		
 		treeViewer.setColumnProperties(new String[] {"type", "source", "variable", "block", "duplicationRatio", "rate"});
@@ -478,6 +506,23 @@ public class LongMethod extends ViewPart {
 				treeViewer.setContentProvider(new ViewContentProvider());
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
+				Tree tree = treeViewer.getTree();
+				TreeItem[] items = tree.getItems();
+				for(int i = 0; i < items.length; i++) {
+					TreeEditor editor = new TreeEditor(tree);
+					
+					TreeItem item1 = items[i];
+					
+					Button button = new Button(tree, SWT.PUSH);					
+					button.setText("TEST");
+					button.setSize(16, 16);
+					button.pack();
+					
+					editor.horizontalAlignment = SWT.RIGHT;
+				    editor.grabHorizontal = true;
+				    editor.minimumWidth = 50;
+					editor.setEditor(button, item1, 6);
+				}
 				//evolutionAnalysisAction.setEnabled(true);
 			}
 		};
