@@ -760,18 +760,23 @@ public class LongMethod extends ViewPart {
 				final Set<ClassObject> classObjectsToBeExamined = new LinkedHashSet<ClassObject>();
 				final Set<AbstractMethodDeclaration> methodObjectsToBeExamined = new LinkedHashSet<AbstractMethodDeclaration>();
 				if(selectedPackageFragmentRoot != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Prj");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragmentRoot));
 				}
 				else if(selectedPackageFragment != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Pac");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragment));
 				}
 				else if(selectedCompilationUnit != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Compi");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedCompilationUnit));
 				}
 				else if(selectedType != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Type");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedType));
 				}
 				else if(selectedMethod != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Method");
 					AbstractMethodDeclaration methodObject = systemObject.getMethodObject(selectedMethod);
 					if(methodObject != null) {
 						ClassObject declaringClass = systemObject.getClassObject(methodObject.getClassName());
@@ -780,6 +785,7 @@ public class LongMethod extends ViewPart {
 					}
 				}
 				else {
+					System.out.println("In GetTable : classObjectsToBeExamined else");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
 				}
 				//각각의 단위별로 ClassObject를 받아오는 부분이다.

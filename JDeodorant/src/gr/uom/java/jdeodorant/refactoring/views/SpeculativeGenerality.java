@@ -123,9 +123,10 @@ public class SpeculativeGenerality extends ViewPart {
 	private ICompilationUnit selectedCompilationUnit;
 	private IType selectedType;
 	private IMethod selectedMethod;
-	private ASTSliceGroup[] sliceGroupTable;
-	private ClassObject[] classObjectTable; // Exp : real-one
-	//private MethodEvolution methodEvolution;
+	
+	// Exp : would-be extended to contain information of line, source-path, and so forth... (for UI)
+	private ClassObject[] classObjectTable; 
+	
 	
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
@@ -140,22 +141,27 @@ public class SpeculativeGenerality extends ViewPart {
 				return new ClassObject[] {};
 			}
 		}
+		// Warn : Quite Sure a/ JuYongLee, JaeYeopLee
 		public Object[] getChildren(Object arg) {
-			if (arg instanceof ASTSliceGroup) {
-				return ((ASTSliceGroup)arg).getCandidates().toArray();
-			}
-			else {
-				return new ASTSlice[] {};
+			if(arg instanceof ClassObject[]) {
+				return (ClassObject[])arg; 
+			} else {
+				ClassObject[] res = { };
+				return res; 
 			}
 		}
+		// Warn : Quite Sure a/ JuYongLee, JaeYeopLee
 		public Object getParent(Object arg0) {
-			if(arg0 instanceof ASTSlice) {
-				ASTSlice slice = (ASTSlice)arg0;
-				for(int i=0; i<sliceGroupTable.length; i++) {
-					if(sliceGroupTable[i].getCandidates().contains(slice))
-						return sliceGroupTable[i];
+			if(arg0 instanceof ClassObject[]) {
+				ClassObject target = (ClassObject)arg0;
+				
+				for(int i=0; i<classObjectTable.length; i++) {
+					if(classObjectTable[i].getName().equals(target.getName())) {
+						return classObjectTable[i];
+					}
 				}
 			}
+				
 			return null;
 		}
 		public boolean hasChildren(Object arg0) {
@@ -202,6 +208,25 @@ public class SpeculativeGenerality extends ViewPart {
 					return "";
 				}
 			}
+			else if(obj instanceof ClassObject) {
+				ClassObject entry = (ClassObject)obj;
+				switch(index){
+				case 0:
+					return "aaaa";
+				case 1:
+					return entry.getName();
+				case 2:
+					return "aaaa";
+				case 3:
+					return "aaaa";
+				case 4:
+					return "aaaa";
+				case 5:
+					return "aaaa";
+				default:
+					return "";
+				}
+			}
 			return "";
 		}
 		public Image getColumnImage(Object obj, int index) {
@@ -230,6 +255,21 @@ public class SpeculativeGenerality extends ViewPart {
 
 	class NameSorter extends ViewerSorter {
 		public int compare(Viewer viewer, Object obj1, Object obj2) {
+			System.out.println("In NameSorter");
+			
+
+			if(obj1 instanceof ClassObject && obj2 instanceof ClassObject) {
+				ClassObject classObject1 = (ClassObject)obj1;
+				ClassObject classObject2 = (ClassObject)obj2;
+				return classObject1.getName().compareTo(classObject2.getName());
+			}
+			else
+			{
+				System.out.println("In NameSorter else");
+				return 1;
+			}
+			
+			/*
 			if(obj1 instanceof ASTSliceGroup && obj2 instanceof ASTSliceGroup) {
 				ASTSliceGroup sliceGroup1 = (ASTSliceGroup)obj1;
 				ASTSliceGroup sliceGroup2 = (ASTSliceGroup)obj2;
@@ -241,6 +281,7 @@ public class SpeculativeGenerality extends ViewPart {
 				//slices belong to the same group
 				return Integer.valueOf(slice1.getBoundaryBlock().getId()).compareTo(Integer.valueOf(slice2.getBoundaryBlock().getId()));
 			}
+			*/
 		}
 	}
 	
@@ -337,6 +378,7 @@ public class SpeculativeGenerality extends ViewPart {
 		column0.pack();
 		TreeColumn column1 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
 		column1.setText("Source Method");
+		System.out.println("Fuck");
 		column1.setResizable(true);
 		column1.pack();
 		TreeColumn column2 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
@@ -364,19 +406,30 @@ public class SpeculativeGenerality extends ViewPart {
 				new MyComboBoxCellEditor(treeViewer.getTree(), new String[] {"0", "1", "2", "3", "4", "5"}, SWT.READ_ONLY)
 		});
 		
+		System.out.println("Before SetCellModifier!!!");
 		treeViewer.setCellModifier(new ICellModifier() {
 			public boolean canModify(Object element, String property) {
+				System.out.println("In CanModify");
 				return property.equals("rate");
 			}
 
 			public Object getValue(Object element, String property) {
+				System.out.println("In GetValue");
 				if(element instanceof ASTSlice) {
+					System.out.println("Slice!!!");
 					ASTSlice slice = (ASTSlice)element;
 					if(slice.getUserRate() != null)
 						return slice.getUserRate();
 					else
 						return 0;
 				}
+				
+				if(element instanceof ClassObject) {
+					System.out.println("Class!!!");
+				}
+				
+				System.out.println(element);
+				
 				return 0;
 			}
 
@@ -441,9 +494,11 @@ public class SpeculativeGenerality extends ViewPart {
 					}
 					treeViewer.update(data, null);
 				}
+				
 			}
+			
 		});
-		
+		System.out.println("After SetCellModifier!!!");
 		makeActions();
 		hookDoubleClickAction();
 		contributeToActionBars();
@@ -477,11 +532,14 @@ public class SpeculativeGenerality extends ViewPart {
 	}
 
 	private void makeActions() {
+		System.out.println("In makeActions");
 		identifyBadSmellsAction = new Action() {
 			public void run() {
 				activeProject = selectedProject;
 				CompilationUnitCache.getInstance().clearCache();
-				// ToDo :: sliceGroupTable = getTable();
+				System.out.println("Before GetTable");
+				classObjectTable = getTable();
+				System.out.println("After GetTable");
 				treeViewer.setContentProvider(new ViewContentProvider());
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
@@ -656,7 +714,9 @@ public class SpeculativeGenerality extends ViewPart {
 
 	private ClassObject[] getTable() {
 		ClassObject[] table = null;
+		System.out.println("In GetTable");
 		try {
+			System.out.println("In GetTable : Try");
 			IWorkbench wb = PlatformUI.getWorkbench();
 			IProgressService ps = wb.getProgressService();
 			if(ASTReader.getSystemObject() != null && activeProject.equals(ASTReader.getExaminedProject())) {
@@ -680,27 +740,38 @@ public class SpeculativeGenerality extends ViewPart {
 			}
 			SystemObject systemObject = ASTReader.getSystemObject();
 			if(systemObject != null) {
+				System.out.println("In GetTable : Before classObjectsToBeExamined");
 				Set<ClassObject> classObjectsToBeExamined = new LinkedHashSet<ClassObject>();
 				if(selectedPackageFragmentRoot != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Prj");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragmentRoot));
 				}
 				else if(selectedPackageFragment != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Pck");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragment));
 				}
 				else if(selectedCompilationUnit != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined JvF");
 					// ToDo :: Not Allowed!!!
 				}
 				else if(selectedType != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Tpe");
 					// ToDo :: Not Allowed!!!
 				}
 				else {
+					System.out.println("In GetTable : classObjectsToBeExamined else");
 					// ToDo :: Not Allowed!!!
+					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
 				}
 
 				final Set<String> classNamesToBeExamined = new LinkedHashSet<String>();
 				for(ClassObject classObject : classObjectsToBeExamined) {
 					if(!classObject.isEnum() && !classObject.isInterface() && !classObject.isGeneratedByParserGenenator())
 						classNamesToBeExamined.add(classObject.getName());
+				}
+				
+				for(ClassObject target : classObjectsToBeExamined) {
+					System.out.println(target.getName());
 				}
 				
 				table=processMethod(classObjectsToBeExamined);			
@@ -714,6 +785,10 @@ public class SpeculativeGenerality extends ViewPart {
 			MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), MESSAGE_DIALOG_TITLE,
 					"Compilation errors were detected in the project. Fix the errors before using JDeodorant.");
 		}
+		for(int i=0;i<table.length;i++)
+		{
+			System.out.println(table[i].getName());
+		}
 		return table;	
 	}
 
@@ -724,13 +799,24 @@ public class SpeculativeGenerality extends ViewPart {
 	 */
 	private ClassObject[] processMethod(final Set<ClassObject> classObjectsToBeExamined){	
 		final List<ClassObject> classObjectswithSG = new ArrayList<ClassObject>();
-		
+		System.out.println("In ProcessMethod");
 		for(ClassObject targetClass : classObjectsToBeExamined) {
+			System.out.println("In ProcessMethod : first for loop");
 			if(targetClass.isAbstract()) {
+				System.out.println("In ProcessMethod : if isAbstract");
 				int childOfTargetNum = 0;
 				
 				for(ClassObject childCandidate : classObjectsToBeExamined) {
-					if(childCandidate.getSuperclass().getClassType().equals(targetClass.getName())){
+					System.out.println("In ProcessMethod : if Abstract, candidate loop");
+					
+					TypeObject superClass = childCandidate.getSuperclass();
+					if(superClass == null) {
+						System.out.println("In ProcessMethod : superclass null");		
+						continue;
+					}
+					
+					if(superClass.getClassType().equals(targetClass.getName())){
+						System.out.println("In ProcessMethod : superclass name same");
 						childOfTargetNum++;
 					}
 					if(childOfTargetNum >= 2)
@@ -741,6 +827,7 @@ public class SpeculativeGenerality extends ViewPart {
 				}
 			}
 			else if(targetClass.isInterface()) {
+				System.out.println("In ProcessMethod : if isInterface");
 				int childOfTargetNum = 0;
 				
 				for(ClassObject childCandidate : classObjectsToBeExamined) {
