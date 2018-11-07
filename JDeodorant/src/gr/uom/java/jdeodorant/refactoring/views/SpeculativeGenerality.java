@@ -216,9 +216,10 @@ public class SpeculativeGenerality extends ViewPart {
 				case 1:
 					return entry.getName();
 				case 2:
-					return "aaaa";
+					IFile sourceFile = entry.getIFile();
+					return sourceFile.getFullPath().toString();
 				case 3:
-					return "aaaa";
+					return entry.codeSmellType;
 				case 4:
 					return "aaaa";
 				case 5:
@@ -255,9 +256,6 @@ public class SpeculativeGenerality extends ViewPart {
 
 	class NameSorter extends ViewerSorter {
 		public int compare(Viewer viewer, Object obj1, Object obj2) {
-			System.out.println("In NameSorter");
-			
-
 			if(obj1 instanceof ClassObject && obj2 instanceof ClassObject) {
 				ClassObject classObject1 = (ClassObject)obj1;
 				ClassObject classObject2 = (ClassObject)obj2;
@@ -377,16 +375,17 @@ public class SpeculativeGenerality extends ViewPart {
 		column0.setResizable(true);
 		column0.pack();
 		TreeColumn column1 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
-		column1.setText("Source Method");
-		System.out.println("Fuck");
+		column1.setText("Source Class");
 		column1.setResizable(true);
 		column1.pack();
 		TreeColumn column2 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
-		column2.setText("Variable Criterion");
+		column2.setText("Class Path");
+//		column2.setText("Variable Criterion");
 		column2.setResizable(true);
 		column2.pack();
 		TreeColumn column3 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
-		column3.setText("Block-Based Region");
+//		column3.setText("Block-Based Region");
+		column3.setText("Code Smell Type");
 		column3.setResizable(true);
 		column3.pack();
 		TreeColumn column4 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
@@ -406,7 +405,6 @@ public class SpeculativeGenerality extends ViewPart {
 				new MyComboBoxCellEditor(treeViewer.getTree(), new String[] {"0", "1", "2", "3", "4", "5"}, SWT.READ_ONLY)
 		});
 		
-		System.out.println("Before SetCellModifier!!!");
 		treeViewer.setCellModifier(new ICellModifier() {
 			public boolean canModify(Object element, String property) {
 				System.out.println("In CanModify");
@@ -414,9 +412,7 @@ public class SpeculativeGenerality extends ViewPart {
 			}
 
 			public Object getValue(Object element, String property) {
-				System.out.println("In GetValue");
 				if(element instanceof ASTSlice) {
-					System.out.println("Slice!!!");
 					ASTSlice slice = (ASTSlice)element;
 					if(slice.getUserRate() != null)
 						return slice.getUserRate();
@@ -425,10 +421,7 @@ public class SpeculativeGenerality extends ViewPart {
 				}
 				
 				if(element instanceof ClassObject) {
-					System.out.println("Class!!!");
 				}
-				
-				System.out.println(element);
 				
 				return 0;
 			}
@@ -498,7 +491,6 @@ public class SpeculativeGenerality extends ViewPart {
 			}
 			
 		});
-		System.out.println("After SetCellModifier!!!");
 		makeActions();
 		hookDoubleClickAction();
 		contributeToActionBars();
@@ -532,14 +524,11 @@ public class SpeculativeGenerality extends ViewPart {
 	}
 
 	private void makeActions() {
-		System.out.println("In makeActions");
 		identifyBadSmellsAction = new Action() {
 			public void run() {
 				activeProject = selectedProject;
 				CompilationUnitCache.getInstance().clearCache();
-				System.out.println("Before GetTable");
 				classObjectTable = getTable();
-				System.out.println("After GetTable");
 				treeViewer.setContentProvider(new ViewContentProvider());
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
@@ -563,86 +552,92 @@ public class SpeculativeGenerality extends ViewPart {
 
 		applyRefactoringAction = new Action() {
 			public void run() {
+				System.out.println("In ApplyRefactoringAction run");
+				
+				
 				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
-				if(selection != null && selection.getFirstElement() instanceof ASTSlice) {
-					ASTSlice slice = (ASTSlice)selection.getFirstElement();
-					TypeDeclaration sourceTypeDeclaration = slice.getSourceTypeDeclaration();
-					CompilationUnit sourceCompilationUnit = (CompilationUnit)sourceTypeDeclaration.getRoot();
-					IFile sourceFile = slice.getIFile();
-					IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-					boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
-					if(allowUsageReporting) {
-						Tree tree = treeViewer.getTree();
-						int groupPosition = -1;
-						int totalGroups = tree.getItemCount();
-						for(int i=0; i<tree.getItemCount(); i++) {
-							TreeItem treeItem = tree.getItem(i);
-							ASTSliceGroup group = (ASTSliceGroup)treeItem.getData();
-							if(group.getCandidates().contains(slice)) {
-								groupPosition = i;
-								break;
-							}
-						}
-						try {
-							boolean allowSourceCodeReporting = store.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
-							String declaringClass = slice.getSourceTypeDeclaration().resolveBinding().getQualifiedName();
-							String methodName = slice.getSourceMethodDeclaration().resolveBinding().toString();
-							String sourceMethodName = declaringClass + "::" + methodName;
-							String content = URLEncoder.encode("project_name", "UTF-8") + "=" + URLEncoder.encode(activeProject.getElementName(), "UTF-8");
-							content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "=" + URLEncoder.encode(sourceMethodName, "UTF-8");
-							content += "&" + URLEncoder.encode("variable_name", "UTF-8") + "=" + URLEncoder.encode(slice.getLocalVariableCriterion().resolveBinding().toString(), "UTF-8");
-							content += "&" + URLEncoder.encode("block", "UTF-8") + "=" + URLEncoder.encode("B" + slice.getBoundaryBlock().getId(), "UTF-8");
-							content += "&" + URLEncoder.encode("object_slice", "UTF-8") + "=" + URLEncoder.encode(slice.isObjectSlice() ? "1" : "0", "UTF-8");
-							int numberOfSliceStatements = slice.getNumberOfSliceStatements();
-							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
-							content += "&" + URLEncoder.encode("duplicated_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfDuplicatedStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("extracted_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfSliceStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
-							content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
-							if(allowSourceCodeReporting) {
-								content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "=" + URLEncoder.encode(slice.getSourceMethodDeclaration().toString(), "UTF-8");
-								content += "&" + URLEncoder.encode("slice_statements", "UTF-8") + "=" + URLEncoder.encode(slice.sliceToString(), "UTF-8");
-							}
-							content += "&" + URLEncoder.encode("application", "UTF-8") + "=" + URLEncoder.encode(String.valueOf("1"), "UTF-8");
-							content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "=" + URLEncoder.encode(slice.getExtractedMethodName(), "UTF-8");
-							content += "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
-							content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("2", "UTF-8");
-							URL url = new URL(Activator.RANK_URL);
-							URLConnection urlConn = url.openConnection();
-							urlConn.setDoInput(true);
-							urlConn.setDoOutput(true);
-							urlConn.setUseCaches(false);
-							urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-							DataOutputStream printout = new DataOutputStream(urlConn.getOutputStream());
-							printout.writeBytes(content);
-							printout.flush();
-							printout.close();
-							DataInputStream input = new DataInputStream(urlConn.getInputStream());
-							input.close();
-						} catch (IOException ioe) {
-							ioe.printStackTrace();
-						}
-					}
-					Refactoring refactoring = new ExtractMethodRefactoring(sourceCompilationUnit, slice);
-					try {
-						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
-						JavaUI.openInEditor(sourceJavaElement);
-					} catch (PartInitException e) {
-						e.printStackTrace();
-					} catch (JavaModelException e) {
-						e.printStackTrace();
-					}
-					MyRefactoringWizard wizard = new MyRefactoringWizard(refactoring, applyRefactoringAction);
-					RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
-					try { 
-						String titleForFailedChecks = ""; //$NON-NLS-1$ 
-						op.run(getSite().getShell(), titleForFailedChecks); 
-					} catch(InterruptedException e) {
-						e.printStackTrace();
-					}
+				if(selection != null && selection.getFirstElement() instanceof ClassObject) {
+					IFile sourceFile = ((ClassObject) selection.getFirstElement()).getIFile();
+					System.out.println(sourceFile.getFullPath().toString());
+					//
 				}
+//					IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+//					boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
+//					if(allowUsageReporting) {
+//						Tree tree = treeViewer.getTree();
+//						int groupPosition = -1;
+//						int totalGroups = tree.getItemCount();
+//						for(int i=0; i<tree.getItemCount(); i++) {
+//							TreeItem treeItem = tree.getItem(i);
+//							ASTSliceGroup group = (ASTSliceGroup)treeItem.getData();
+//							if(group.getCandidates().contains(slice)) {
+//								groupPosition = i;
+//								break;
+//							}
+//						}
+//						try {
+//							boolean allowSourceCodeReporting = store.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
+//							String declaringClass = slice.getSourceTypeDeclaration().resolveBinding().getQualifiedName();
+//							String methodName = slice.getSourceMethodDeclaration().resolveBinding().toString();
+//							String sourceMethodName = declaringClass + "::" + methodName;
+//							String content = URLEncoder.encode("project_name", "UTF-8") + "=" + URLEncoder.encode(activeProject.getElementName(), "UTF-8");
+//							content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "=" + URLEncoder.encode(sourceMethodName, "UTF-8");
+//							content += "&" + URLEncoder.encode("variable_name", "UTF-8") + "=" + URLEncoder.encode(slice.getLocalVariableCriterion().resolveBinding().toString(), "UTF-8");
+//							content += "&" + URLEncoder.encode("block", "UTF-8") + "=" + URLEncoder.encode("B" + slice.getBoundaryBlock().getId(), "UTF-8");
+//							content += "&" + URLEncoder.encode("object_slice", "UTF-8") + "=" + URLEncoder.encode(slice.isObjectSlice() ? "1" : "0", "UTF-8");
+//							int numberOfSliceStatements = slice.getNumberOfSliceStatements();
+//							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
+//							content += "&" + URLEncoder.encode("duplicated_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfDuplicatedStatements), "UTF-8");
+//							content += "&" + URLEncoder.encode("extracted_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfSliceStatements), "UTF-8");
+//							content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
+//							content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
+//							if(allowSourceCodeReporting) {
+//								content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "=" + URLEncoder.encode(slice.getSourceMethodDeclaration().toString(), "UTF-8");
+//								content += "&" + URLEncoder.encode("slice_statements", "UTF-8") + "=" + URLEncoder.encode(slice.sliceToString(), "UTF-8");
+//							}
+//							content += "&" + URLEncoder.encode("application", "UTF-8") + "=" + URLEncoder.encode(String.valueOf("1"), "UTF-8");
+//							content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "=" + URLEncoder.encode(slice.getExtractedMethodName(), "UTF-8");
+//							content += "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
+//							content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("2", "UTF-8");
+//							URL url = new URL(Activator.RANK_URL);
+//							URLConnection urlConn = url.openConnection();
+//							urlConn.setDoInput(true);
+//							urlConn.setDoOutput(true);
+//							urlConn.setUseCaches(false);
+//							urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+//							DataOutputStream printout = new DataOutputStream(urlConn.getOutputStream());
+//							printout.writeBytes(content);
+//							printout.flush();
+//							printout.close();
+//							DataInputStream input = new DataInputStream(urlConn.getInputStream());
+//							input.close();
+//						} catch (IOException ioe) {
+//							ioe.printStackTrace();
+//						}
+//					}
+//					Refactoring refactoring = new ExtractMethodRefactoring(sourceCompilationUnit, slice);
+//					try {
+//						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
+//						JavaUI.openInEditor(sourceJavaElement);
+//					} catch (PartInitException e) {
+//						e.printStackTrace();
+//					} catch (JavaModelException e) {
+//						e.printStackTrace();
+//					}
+//					MyRefactoringWizard wizard = new MyRefactoringWizard(refactoring, applyRefactoringAction);
+//					RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
+//					try { 
+//						String titleForFailedChecks = ""; //$NON-NLS-1$ 
+//						op.run(getSite().getShell(), titleForFailedChecks); 
+//					} catch(InterruptedException e) {
+//						e.printStackTrace();
+//					}
+//				}
+
+				System.out.println("After ApplyRefactoringAction run : end after if");
 			}
 		};
+
 		applyRefactoringAction.setToolTipText("Apply Refactoring");
 		applyRefactoringAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 				getImageDescriptor(ISharedImages.IMG_DEF_VIEW));
@@ -743,24 +738,16 @@ public class SpeculativeGenerality extends ViewPart {
 				System.out.println("In GetTable : Before classObjectsToBeExamined");
 				Set<ClassObject> classObjectsToBeExamined = new LinkedHashSet<ClassObject>();
 				if(selectedPackageFragmentRoot != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Prj");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragmentRoot));
 				}
 				else if(selectedPackageFragment != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Pck");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragment));
 				}
 				else if(selectedCompilationUnit != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined JvF");
-					// ToDo :: Not Allowed!!!
 				}
 				else if(selectedType != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Tpe");
-					// ToDo :: Not Allowed!!!
 				}
 				else {
-					System.out.println("In GetTable : classObjectsToBeExamined else");
-					// ToDo :: Not Allowed!!!
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
 				}
 
@@ -774,8 +761,7 @@ public class SpeculativeGenerality extends ViewPart {
 					System.out.println(target.getName());
 				}
 				
-				table=processMethod(classObjectsToBeExamined);			
-
+				table=processMethod(classObjectsToBeExamined);
 			}
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
@@ -798,36 +784,32 @@ public class SpeculativeGenerality extends ViewPart {
 	 * @return Array of ClassObject
 	 */
 	private ClassObject[] processMethod(final Set<ClassObject> classObjectsToBeExamined){	
+//		final List<ClassObject> classObjectswithSG = new ArrayList<ClassObject>();
 		final List<ClassObject> classObjectswithSG = new ArrayList<ClassObject>();
-		System.out.println("In ProcessMethod");
+		
 		for(ClassObject targetClass : classObjectsToBeExamined) {
-			System.out.println("In ProcessMethod : first for loop");
+			// Unnecessary Abstraction
 			if(targetClass.isAbstract()) {
-				System.out.println("In ProcessMethod : if isAbstract");
 				int childOfTargetNum = 0;
 				
 				for(ClassObject childCandidate : classObjectsToBeExamined) {
-					System.out.println("In ProcessMethod : if Abstract, candidate loop");
-					
 					TypeObject superClass = childCandidate.getSuperclass();
 					if(superClass == null) {
-						System.out.println("In ProcessMethod : superclass null");		
 						continue;
 					}
-					
+				
 					if(superClass.getClassType().equals(targetClass.getName())){
-						System.out.println("In ProcessMethod : superclass name same");
 						childOfTargetNum++;
 					}
 					if(childOfTargetNum >= 2)
 						break;
 				}
 				if(childOfTargetNum < 2) {
+					targetClass.codeSmellType="Abstraction";
 					classObjectswithSG.add(targetClass);
 				}
 			}
 			else if(targetClass.isInterface()) {
-				System.out.println("In ProcessMethod : if isInterface");
 				int childOfTargetNum = 0;
 				
 				for(ClassObject childCandidate : classObjectsToBeExamined) {
@@ -843,9 +825,38 @@ public class SpeculativeGenerality extends ViewPart {
 						break;
 				}
 				if(childOfTargetNum < 2) {
+					targetClass.codeSmellType="Interface";
 					classObjectswithSG.add(targetClass);
 				}
 			}
+			
+			// Unnecsary Parameter
+			
+			//Method Iterator have critical problem currently
+			
+			System.out.println("In for loop of methoditerator");
+//			if(!targetClass.isEnum() && !targetClass.isInterface() && !targetClass.isGeneratedByParserGenenator()) {
+//				ListIterator<MethodObject> methodIterator = targetClass.getMethodIterator();
+//				while(methodIterator.hasNext()) {
+//					// ToDo : find unnecessary parameter
+//					MethodObject methodObject = methodIterator.next();
+//					System.out.println(methodObject.getClassName()+"::"+methodObject.getName());
+//					for(int i=0;i<methodObject.getParameterList().size();i++) {
+//						System.out.println(methodObject.getParameter(i).getName());
+//						System.out.println(methodObject.getClassName());
+//					}
+//					
+//					if(!targetClass.codeSmellMethodList.isEmpty())
+//					{
+//						// ToDo : Add target for each smelling Method
+//						targetClass.codeSmellType="Parameter";
+//						classObjectswithSG.add(targetClass);
+//					}
+//				}
+//			}
+			
+			
+			
 		}
 		
 		ClassObject[] res = new ClassObject[classObjectswithSG.size()];

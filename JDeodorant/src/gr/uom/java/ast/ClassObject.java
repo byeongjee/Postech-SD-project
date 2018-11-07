@@ -14,7 +14,6 @@ import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 public class ClassObject extends ClassDeclarationObject {
-
 	private List<ConstructorObject> constructorList;
 	private List<EnumConstantDeclarationObject> enumConstantDeclarationList;
 	private TypeObject superclass;
@@ -28,6 +27,11 @@ public class ClassObject extends ClassDeclarationObject {
     private ASTInformation typeDeclaration;
     private IFile iFile;
 
+    // Ext : JuYongLee & JaeYeop Lee (From Here)
+    public String codeSmellType;
+    public String refactorType;
+    public List<MethodObject> codeSmellMethodList;
+    
     public ClassObject() {
 		this.constructorList = new ArrayList<ConstructorObject>();
 		this.interfaceList = new ArrayList<TypeObject>();

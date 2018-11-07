@@ -584,9 +584,11 @@ public class LongMethod extends ViewPart {
 				if(selection != null && selection.getFirstElement() instanceof ASTSlice) {
 					ASTSlice slice = (ASTSlice)selection.getFirstElement();
 					TypeDeclaration sourceTypeDeclaration = slice.getSourceTypeDeclaration();
+					System.out.println(sourceTypeDeclaration.getName());
 					CompilationUnit sourceCompilationUnit = (CompilationUnit)sourceTypeDeclaration.getRoot();
 					IFile sourceFile = slice.getIFile();
 					IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+
 					boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
 					if(allowUsageReporting) {
 						Tree tree = treeViewer.getTree();
@@ -640,6 +642,7 @@ public class LongMethod extends ViewPart {
 							ioe.printStackTrace();
 						}
 					}
+					
 					Refactoring refactoring = new ExtractMethodRefactoring(sourceCompilationUnit, slice);
 					try {
 						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
