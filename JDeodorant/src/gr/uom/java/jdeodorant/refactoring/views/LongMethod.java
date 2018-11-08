@@ -17,6 +17,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.event.TreeExpansionListener;
+
 import gr.uom.java.ast.ASTReader;
 import gr.uom.java.ast.AbstractMethodDeclaration;
 import gr.uom.java.ast.ClassObject;
@@ -89,7 +91,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
@@ -496,6 +500,41 @@ public class LongMethod extends ViewPart {
 		manager.add(saveResultsAction);
 		//manager.add(evolutionAnalysisAction);
 	}
+	
+	public void makeRefactoringButtons() {
+		Tree tree = treeViewer.getTree();
+		TreeItem[] items = tree.getItems();
+		for(int i = 0; i < items.length; i++) {
+			TreeEditor editor = new TreeEditor(tree);
+			
+			TreeItem item1 = items[i];
+			
+			//item1.setExpanded(true);
+			
+			for(int j = 0; j < item1.getItems().length; j++) {
+				TreeEditor editor2 = new TreeEditor(item1.getItem(j).getParent());
+				System.out.println(item1.getItems().length);
+				System.out.println(item1.getText(2));
+				Button button = new Button(item1.getItem(j).getParent(), SWT.PUSH);					
+				button.setText("TEST");
+				button.setSize(16, 16);
+				button.pack();
+				
+				editor2.horizontalAlignment = SWT.RIGHT;
+				editor2.grabHorizontal = true;
+				editor2.minimumWidth = 50;
+				editor2.setEditor(button, item1.getItem(j), 6);
+				
+				//item1.getItem(j).setData(button);
+				
+				/*editor.horizontalAlignment = SWT.RIGHT;
+			    editor.grabHorizontal = true;
+			    editor.minimumWidth = 50;
+				editor.setEditor(button, item1.get);*/
+			}
+		}
+	}
+	
 
 	private void makeActions() {
 		identifyBadSmellsAction = new Action() {
@@ -506,14 +545,16 @@ public class LongMethod extends ViewPart {
 				treeViewer.setContentProvider(new ViewContentProvider());
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
+				
+				//makeRefactoringButtons();
 				Tree tree = treeViewer.getTree();
-				TreeItem[] items = tree.getItems();
-				for(int i = 0; i < items.length; i++) {
-					TreeEditor editor = new TreeEditor(tree);
+				tree.addListener(SWT.Expand, new Listener() {
+					public void handleEvent(Event e) {
+						makeRefactoringButtons();
+					}
+				});
 					
-					TreeItem item1 = items[i];
-					
-					Button button = new Button(tree, SWT.PUSH);					
+					/*Button button = new Button(tree, SWT.PUSH);					
 					button.setText("TEST");
 					button.setSize(16, 16);
 					button.pack();
@@ -521,8 +562,7 @@ public class LongMethod extends ViewPart {
 					editor.horizontalAlignment = SWT.RIGHT;
 				    editor.grabHorizontal = true;
 				    editor.minimumWidth = 50;
-					editor.setEditor(button, item1, 6);
-				}
+					editor.setEditor(button, item1, 6);*/
 				//evolutionAnalysisAction.setEnabled(true);
 			}
 		};
