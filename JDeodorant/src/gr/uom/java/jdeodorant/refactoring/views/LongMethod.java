@@ -86,6 +86,8 @@ import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -533,9 +535,25 @@ public class LongMethod extends ViewPart {
 				TreeEditor editor2 = new TreeEditor(item1.getItem(j).getParent());
 				System.out.println(item1.getItems().length);
 				System.out.println(item1.getText(2));
-				Button button = new Button(item1.getItem(j).getParent(), SWT.PUSH);					
-				button.setText("TEST");
-				button.setSize(16, 16);
+				Button button = new Button(item1.getItem(j).getParent(), SWT.PUSH);	
+				Image image = Activator.getImageDescriptor("/icons/green_button.png").createImage();
+	  
+				button.addPaintListener( new PaintListener() {
+					  //@Override
+					  public void paintControl( PaintEvent event ) {
+						  event.gc.setBackground( event.display.getSystemColor( SWT.COLOR_WHITE ) );
+						  event.gc.fillRectangle( event.x, event.y, event.width, event.height );
+						  Image image = Activator.getImageDescriptor("/icons/green_button.png").createImage();;
+						  //
+						  event.gc.drawImage( image, event.width/2-8, event.height/2-8 );
+					  }
+				});
+				
+				//Image image = new Image(display, "yourFile.gif");
+				//Image image = PaintEvent.event.display.getSystemImage( SWT.ICON_QUESTION );
+				//button.setText("TEST");
+				button.setSize(3, 3);
+				button.setImage(image);
 				button.pack();
 				
 				editor2.horizontalAlignment = SWT.RIGHT;
