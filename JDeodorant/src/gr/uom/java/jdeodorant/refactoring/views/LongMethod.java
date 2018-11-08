@@ -86,6 +86,8 @@ import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Image;
@@ -127,6 +129,7 @@ public class LongMethod extends ViewPart {
 	private IMethod selectedMethod;
 	private ASTSliceGroup[] sliceGroupTable;
 	//private MethodEvolution methodEvolution;
+	private List<Button> buttonList = new ArrayList<Button>();
 	
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
@@ -509,8 +512,6 @@ public class LongMethod extends ViewPart {
 		for(int i = 0; i < items.length; i++) {			
 			TreeItem item1 = items[i];
 			TreeEditor editor = new TreeEditor(item1.getParent());
-			System.out.println(item1.getItems().length);
-			System.out.println(item1.getText(2));
 			Button button = new Button(item1.getParent(), SWT.PUSH);					
 			button.setText("TEST");
 			button.setSize(16, 16);
@@ -520,6 +521,7 @@ public class LongMethod extends ViewPart {
 			editor.grabHorizontal = true;
 			editor.minimumWidth = 50;
 			editor.setEditor(button, item1, 6);
+			buttonList.add(button);
 		}
 	}
 	
@@ -533,8 +535,6 @@ public class LongMethod extends ViewPart {
 						
 			for(int j = 0; j < item1.getItems().length; j++) {
 				TreeEditor editor2 = new TreeEditor(item1.getItem(j).getParent());
-				System.out.println(item1.getItems().length);
-				System.out.println(item1.getText(2));
 				Button button = new Button(item1.getItem(j).getParent(), SWT.PUSH);	
 				Image image = Activator.getImageDescriptor("/icons/green_button.png").createImage();
 	  
@@ -560,6 +560,7 @@ public class LongMethod extends ViewPart {
 				editor2.grabHorizontal = true;
 				editor2.minimumWidth = 50;
 				editor2.setEditor(button, item1.getItem(j), 6);
+				buttonList.add(button);
 			}
 		}
 	}
@@ -575,13 +576,17 @@ public class LongMethod extends ViewPart {
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
 				
+				for(Button it : buttonList) {
+					it.dispose();
+				}
+				
 				makeRefactoringButtons();
 				Tree tree = treeViewer.getTree();
 				tree.addListener(SWT.Expand, new Listener() {
 					public void handleEvent(Event e) {
 						makeChildrenRefactoringButtons();
 					}
-				});				
+				});
 			}
 		};
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
