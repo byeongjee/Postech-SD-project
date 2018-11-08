@@ -504,13 +504,31 @@ public class LongMethod extends ViewPart {
 	public void makeRefactoringButtons() {
 		Tree tree = treeViewer.getTree();
 		TreeItem[] items = tree.getItems();
+		for(int i = 0; i < items.length; i++) {			
+			TreeItem item1 = items[i];
+			TreeEditor editor = new TreeEditor(item1.getParent());
+			System.out.println(item1.getItems().length);
+			System.out.println(item1.getText(2));
+			Button button = new Button(item1.getParent(), SWT.PUSH);					
+			button.setText("TEST");
+			button.setSize(16, 16);
+			button.pack();
+			
+			editor.horizontalAlignment = SWT.RIGHT;
+			editor.grabHorizontal = true;
+			editor.minimumWidth = 50;
+			editor.setEditor(button, item1, 6);
+		}
+	}
+	
+	public void makeChildrenRefactoringButtons() {
+		Tree tree = treeViewer.getTree();
+		TreeItem[] items = tree.getItems();
 		for(int i = 0; i < items.length; i++) {
 			TreeEditor editor = new TreeEditor(tree);
 			
 			TreeItem item1 = items[i];
-			
-			//item1.setExpanded(true);
-			
+						
 			for(int j = 0; j < item1.getItems().length; j++) {
 				TreeEditor editor2 = new TreeEditor(item1.getItem(j).getParent());
 				System.out.println(item1.getItems().length);
@@ -524,13 +542,6 @@ public class LongMethod extends ViewPart {
 				editor2.grabHorizontal = true;
 				editor2.minimumWidth = 50;
 				editor2.setEditor(button, item1.getItem(j), 6);
-				
-				//item1.getItem(j).setData(button);
-				
-				/*editor.horizontalAlignment = SWT.RIGHT;
-			    editor.grabHorizontal = true;
-			    editor.minimumWidth = 50;
-				editor.setEditor(button, item1.get);*/
 			}
 		}
 	}
@@ -546,24 +557,13 @@ public class LongMethod extends ViewPart {
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
 				
-				//makeRefactoringButtons();
+				makeRefactoringButtons();
 				Tree tree = treeViewer.getTree();
 				tree.addListener(SWT.Expand, new Listener() {
 					public void handleEvent(Event e) {
-						makeRefactoringButtons();
+						makeChildrenRefactoringButtons();
 					}
-				});
-					
-					/*Button button = new Button(tree, SWT.PUSH);					
-					button.setText("TEST");
-					button.setSize(16, 16);
-					button.pack();
-					
-					editor.horizontalAlignment = SWT.RIGHT;
-				    editor.grabHorizontal = true;
-				    editor.minimumWidth = 50;
-					editor.setEditor(button, item1, 6);*/
-				//evolutionAnalysisAction.setEnabled(true);
+				});				
 			}
 		};
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
