@@ -130,6 +130,15 @@ public class LongMethod extends ViewPart {
 	private ASTSliceGroup[] sliceGroupTable;
 	//private MethodEvolution methodEvolution;
 	private List<Button> buttonList = new ArrayList<Button>();
+	private class LongMethodRefactoringButtonUI extends RefactoringButtonUI {
+		
+		
+		//To be implemented
+		public void pressRefactorButton(int index) {
+			System.out.println("Success");
+		}
+	}
+	private LongMethodRefactoringButtonUI refactorButtonMaker;
 	
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
@@ -319,6 +328,7 @@ public class LongMethod extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
+		refactorButtonMaker = new LongMethodRefactoringButtonUI();
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
@@ -505,66 +515,6 @@ public class LongMethod extends ViewPart {
 		manager.add(saveResultsAction);
 		//manager.add(evolutionAnalysisAction);
 	}
-	
-	public void makeRefactoringButtons() {
-		Tree tree = treeViewer.getTree();
-		TreeItem[] items = tree.getItems();
-		for(int i = 0; i < items.length; i++) {			
-			TreeItem item1 = items[i];
-			TreeEditor editor = new TreeEditor(item1.getParent());
-			Button button = new Button(item1.getParent(), SWT.PUSH);					
-			button.setText("TEST");
-			button.setSize(16, 16);
-			button.pack();
-			
-			editor.horizontalAlignment = SWT.RIGHT;
-			editor.grabHorizontal = true;
-			editor.minimumWidth = 50;
-			editor.setEditor(button, item1, 6);
-			buttonList.add(button);
-		}
-	}
-	
-	public void makeChildrenRefactoringButtons() {
-		Tree tree = treeViewer.getTree();
-		TreeItem[] items = tree.getItems();
-		for(int i = 0; i < items.length; i++) {
-			TreeEditor editor = new TreeEditor(tree);
-			
-			TreeItem item1 = items[i];
-						
-			for(int j = 0; j < item1.getItems().length; j++) {
-				TreeEditor editor2 = new TreeEditor(item1.getItem(j).getParent());
-				Button button = new Button(item1.getItem(j).getParent(), SWT.PUSH);	
-				Image image = Activator.getImageDescriptor("/icons/green_button.png").createImage();
-	  
-				button.addPaintListener( new PaintListener() {
-					  //@Override
-					  public void paintControl( PaintEvent event ) {
-						  event.gc.setBackground( event.display.getSystemColor( SWT.COLOR_WHITE ) );
-						  event.gc.fillRectangle( event.x, event.y, event.width, event.height );
-						  Image image = Activator.getImageDescriptor("/icons/green_button.png").createImage();;
-						  //
-						  event.gc.drawImage( image, event.width/2-8, event.height/2-8 );
-					  }
-				});
-				
-				//Image image = new Image(display, "yourFile.gif");
-				//Image image = PaintEvent.event.display.getSystemImage( SWT.ICON_QUESTION );
-				//button.setText("TEST");
-				button.setSize(3, 3);
-				button.setImage(image);
-				button.pack();
-				
-				editor2.horizontalAlignment = SWT.RIGHT;
-				editor2.grabHorizontal = true;
-				editor2.minimumWidth = 50;
-				editor2.setEditor(button, item1.getItem(j), 6);
-				buttonList.add(button);
-			}
-		}
-	}
-	
 
 	private void makeActions() {
 		identifyBadSmellsAction = new Action() {
@@ -580,11 +530,13 @@ public class LongMethod extends ViewPart {
 					it.dispose();
 				}
 				
-				makeRefactoringButtons();
 				Tree tree = treeViewer.getTree();
+				refactorButtonMaker.setTree(tree);
+				refactorButtonMaker.makeRefactoringButtons();
+
 				tree.addListener(SWT.Expand, new Listener() {
 					public void handleEvent(Event e) {
-						makeChildrenRefactoringButtons();
+						refactorButtonMaker.makeChildrenRefactoringButtons();
 					}
 				});
 			}
