@@ -13,12 +13,15 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import gr.uom.java.jdeodorant.refactoring.Activator;
 
 public class RefactoringButtonUI {
 	private Tree tree;
 	private List<Button> buttonList;
+	
+	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
 	
 	public RefactoringButtonUI(){
 		buttonList = new ArrayList<Button>();
@@ -90,15 +93,15 @@ public class RefactoringButtonUI {
 			for(int j = 0; j < item1.getItems().length; j++) {
 				TreeEditor editor2 = new TreeEditor(item1.getItem(j).getParent());
 				Button button = new Button(item1.getItem(j).getParent(), SWT.PUSH);	
-				Image image = Activator.getImageDescriptor("/icons/green_button.png").createImage();
+				//Image image = Activator.getImageDescriptor("/icons/green_button.png").createImage();
 	  
 				button.addPaintListener( new PaintListener() {
 					  //@Override
 					  public void paintControl( PaintEvent event ) {
 						  event.gc.setBackground( event.display.getSystemColor( SWT.COLOR_WHITE ) );
 						  event.gc.fillRectangle( event.x, event.y, event.width, event.height );
-						  Image image = Activator.getImageDescriptor("/icons/green_button.png").createImage();;
-						  //
+						  Image image = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/green_button.png").createImage();
+						  //Image image = Activator.getImageDescriptor("/icons/green_button.png").createImage();;
 						  event.gc.drawImage( image, event.width/2-8, event.height/2-8 );
 					  }
 				});
@@ -107,7 +110,7 @@ public class RefactoringButtonUI {
 				//Image image = PaintEvent.event.display.getSystemImage( SWT.ICON_QUESTION );
 				//button.setText("TEST");
 				button.setSize(3, 3);
-				button.setImage(image);
+				//button.setImage(image);
 				button.pack();
 				
 				editor2.horizontalAlignment = SWT.RIGHT;
