@@ -98,6 +98,10 @@ public class ClassObjectCandidate extends ClassObject {
 		}
 	}
     
+	public void addSmellingMethod(MethodObject target) {
+		this.smellingMethods.add(target);
+	}
+	
     public ClassObjectCandidate getClassObjectCandidate() {
     	return this;
     }
