@@ -14,23 +14,18 @@ import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 public class ClassObject extends ClassDeclarationObject {
-	private List<ConstructorObject> constructorList;
-	private List<EnumConstantDeclarationObject> enumConstantDeclarationList;
-	private TypeObject superclass;
-	private List<TypeObject> interfaceList;
-	private boolean _abstract;
-    private boolean _interface;
-    private boolean _static;
-    private boolean _enum;
-    private Access access;
+	protected List<ConstructorObject> constructorList;
+	protected List<EnumConstantDeclarationObject> enumConstantDeclarationList;
+	protected TypeObject superclass;
+	protected List<TypeObject> interfaceList;
+	protected boolean _abstract;
+	protected boolean _interface;
+	protected boolean _static;
+	protected boolean _enum;
+	protected Access access;
     //private TypeDeclaration typeDeclaration;
-    private ASTInformation typeDeclaration;
-    private IFile iFile;
-
-    // Ext : JuYongLee & JaeYeop Lee (From Here)
-    public String codeSmellType;
-    public String refactorType;
-    public List<MethodObject> codeSmellMethodList;
+	protected ASTInformation typeDeclaration;
+	protected IFile iFile;
     
     public ClassObject() {
 		this.constructorList = new ArrayList<ConstructorObject>();
