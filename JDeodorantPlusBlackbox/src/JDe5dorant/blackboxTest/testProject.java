@@ -80,15 +80,86 @@ public class testProject {
     	newEntries[oldEntries.length] = JavaCore.newSourceEntry(fragRoot.getPath());
     	javaProject.setRawClasspath(newEntries, null);
     	
-    	// Generate Java Class
-    	IPackageFragment pack = 
-    			javaProject.getPackageFragmentRoot(sourceFolder).createPackageFragment("homework5", false, null);
-    	StringBuffer source = new StringBuffer();
-    	source.append("package " + pack.getElementName() + ";\n");
-    	source.append("\n public class simple{\n \t int a = 1; \n\n \t int test(int t) {\n\t\t return t; \n\t} \n}");
-    	source.append("");
-		ICompilationUnit _class = pack.createCompilationUnit("simple.java", source.toString(), false, null);
+    	// Creating Package 
+    	IPackageFragment _package = 
+    			javaProject.getPackageFragmentRoot(sourceFolder).createPackageFragment("SpeculativeGenerality", false, null);
+    	StringBuffer source;
+    	
+    	// Generate Java Class : NoChildInterface
+    	source = new StringBuffer();
+    	source.append("package " + _package.getElementName() + ";\n");
+    	String strNoChildInterface = "public interface NoChildInterface {\r\n" + 
+    							  	 "	int NoChildInterface_Method(int input);\r\n" +
+    							  	 "}";
+    	source.append(strNoChildInterface);
+		ICompilationUnit classNoChildInterface = _package.createCompilationUnit("NoChildInterface.java", source.toString(), false, null);
 		
+		// Generate Java Class : OneChildAbstract
+		source = new StringBuffer();
+    	source.append("package " + _package.getElementName() + ";\n");
+    	String strOneChildAbstract = "public abstract class OneChildAbstract {\r\n" + 
+    			"	int var = 10;\r\n" + 
+    			"	int OneChildAstract_Method(int a)\r\n" + 
+    			"	{\r\n" + 
+    			"		return a + var*10;\r\n" + 
+    			"	}\r\n" + 
+    			"}";
+    	source.append(strOneChildAbstract);
+    	ICompilationUnit classOneChildAbstract = _package.createCompilationUnit("OneChildAbstract.java", source.toString(), false, null);
+		
+    	// Generate Java Class : OneChild
+		source = new StringBuffer();
+		source.append("package " + _package.getElementName() + ";\n");
+		String strOneChild = "public class OneChild extends OneChildAbstract {\r\n" + 
+				"	int var = 5;\r\n" + 
+				"	int OneChildAstract_Method() {\r\n" + 
+				"		return var;\r\n" + 
+				"	}\r\n" + 
+				"}";
+		source.append(strOneChild);
+		ICompilationUnit classOneChild = _package.createCompilationUnit("OneChild.java", source.toString(), false, null);
+		
+    	// Generate Java Class : TwoChildAbstract
+		source = new StringBuffer();
+		source.append("package " + _package.getElementName() + ";\n");
+		String strTwoChildAbstract = "public abstract class TwoChildAbstract {\r\n" + 
+				"	int var = 10;\r\n" + 
+				"	int OneChildAstract_Method(int a)\r\n" + 
+				"	{\r\n" + 
+				"		return a + var*10;\r\n" + 
+				"	}\r\n" + 
+				"}";
+		source.append(strTwoChildAbstract);
+		ICompilationUnit classTwoChildAbstract = _package.createCompilationUnit("TwoChildAbstract.java", source.toString(), false, null);
+		
+		// Generate Java Class : TwoChild_LongMethod
+		source = new StringBuffer();
+		source.append("package " + _package.getElementName() + ";\n");
+		String strTwoChildLongMethod = "public class TwoChild_LongMethod extends TwoChildAbstract {\r\n" + 
+				"	int var = 5;\r\n" + 
+				"	int LongMethod() {\r\n" + 
+				"		int a11 = 0;\r\n \t int a12 = 0;\r\n \t int a13 = 0;\r\n \t int a14 = 0;\r\n \t int a15 = 0;\r\n" + 
+				"		int a16 = 0;\r\n \t int a17 = 0;\r\n \t int a18 = 0;\r\n \t int a19 = 0;\r\n \t int a21 = 0;\r\n" + 
+				"		int a22 = 0;\r\n \t int a23 = 0;\r\n \t int a24 = 0;\r\n \t int a25 = 0;\r\n \t int a26 = 0;\r\n" + 
+				"		int a27 = 0;\r\n \t int a28 = 0;\r\n \t int a29 = 0;\r\n \t int a31 = 0;\r\n \t int a32 = 0;\r\n" + 
+				"		int a33 = 0;\r\n \t int a34 = 0;\r\n \t int a35 = 0;\r\n \t int a36 = 0;\r\n \r\n" + 
+				"		return var;\r\n" + 
+				"	}\r\n" + 
+				"}";
+		source.append(strTwoChildLongMethod);
+		ICompilationUnit classTwoChildLongMethod = _package.createCompilationUnit("TwoChild_LongMethod.java", source.toString(), false, null);
+
+		// Generate Java Class : TwoChild_UnnecessaryParameter
+		source = new StringBuffer();
+		source.append("package " + _package.getElementName() + ";\n");
+		String strTwoChildUnnecessaryParameter = "public class TwoChild_UnnecessaryParameter extends TwoChildAbstract {\r\n" + 
+				"	int var = 5;\r\n" + 
+				"	int UncessaryParameter(int a, int b, int c) {\r\n" + 
+				"		return var;\r\n" + 
+				"	}\r\n" + 
+				"}";
+		source.append(strTwoChildUnnecessaryParameter);
+		ICompilationUnit classTwoChildUnnecessaryParameter = _package.createCompilationUnit("TwoChild_UnnecessaryParameter.java", source.toString(), false, null);
 		
     }
     

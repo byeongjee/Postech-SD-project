@@ -186,9 +186,9 @@ public class SpeculativeGenerality extends ViewPart {
 				ClassObjectCandidate entry = (ClassObjectCandidate)obj;
 				switch(index){
 				case 0:
-					return entry.getRefactorType();
-				case 1:
 					return entry.getName();
+				case 1:
+					return entry.getRefactorType();
 				case 2:
 					IFile sourceFile = entry.getIFile();
 					return sourceFile.getFullPath().toString();
@@ -205,9 +205,9 @@ public class SpeculativeGenerality extends ViewPart {
 				MethodObject entry = (MethodObject)obj;
 				switch(index){
 				case 0:
-					return "";
-				case 1:
 					return entry.getName();
+				case 1:
+					return "";
 				case 2:
 					return "";
 				case 3:
@@ -349,8 +349,8 @@ public class SpeculativeGenerality extends ViewPart {
 		treeViewer.setSorter(new NameSorter());
 		treeViewer.setInput(getViewSite());
 		TableLayout layout = new TableLayout();
-		layout.addColumnData(new ColumnWeightData(20, true));
 		layout.addColumnData(new ColumnWeightData(60, true));
+		layout.addColumnData(new ColumnWeightData(20, true));
 		layout.addColumnData(new ColumnWeightData(40, true));
 		layout.addColumnData(new ColumnWeightData(20, true));
 		layout.addColumnData(new ColumnWeightData(20, true));
@@ -360,13 +360,13 @@ public class SpeculativeGenerality extends ViewPart {
 		treeViewer.getTree().setLinesVisible(true);
 		treeViewer.getTree().setHeaderVisible(true);
 		TreeColumn column0 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
-		column0.setText("Refactoring Type");
+		column0.setText("Target");
 		column0.setResizable(true);
 		column0.pack();
 		TreeColumn column1 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
-		column1.setText("Target");
+		column1.setText("Refactoring Type");
 		column1.setResizable(true);
-		column1.pack();
+		column1.pack();		
 		TreeColumn column2 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
 		column2.setText("Source Path");
 		column2.setResizable(true);
@@ -379,7 +379,6 @@ public class SpeculativeGenerality extends ViewPart {
 		column4.setText("Duplicated/Extracted");
 		column4.setResizable(true);
 		column4.pack();
-		
 		TreeColumn column5 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
 		column5.setText("Rate it!");
 		column5.setResizable(true);
