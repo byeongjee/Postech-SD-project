@@ -37,14 +37,14 @@ public class UIButtonTest {
 	@Test
 	public void MakeRefactoringButtonsMethodTest() {
 		setup();
-		ui.makeRefactoringButtons();
+		ui.makeRefactoringButtons(6);
 		assertEquals(3, ui.getButtonList().size());
 	}
 	
 	@Test
 	public void MakeChildrenRefactoringButtonsMethodTest() {
 		setup();
-		ui.makeChildrenRefactoringButtons();
+		ui.makeChildrenRefactoringButtons(6);
 		assertEquals(4, ui.getButtonList().size());
 		
 	}

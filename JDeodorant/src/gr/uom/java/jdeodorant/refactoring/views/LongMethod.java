@@ -530,11 +530,11 @@ public class LongMethod extends ViewPart {
 				
 				Tree tree = treeViewer.getTree();
 				refactorButtonMaker.setTree(tree);
-				refactorButtonMaker.makeRefactoringButtons();
+				refactorButtonMaker.makeRefactoringButtons(6);
 
 				tree.addListener(SWT.Expand, new Listener() {
 					public void handleEvent(Event e) {
-						refactorButtonMaker.makeChildrenRefactoringButtons();
+						refactorButtonMaker.makeChildrenRefactoringButtons(6);
 					}
 				});
 			}
