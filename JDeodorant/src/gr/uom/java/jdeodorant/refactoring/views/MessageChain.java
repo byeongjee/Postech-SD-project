@@ -94,7 +94,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
@@ -128,7 +130,13 @@ public class MessageChain extends ViewPart {
 	// private MethodEvolution methodEvolution;
 	/* Mine */
 	public MessageChainStructure[] targets;
-
+	private class MessageChainRefactoringButtonUI extends RefactoringButtonUI{
+		public void pressRefactoringButton(int index) {
+			//gg
+		}
+	}
+	private MessageChainRefactoringButtonUI refactorButtonMaker;
+	
 	public class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}
@@ -380,6 +388,7 @@ public class MessageChain extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
+		refactorButtonMaker = new MessageChainRefactoringButtonUI();
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
@@ -574,6 +583,18 @@ public class MessageChain extends ViewPart {
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
 				// evolutionAnalysisAction.setEnabled(true);
+				
+				refactorButtonMaker.disposeButtons();
+				
+				Tree tree = treeViewer.getTree();
+				refactorButtonMaker.setTree(tree);
+				refactorButtonMaker.makeRefactoringButtons(3);
+
+				tree.addListener(SWT.Expand, new Listener() {
+					public void handleEvent(Event e) {
+						refactorButtonMaker.makeChildrenRefactoringButtons(3);
+					}
+				});
 			}
 		};
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
