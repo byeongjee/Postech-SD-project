@@ -39,7 +39,6 @@ import gr.uom.java.jdeodorant.refactoring.Activator;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSlice;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSliceGroup;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
-
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.resources.IFile;
@@ -89,7 +88,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
@@ -124,6 +125,16 @@ public class SpeculativeGenerality extends ViewPart {
 	private ICompilationUnit selectedCompilationUnit;
 	private IType selectedType;
 	private IMethod selectedMethod;
+	
+	private class SpeculativeGeneralityRefactoringButtonUI extends RefactoringButtonUI {
+		
+		
+		//To be implemented
+		public void pressRefactorButton(int index) {
+			System.out.println("Index of button pressed is " + index);
+		}
+	}
+	private SpeculativeGeneralityRefactoringButtonUI refactorButtonMaker;
 	
 	// Exp : would-be extended to contain information of line, source-path, and so forth... (for UI)
 	private ClassObjectCandidate[] classObjectTable; 
@@ -343,6 +354,7 @@ public class SpeculativeGenerality extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
+		refactorButtonMaker = new SpeculativeGeneralityRefactoringButtonUI();
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
@@ -519,6 +531,18 @@ public class SpeculativeGenerality extends ViewPart {
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
 				//evolutionAnalysisAction.setEnabled(true);
+				
+				refactorButtonMaker.disposeButtons();
+				
+				Tree tree = treeViewer.getTree();
+				refactorButtonMaker.setTree(tree);
+				refactorButtonMaker.makeRefactoringButtons();
+
+				tree.addListener(SWT.Expand, new Listener() {
+					public void handleEvent(Event e) {
+						refactorButtonMaker.makeChildrenRefactoringButtons();
+					}
+				});
 			}
 		};
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
