@@ -54,7 +54,7 @@ public class RefactoringButtonUI {
 	 * @UI
 	 * Add refactoring buttons for top level smells
 	 */
-	public void makeRefactoringButtons() {
+	public void makeRefactoringButtons(int columnIndex) {
 		TreeItem[] items = tree.getItems();
 		for(int i = 0; i < items.length; i++) {			
 			TreeItem item1 = items[i];
@@ -68,7 +68,7 @@ public class RefactoringButtonUI {
 			editor.horizontalAlignment = SWT.RIGHT;
 			editor.grabHorizontal = true;
 			editor.minimumWidth = 50;
-			editor.setEditor(button, item1, 6);
+			editor.setEditor(button, item1, columnIndex);
 			buttonList.add(button);
 			button.addSelectionListener(new SelectionListener() {
 				public void widgetSelected(SelectionEvent event) {
@@ -83,7 +83,7 @@ public class RefactoringButtonUI {
 	}
 	
 	
-	public void makeChildrenRefactoringButtons() {
+	public void makeChildrenRefactoringButtons(int columnIndex) {
 		TreeItem[] items = tree.getItems();
 		for(int i = 0; i < items.length; i++) {
 			TreeEditor editor = new TreeEditor(tree);
@@ -93,7 +93,6 @@ public class RefactoringButtonUI {
 			for(int j = 0; j < item1.getItems().length; j++) {
 				TreeEditor editor2 = new TreeEditor(item1.getItem(j).getParent());
 				Button button = new Button(item1.getItem(j).getParent(), SWT.PUSH);	
-				//Image image = Activator.getImageDescriptor("/icons/green_button.png").createImage();
 	  
 				button.addPaintListener( new PaintListener() {
 					  //@Override
@@ -101,22 +100,17 @@ public class RefactoringButtonUI {
 						  event.gc.setBackground( event.display.getSystemColor( SWT.COLOR_WHITE ) );
 						  event.gc.fillRectangle( event.x, event.y, event.width, event.height );
 						  Image image = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/green_button.png").createImage();
-						  //Image image = Activator.getImageDescriptor("/icons/green_button.png").createImage();;
 						  event.gc.drawImage( image, event.width/2-8, event.height/2-8 );
 					  }
 				});
 				
-				//Image image = new Image(display, "yourFile.gif");
-				//Image image = PaintEvent.event.display.getSystemImage( SWT.ICON_QUESTION );
-				//button.setText("TEST");
 				button.setSize(3, 3);
-				//button.setImage(image);
 				button.pack();
 				
 				editor2.horizontalAlignment = SWT.RIGHT;
 				editor2.grabHorizontal = true;
 				editor2.minimumWidth = 50;
-				editor2.setEditor(button, item1.getItem(j), 6);
+				editor2.setEditor(button, item1.getItem(j), columnIndex);
 				buttonList.add(button);
 			}
 		}
