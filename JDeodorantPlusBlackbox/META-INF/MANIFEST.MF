@@ -1,10 +1,13 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: JDeodrantPlusBlackbox
-Bundle-SymbolicName: JDeodorantPlusBlackbox
+Bundle-Name: messageChainBlackbox
+Bundle-SymbolicName: messageChainBlackbox
 Bundle-Version: 1.0.0.qualifier
 Automatic-Module-Name: JDeodrantPlusBlackbox
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Bundle-Vendor: 
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.eclipse.core.resources,
  org.eclipse.core.runtime;version="3.5.0",
  org.eclipse.jdt.core,
@@ -15,7 +18,15 @@ Import-Package: org.eclipse.core.resources,
  org.eclipse.ui,
  org.junit,
  org.junit.runner;version="4.12.0"
-Require-Bundle: org.eclipse.swt;bundle-version="3.107.0",
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.swt;bundle-version="3.107.0",
  org.eclipse.swtbot.e4.finder;bundle-version="2.7.0",
  org.eclipse.swtbot.swt.finder;bundle-version="2.7.0",
- org.hamcrest.library
+ org.hamcrest.library,
+ org.eclipse.core.runtime,
+ org.eclipse.swtbot.go;bundle-version="2.6.0",
+ org.eclipse.swt,
+ org.eclipse.core.resources;bundle-version="3.13.0",
+ org.eclipse.jdt.core;bundle-version="3.14.0",
+ org.eclipse.jdt.launching;bundle-version="3.10.0"
+Bundle-Activator: messageChainBlackbox.Activator
