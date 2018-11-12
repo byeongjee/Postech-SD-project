@@ -17,6 +17,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.event.TreeExpansionListener;
+
 import gr.uom.java.ast.ASTReader;
 import gr.uom.java.ast.AbstractMethodDeclaration;
 import gr.uom.java.ast.ClassObject;
@@ -84,12 +86,18 @@ import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
@@ -121,6 +129,16 @@ public class LongMethod extends ViewPart {
 	private IMethod selectedMethod;
 	private ASTSliceGroup[] sliceGroupTable;
 	//private MethodEvolution methodEvolution;
+	private List<Button> buttonList = new ArrayList<Button>();
+	private class LongMethodRefactoringButtonUI extends RefactoringButtonUI {
+		
+		
+		//To be implemented
+		public void pressRefactorButton(int index) {
+			System.out.println("Success");
+		}
+	}
+	private LongMethodRefactoringButtonUI refactorButtonMaker;
 	
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
@@ -310,6 +328,7 @@ public class LongMethod extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
+		refactorButtonMaker = new LongMethodRefactoringButtonUI();
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
@@ -506,24 +525,20 @@ public class LongMethod extends ViewPart {
 				treeViewer.setContentProvider(new ViewContentProvider());
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
-				Tree tree = treeViewer.getTree();
-				TreeItem[] items = tree.getItems();
-				for(int i = 0; i < items.length; i++) {
-					TreeEditor editor = new TreeEditor(tree);
-					
-					TreeItem item1 = items[i];
-					
-					Button button = new Button(tree, SWT.PUSH);					
-					button.setText("TEST");
-					button.setSize(16, 16);
-					button.pack();
-					
-					editor.horizontalAlignment = SWT.RIGHT;
-				    editor.grabHorizontal = true;
-				    editor.minimumWidth = 50;
-					editor.setEditor(button, item1, 6);
+				
+				for(Button it : buttonList) {
+					it.dispose();
 				}
-				//evolutionAnalysisAction.setEnabled(true);
+				
+				Tree tree = treeViewer.getTree();
+				refactorButtonMaker.setTree(tree);
+				refactorButtonMaker.makeRefactoringButtons();
+
+				tree.addListener(SWT.Expand, new Listener() {
+					public void handleEvent(Event e) {
+						refactorButtonMaker.makeChildrenRefactoringButtons();
+					}
+				});
 			}
 		};
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");

@@ -17,7 +17,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.compare,
  org.eclipse.draw2d,
  org.eclipse.core.filebuffers,
- org.eclipse.ui.ide
+ org.eclipse.ui.ide,
+ org.junit,
+ org.junit.jupiter.api;bundle-version="5.1.0"
 Bundle-ActivationPolicy: lazy
 Import-Package: gr.uom.java.ast,
  org.eclipse.jdt.core.refactoring
