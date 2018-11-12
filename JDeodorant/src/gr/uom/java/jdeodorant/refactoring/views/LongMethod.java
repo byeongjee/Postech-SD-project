@@ -129,7 +129,7 @@ public class LongMethod extends ViewPart {
 	private IMethod selectedMethod;
 	private ASTSliceGroup[] sliceGroupTable;
 	//private MethodEvolution methodEvolution;
-	private List<Button> buttonList = new ArrayList<Button>();
+	//private List<Button> buttonList = new ArrayList<Button>();
 	private class LongMethodRefactoringButtonUI extends RefactoringButtonUI {
 		
 		
@@ -526,9 +526,7 @@ public class LongMethod extends ViewPart {
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
 				
-				for(Button it : buttonList) {
-					it.dispose();
-				}
+				refactorButtonMaker.disposeButtons();
 				
 				Tree tree = treeViewer.getTree();
 				refactorButtonMaker.setTree(tree);

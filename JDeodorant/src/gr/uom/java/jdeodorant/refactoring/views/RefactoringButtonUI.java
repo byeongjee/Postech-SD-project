@@ -122,4 +122,10 @@ public class RefactoringButtonUI {
 		}
 	}
 	
+	public void disposeButtons() {
+		for(Button it : buttonList) {
+			it.dispose();
+		}
+	}
+	
 }
