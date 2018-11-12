@@ -395,6 +395,10 @@ public class SpeculativeGenerality extends ViewPart {
 		column5.setText("Rate it!");
 		column5.setResizable(true);
 		column5.pack();
+		TreeColumn column6 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+		column6.setText("Do Refactoring");
+		column6.setResizable(true);
+		column6.pack();
 		treeViewer.expandAll();
 		
 		treeViewer.setColumnProperties(new String[] {"type", "source", "variable", "block", "duplicationRatio", "rate"});
@@ -536,11 +540,11 @@ public class SpeculativeGenerality extends ViewPart {
 				
 				Tree tree = treeViewer.getTree();
 				refactorButtonMaker.setTree(tree);
-				refactorButtonMaker.makeRefactoringButtons();
+				refactorButtonMaker.makeRefactoringButtons(6);
 
 				tree.addListener(SWT.Expand, new Listener() {
 					public void handleEvent(Event e) {
-						refactorButtonMaker.makeChildrenRefactoringButtons();
+						refactorButtonMaker.makeChildrenRefactoringButtons(6);
 					}
 				});
 			}
