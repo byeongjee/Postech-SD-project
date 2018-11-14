@@ -68,29 +68,34 @@ public class testProject {
 	    	
 	    	source = new StringBuffer();
 	    	source.append("package " + _package.getElementName() + ";\n");
-	    	String strSimple = "public class Simple {\r\n" + 
-	    							  	 "	public int a;\r\n" +
-	    							  	 "	public int b;\r\n" +
-	    							  	 "  public Simple() {\r\n" +
-	    							  	 "  	a = 0;\r\n"+
-	    							  	 "      b = 1;\r\n"+
-	    							  	 "  }\r\n"+
-	    							  	 "  public void method1() {\r\n"+
-	    							  	 "  	int c = 2;\r\n"+
-	    							  	 "	}\r\n	"+
-	    							  	 "  public Simple method2() {\r\n"+
-	    							  	 "		a = 4;\r\n"+
-	    							  	 "		return this;\r\n"+
-	    							  	 "  }\r\n"+
-	    							  	 "  public Simple method3() {\r\n"+
-	    							  	 "		return this;\r\n"+
-	    							  	 "  }\r\n"+
-	    							  	 "  public int method4() {\r\n"+
-	    							  	 "		return a;\r\n"+
-	    							  	 "  }\r\n"+
-	    							  	 "}";
+	    	String strSimple = "public class TestLPL {\r\n" + 
+	    				"	 		public int a;\r\n" + 
+	    				"	 		public int b;\r\n" + 
+	    				"	 		public char c;\r\n" + 
+	    				"	 		\r\n" + 
+	    				"	 		public TestLPL() {\r\n" + 
+	    				"	 			a = 1;\r\n" + 
+	    				"	 			b = 2;\r\n" + 
+	    				"	 			c = 'a';\r\n" + 
+	    				"	 		}\r\n" + 
+	    				"	 		public int getVal1 (int x) {\r\n" + 
+	    				"	 			return a + x;\r\n" + 
+	    				"	 		}\r\n" + 
+	    				"	 		public int getVal2 (int x, int y) {\r\n" + 
+	    				"	 			return b + x + y;\r\n" + 
+	    				"	 		}\r\n" + 
+	    				"	 		public int getVal3 (int x, int y, int z) {\r\n" + 
+	    				"	 			return x + y + z;\r\n" + 
+	    				"	 		}\r\n" + 
+	    				"	 		public int getVal4 (int x, int y, int z, int w) {\r\n" + 
+	    				"	 			return x + y + z + w;\r\n" + 
+	    				"	 		}\r\n" + 
+	    				"	 		public int getVal4_2 (int x, int y, char u, char v) {\r\n" + 
+	    				"	 			return x + y;\r\n" + 
+	    				"	 		}\r\n" + 
+	    				"	 	}";
 	    	source.append(strSimple);
-			ICompilationUnit classSimple = _package.createCompilationUnit("Simple.java", source.toString(), false, null);
+			_package.createCompilationUnit("Simple.java", source.toString(), false, null);
 			
 	    }
 	    
