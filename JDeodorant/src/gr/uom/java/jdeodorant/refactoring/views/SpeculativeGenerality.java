@@ -24,6 +24,7 @@ import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.ClassObjectCandidate;
 import gr.uom.java.ast.CompilationErrorDetectedException;
 import gr.uom.java.ast.CompilationUnitCache;
+import gr.uom.java.ast.FieldObject;
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.SystemObject;
 import gr.uom.java.ast.TypeObject;
@@ -130,6 +131,7 @@ public class SpeculativeGenerality extends ViewPart {
 	private IType selectedType;
 	private IMethod selectedMethod;
 	private ClassObjectCandidate[] classObjectTable; 
+	private Set<ClassObject> _classObjectToBeExamined=new HashSet<ClassObject>();
 	
 	private class SpeculativeGeneralityRefactoringButtonUI extends RefactoringButtonUI {
 		public void pressRefactorButton(int index) {
@@ -137,14 +139,15 @@ public class SpeculativeGenerality extends ViewPart {
 			
 			// Get Classes
 			System.out.println("Index of button pressed is " + index);
-			List<String> mystr=targetClass.getClassField();
+			List<String> classBody = targetClass.getClassField();
 			System.out.println("CLASSTABLE SIZE :");
 			System.out.println("CLASS NAME :"+targetClass.getName());
 			System.out.println("SMELL TYPE : "+targetClass.getCodeSmellType());
 			System.out.println(targetClass.toString());
-			for(int i=0;i<mystr.size();i++)
+			System.out.println();
+			for(int i=0;i<classBody.size();i++)
 			{
-				System.out.println(mystr.get(i));
+				System.out.println(classBody.get(i));
 			}
 			
 			// Switch w.r.t smell type and Details
@@ -154,6 +157,20 @@ public class SpeculativeGenerality extends ViewPart {
 					
 				} else {
 					// ToDo :: Integrate Child and Parent
+					ClassObjectCandidate childClass;
+					
+					// Get Child Class
+					for(ClassObject examiningClass : _classObjectToBeExamined) {
+						if(examiningClass.getSuperclass().getClassType().equals(targetClass.getName()))
+						{
+							childClass = new ClassObjectCandidate(examiningClass);
+
+						}
+					}
+					
+					
+					List<FieldObject> parentField = targetClass.getFieldList();
+					
 										
 				}
 			} else if (targetClass.getCodeSmellType().equals("Interface Class")) {
@@ -783,6 +800,7 @@ public class SpeculativeGenerality extends ViewPart {
 				}
 				
 				// Pass classes in selected target to examine, and get smelling Classes
+				_classObjectToBeExamined = classObjectsToBeExamined;
 				table=processMethod(classObjectsToBeExamined);
 			}
 		} catch (InvocationTargetException e) {

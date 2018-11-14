@@ -164,6 +164,11 @@ public class ClassObjectCandidate extends ClassObject {
         
         return sb.toString();
     }
+	public List<FieldObject> getFieldList()
+	{
+		return this.fieldList;
+	}
+	
 	public String getClassFullName()
 	{
 		StringBuilder sb = new StringBuilder();
