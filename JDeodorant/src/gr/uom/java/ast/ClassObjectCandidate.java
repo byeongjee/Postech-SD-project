@@ -23,7 +23,7 @@ public class ClassObjectCandidate extends ClassObject {
     private String refactorType;
     private List<MethodObject> smellingMethods;
     
-    private int numChild;
+    private int numChild = 0;
     private List<Integer> numUnusedParameter;
     
     public ClassObjectCandidate() {
@@ -92,18 +92,22 @@ public class ClassObjectCandidate extends ClassObject {
     	this.numUnusedParameter.add(arg);
     }
     
+    public List<Integer> getNumUnusedParameter() {
+    	return this.numUnusedParameter;
+    }
+    
 	public void setCodeSmellType(String arg) {
 		this.codeSmellType = arg;
 	}
 	
-	public void getRefactorType(String arg) {
+	public void setRefactorType(String arg) {
 		this.refactorType = arg;
 	}
 	
 	public void setSmellingMethods(List<MethodObject> arg) {
 		this.smellingMethods = arg;
 	}
-    
+	
 	public String getCodeSmellType() {
 		return this.codeSmellType;
 	}
@@ -124,11 +128,86 @@ public class ClassObjectCandidate extends ClassObject {
 		this.smellingMethods.add(target);
 	}
 	
-    public ClassObjectCandidate getClassObjectCandidate() {
-    	return this;
-    }
+	public List<FieldObject> getFieldList()
+	{
+		return this.fieldList;
+	}
+	
+	public List<String> getClassField()
+	{
+		String filepath = iFile.getLocation().toString();
+		List<String> result = new ArrayList<String>();
+		Stack<Character> stack = new Stack<Character>();
+		boolean readFlag = false;
 
-	public String toString() {
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(filepath));
+	        while(true) {
+	            String line = br.readLine();
+	            if (line==null) break;
+	            if(line.contains(this.getClassFullName()))
+	            {
+	            	readFlag=true;
+	            }
+	            
+	            if(readFlag)
+	            {
+	            	for(int i=0;i<line.length();i++)
+	            	{
+	            		if(line.charAt(i)=='{')
+	            		{
+	            			stack.push('{');
+	            		}
+	            		else if(line.charAt(i)=='}')
+	            		{
+	            			if(stack.isEmpty())
+	            			{
+	            				return result;
+	            			}
+	            			else if(stack.peek()=='{')
+	            			{	
+	            				stack.pop();
+	            			}
+	            			else
+	            			{
+	            				stack.push('}');
+	            			}
+	            		}
+	            	}
+	            }
+	            if(readFlag)
+	            	result.add(line);
+	            if(stack.isEmpty())
+	            {
+	            	readFlag=false;
+	            }
+	        }
+	        br.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		return result;
+	}
+	
+	public String getClassFullName()
+	{
+		StringBuilder sb = new StringBuilder();
+        if(!access.equals(Access.NONE))
+            sb.append(access.toString()).append(" ");
+        if(_static)
+            sb.append("static").append(" ");
+        if(_interface)
+            sb.append("interface").append(" ");
+        else if(_abstract)
+            sb.append("abstract class").append(" ");
+        else
+            sb.append("class").append(" ");
+        sb.append(name);
+        return sb.toString();
+	}
+	
+/*	public String toString() {
         StringBuilder sb = new StringBuilder();
         if(!access.equals(Access.NONE))
             sb.append(access.toString()).append(" ");
@@ -163,90 +242,5 @@ public class ClassObjectCandidate extends ClassObject {
         //ToDo : Add some string for types and targets 
         
         return sb.toString();
-    }
-	public List<FieldObject> getFieldList()
-	{
-		return this.fieldList;
-	}
-	
-	public String getClassFullName()
-	{
-		StringBuilder sb = new StringBuilder();
-        if(!access.equals(Access.NONE))
-            sb.append(access.toString()).append(" ");
-        if(_static)
-            sb.append("static").append(" ");
-        if(_interface)
-            sb.append("interface").append(" ");
-        else if(_abstract)
-            sb.append("abstract class").append(" ");
-        else
-            sb.append("class").append(" ");
-        sb.append(name);
-        return sb.toString();
-	}
-	public List<String> getClassField()
-	{
-		String filepath=iFile.getLocation().toString();
-		List<String> result=new ArrayList<String>();
-		Stack<Character> stack=new Stack<Character>();
-		boolean readFlag=false;
-//		System.out.println("CLASS NAME: "+this.getClassFullName());
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(filepath));
-	        while(true) {
-	            String line = br.readLine();
-	            if (line==null) break;
-	            if(line.contains(this.getClassFullName()))
-	            {
-	            	readFlag=true;
-//		            System.out.println("readFlag into True");
-	            }
-	            
-	            if(readFlag)
-	            {
-	            	for(int i=0;i<line.length();i++)
-	            	{
-	            		if(line.charAt(i)=='{')
-	            		{
-	            			stack.push('{');
-//	        	            System.out.println("PUSH {");
-	            		}
-	            		else if(line.charAt(i)=='}')
-	            		{
-	            			if(stack.isEmpty())
-	            			{
-//	            				System.out.print("STACKERROR in getClassField Method");
-	            				return result;
-	            			}
-	            			else if(stack.peek()=='{')
-	            			{	
-	            				stack.pop();
-//	            				System.out.println("READ SUCCESS");
-	            			}
-	            			else
-	            			{
-	            				stack.push('}');
-//	            				System.out.println("PUSH }");
-	            			}
-	            		}
-	            	}
-	            }
-	            if(readFlag)
-	            	result.add(line);
-//	            System.out.println("STACK SIZE : "+stack.size());
-	            if(stack.isEmpty())
-	            {
-	            	readFlag=false;
-	            }
-	            	
-//	            System.out.println(line);
-	        }
-	        br.close();
-		}catch(IOException e){
-			e.printStackTrace();
-		}
-		
-		return result;
-	}
+    }*/
 }

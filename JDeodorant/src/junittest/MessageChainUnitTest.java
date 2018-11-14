@@ -1,4 +1,5 @@
-package JUnitTest;
+package junittest;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,6 @@ public class MessageChainUnitTest {
 	    assertTrue(((MessageChainStructure) result[0]).getStart()==15);
 	    assertTrue(result2.length == 0);
 	    assertTrue(result3.length == 0);
-		
 	}
 	
 	@Test

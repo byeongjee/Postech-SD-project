@@ -1,13 +1,13 @@
 package junittest;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Test;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 
 import gr.uom.java.jdeodorant.refactoring.views.RefactoringButtonUI;
@@ -50,7 +50,6 @@ public class UIButtonTest {
 	}
 	
 	public void setup() {
-		System.out.println("BeforeEAch");
 		tree = new Tree(new Shell(), SWT.SINGLE);
 		TreeItem child1 = new TreeItem(tree, SWT.NONE, 0);
 		child1.setText("1");
