@@ -17,6 +17,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.event.TreeExpansionListener;
+
 import gr.uom.java.ast.ASTReader;
 import gr.uom.java.ast.AbstractMethodDeclaration;
 import gr.uom.java.ast.ClassObject;
@@ -83,11 +85,19 @@ import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TreeEditor;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
@@ -102,8 +112,8 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.IProgressService;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-public class LongParameterList extends ViewPart {
-	private static final String MESSAGE_DIALOG_TITLE = "Long Parameter List";
+public class LongMethod extends ViewPart {
+	private static final String MESSAGE_DIALOG_TITLE = "Long Method";
 	private TreeViewer treeViewer;
 	private Action identifyBadSmellsAction;
 	private Action applyRefactoringAction;
@@ -119,6 +129,16 @@ public class LongParameterList extends ViewPart {
 	private IMethod selectedMethod;
 	private ASTSliceGroup[] sliceGroupTable;
 	//private MethodEvolution methodEvolution;
+	//private List<Button> buttonList = new ArrayList<Button>();
+	private class LongMethodRefactoringButtonUI extends RefactoringButtonUI {
+		
+		
+		//To be implemented
+		public void pressRefactorButton(int index) {
+			System.out.println("Success");
+		}
+	}
+	private LongMethodRefactoringButtonUI refactorButtonMaker;
 	
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
@@ -308,6 +328,7 @@ public class LongParameterList extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
+		refactorButtonMaker = new LongMethodRefactoringButtonUI();
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
@@ -349,6 +370,32 @@ public class LongParameterList extends ViewPart {
 		column5.setText("Rate it!");
 		column5.setResizable(true);
 		column5.pack();
+		
+		TreeColumn column6 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+		column6.setText("Do Refactoring");
+		column6.setResizable(true);
+		column6.pack();
+		
+		/*
+		Tree tree = treeViewer.getTree();
+		TreeItem[] items = tree.getItems();
+		
+		for(int i = 0; i < items.length; i++) {
+			TreeEditor editor = new TreeEditor(tree);
+			
+			TreeItem item = items[i];
+			
+			Button button = new Button(tree, SWT.PUSH);
+			
+			button.setText("TEST");
+			button.setSize(16, 16);
+			button.pack();
+			
+			editor.horizontalAlignment = SWT.RIGHT;
+		    editor.grabHorizontal = true;
+		    editor.minimumWidth = 50;
+			editor.setEditor(button, item);
+		}*/
 		treeViewer.expandAll();
 		
 		treeViewer.setColumnProperties(new String[] {"type", "source", "variable", "block", "duplicationRatio", "rate"});
@@ -478,7 +525,18 @@ public class LongParameterList extends ViewPart {
 				treeViewer.setContentProvider(new ViewContentProvider());
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
-				//evolutionAnalysisAction.setEnabled(true);
+				
+				refactorButtonMaker.disposeButtons();
+				
+				Tree tree = treeViewer.getTree();
+				refactorButtonMaker.setTree(tree);
+				refactorButtonMaker.makeRefactoringButtons(6);
+
+				tree.addListener(SWT.Expand, new Listener() {
+					public void handleEvent(Event e) {
+						refactorButtonMaker.makeChildrenRefactoringButtons(6);
+					}
+				});
 			}
 		};
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
@@ -539,9 +597,11 @@ public class LongParameterList extends ViewPart {
 				if(selection != null && selection.getFirstElement() instanceof ASTSlice) {
 					ASTSlice slice = (ASTSlice)selection.getFirstElement();
 					TypeDeclaration sourceTypeDeclaration = slice.getSourceTypeDeclaration();
+					System.out.println(sourceTypeDeclaration.getName());
 					CompilationUnit sourceCompilationUnit = (CompilationUnit)sourceTypeDeclaration.getRoot();
 					IFile sourceFile = slice.getIFile();
 					IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+
 					boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
 					if(allowUsageReporting) {
 						Tree tree = treeViewer.getTree();
@@ -595,6 +655,7 @@ public class LongParameterList extends ViewPart {
 							ioe.printStackTrace();
 						}
 					}
+					
 					Refactoring refactoring = new ExtractMethodRefactoring(sourceCompilationUnit, slice);
 					try {
 						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
@@ -707,24 +768,31 @@ public class LongParameterList extends ViewPart {
 						}
 					}
 				});
-			}
+			}//아마 UI 관련 코드로 예상된다. 대부분의 smell code가 동일하게 가지고 있음
+			
+			
 			final SystemObject systemObject = ASTReader.getSystemObject();
 			if(systemObject != null) {
 				final Set<ClassObject> classObjectsToBeExamined = new LinkedHashSet<ClassObject>();
 				final Set<AbstractMethodDeclaration> methodObjectsToBeExamined = new LinkedHashSet<AbstractMethodDeclaration>();
 				if(selectedPackageFragmentRoot != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Prj");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragmentRoot));
 				}
 				else if(selectedPackageFragment != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Pac");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragment));
 				}
 				else if(selectedCompilationUnit != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Compi");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedCompilationUnit));
 				}
 				else if(selectedType != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Type");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedType));
 				}
 				else if(selectedMethod != null) {
+					System.out.println("In GetTable : classObjectsToBeExamined Method");
 					AbstractMethodDeclaration methodObject = systemObject.getMethodObject(selectedMethod);
 					if(methodObject != null) {
 						ClassObject declaringClass = systemObject.getClassObject(methodObject.getClassName());
@@ -733,8 +801,12 @@ public class LongParameterList extends ViewPart {
 					}
 				}
 				else {
+					System.out.println("In GetTable : classObjectsToBeExamined else");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
 				}
+				//각각의 단위별로 ClassObject를 받아오는 부분이다.
+				
+				
 				final List<ASTSliceGroup> extractedSliceGroups = new ArrayList<ASTSliceGroup>();
 
 				ps.busyCursorWhile(new IRunnableWithProgress() {
