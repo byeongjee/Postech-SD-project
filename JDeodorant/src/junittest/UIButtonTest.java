@@ -2,11 +2,15 @@ package junittest;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
+
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Widget;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -45,8 +49,27 @@ public class UIButtonTest {
 	public void MakeChildrenRefactoringButtonsMethodTest() {
 		setup();
 		ui.makeChildrenRefactoringButtons(6);
-		assertEquals(4, ui.getButtonList().size());
-		
+		assertEquals(3, ui.getChildrenButtonList().size());
+		assertEquals(2, ((List) (ui.getChildrenButtonList()).get(0)).size());
+		assertEquals(2, ((List) (ui.getChildrenButtonList()).get(1)).size());
+	}
+	
+	
+	@Test
+	public void testParentButtonData() {
+		setup();
+		ui.makeRefactoringButtons(6);
+		assertEquals(2, ((Button) ui.getButtonList().get(2)).getData("index"));
+	}
+	
+	@Test
+	public void testChildButtonData() {
+		setup();
+		ui.makeChildrenRefactoringButtons(6);
+		assertEquals(0, ((Button) ((List) ui.getChildrenButtonList().get(0)).get(0)).getData("parentIndex"));
+		assertEquals(0, ((Button) ((List) ui.getChildrenButtonList().get(0)).get(0)).getData("childIndex"));
+		assertEquals(1, ((Button) ((List) ui.getChildrenButtonList().get(1)).get(0)).getData("parentIndex"));
+		assertEquals(0, ((Button) ((List) ui.getChildrenButtonList().get(1)).get(0)).getData("childIndex"));
 	}
 	
 	public void setup() {
