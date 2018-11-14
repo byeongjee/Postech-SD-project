@@ -39,14 +39,14 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 public class MethodObject implements AbstractMethodDeclaration {
 
-    private TypeObject returnType;
-    private boolean _abstract;
-    private boolean _static;
-    private boolean _synchronized;
-    private boolean _native;
-    private ConstructorObject constructorObject;
-    private boolean testAnnotation;
-    private volatile int hashCode = 0;
+    protected TypeObject returnType;
+    protected boolean _abstract;
+    protected boolean _static;
+    protected boolean _synchronized;
+    protected boolean _native;
+    protected ConstructorObject constructorObject;
+    protected boolean testAnnotation;
+    protected volatile int hashCode = 0;
 
     public MethodObject(ConstructorObject co) {
         this.constructorObject = co;

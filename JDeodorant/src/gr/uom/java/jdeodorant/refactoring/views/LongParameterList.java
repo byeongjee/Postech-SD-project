@@ -24,6 +24,7 @@ import gr.uom.java.ast.AbstractMethodDeclaration;
 import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.CompilationErrorDetectedException;
 import gr.uom.java.ast.CompilationUnitCache;
+import gr.uom.java.ast.LPLMethodObject;
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.SystemObject;
 import gr.uom.java.ast.decomposition.cfg.CFG;
@@ -112,14 +113,14 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.IProgressService;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-public class LongMethod extends ViewPart {
+public class LongParameterList extends ViewPart {
 	private static final String MESSAGE_DIALOG_TITLE = "Long Method";
 	private TreeViewer treeViewer;
 	private Action identifyBadSmellsAction;
 	private Action applyRefactoringAction;
 	private Action doubleClickAction;
 	private Action saveResultsAction;
-	//private Action evolutionAnalysisAction;
+	// private Action evolutionAnalysisAction;
 	private IJavaProject selectedProject;
 	private IJavaProject activeProject;
 	private IPackageFragmentRoot selectedPackageFragmentRoot;
@@ -127,115 +128,61 @@ public class LongMethod extends ViewPart {
 	private ICompilationUnit selectedCompilationUnit;
 	private IType selectedType;
 	private IMethod selectedMethod;
-	private ASTSliceGroup[] sliceGroupTable;
-	//private MethodEvolution methodEvolution;
-	//private List<Button> buttonList = new ArrayList<Button>();
+	private LPLMethodObject[] methodObjectTable;
+
+	// private MethodEvolution methodEvolution;
+	// private List<Button> buttonList = new ArrayList<Button>();
 	private class LongMethodRefactoringButtonUI extends RefactoringButtonUI {
-		
-		
-		//To be implemented
+
+		// To be implemented
 		public void pressRefactorButton(int index) {
 			System.out.println("Success");
 		}
 	}
+
 	private LongMethodRefactoringButtonUI refactorButtonMaker;
-	
+
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}
+
 		public void dispose() {
 		}
+
 		public Object[] getElements(Object parent) {
-			if(sliceGroupTable!=null) {
-				return sliceGroupTable;
-			}
-			else {
-				return new ASTSliceGroup[] {};
+			if (methodObjectTable != null) {
+				return methodObjectTable;
+			} else {
+				return new LPLMethodObject[] {};
 			}
 		}
+
 		public Object[] getChildren(Object arg) {
-			if (arg instanceof ASTSliceGroup) {
-				return ((ASTSliceGroup)arg).getCandidates().toArray();
-			}
-			else {
-				return new ASTSlice[] {};
-			}
-		}
-		public Object getParent(Object arg0) {
-			if(arg0 instanceof ASTSlice) {
-				ASTSlice slice = (ASTSlice)arg0;
-				for(int i=0; i<sliceGroupTable.length; i++) {
-					if(sliceGroupTable[i].getCandidates().contains(slice))
-						return sliceGroupTable[i];
-				}
-			}
 			return null;
 		}
+
+		public Object getParent(Object arg0) {
+			return null;
+		}
+
 		public boolean hasChildren(Object arg0) {
-			return getChildren(arg0).length > 0;
+			return false;
 		}
 	}
 
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
 		public String getColumnText(Object obj, int index) {
-			if(obj instanceof ASTSlice) {
-				ASTSlice entry = (ASTSlice)obj;
-				switch(index){
-				case 0:
-					return "Extract Method";
-				/*case 1:
-					String declaringClass = entry.getSourceTypeDeclaration().resolveBinding().getQualifiedName();
-					String methodName = entry.getSourceMethodDeclaration().resolveBinding().toString();
-					return declaringClass + "::" + methodName;
-				case 2:
-					return entry.getLocalVariableCriterion().getName().getIdentifier();*/
-				case 3:
-					return "B" + entry.getBoundaryBlock().getId();
-				case 4:
-					int numberOfSliceStatements = entry.getNumberOfSliceStatements();
-					int numberOfDuplicatedStatements = entry.getNumberOfDuplicatedStatements();
-					return numberOfDuplicatedStatements + "/" + numberOfSliceStatements;
-				case 5:
-					Integer userRate = entry.getUserRate();
-					return (userRate == null) ? "" : userRate.toString();
-				default:
-					return "";
-				}
-			}
-			else if(obj instanceof ASTSliceGroup) {
-				ASTSliceGroup entry = (ASTSliceGroup)obj;
-				switch(index){
-				case 1:
-					String declaringClass = entry.getSourceTypeDeclaration().resolveBinding().getQualifiedName();
-					String methodName = entry.getSourceMethodDeclaration().resolveBinding().toString();
-					return declaringClass + "::" + methodName;
-				case 2:
-					return entry.getLocalVariableCriterion().getName().getIdentifier();
-				default:
-					return "";
-				}
+			if (obj instanceof LPLMethodObject) {
+				LPLMethodObject entry = (LPLMethodObject) obj;
+				return entry.getColumnText(index);
 			}
 			return "";
 		}
+
 		public Image getColumnImage(Object obj, int index) {
-			Image image = null;
-			if(obj instanceof ASTSlice) {
-				ASTSlice entry = (ASTSlice)obj;
-				int rate = -1;
-				Integer userRate = entry.getUserRate();
-				if(userRate != null)
-					rate = userRate;
-				switch(index) {
-				case 5:
-					if(rate != -1) {
-						image = Activator.getImageDescriptor("/icons/" + String.valueOf(rate) + ".jpg").createImage();
-					}
-				default:
-					break;
-				}
-			}
-			return image;
+			return null;
 		}
+
 		public Image getImage(Object obj) {
 			return null;
 		}
@@ -243,72 +190,60 @@ public class LongMethod extends ViewPart {
 
 	class NameSorter extends ViewerSorter {
 		public int compare(Viewer viewer, Object obj1, Object obj2) {
-			if(obj1 instanceof ASTSliceGroup && obj2 instanceof ASTSliceGroup) {
-				ASTSliceGroup sliceGroup1 = (ASTSliceGroup)obj1;
-				ASTSliceGroup sliceGroup2 = (ASTSliceGroup)obj2;
-				return sliceGroup1.compareTo(sliceGroup2);
+			if (obj1 instanceof LPLMethodObject && obj2 instanceof LPLMethodObject) {
+				return ((LPLMethodObject) obj1).compareTo((LPLMethodObject) obj2);
 			}
-			else {
-				ASTSlice slice1 = (ASTSlice)obj1;
-				ASTSlice slice2 = (ASTSlice)obj2;
-				//slices belong to the same group
-				return Integer.valueOf(slice1.getBoundaryBlock().getId()).compareTo(Integer.valueOf(slice2.getBoundaryBlock().getId()));
-			}
+			return 0;
 		}
 	}
-	
+
 	private ISelectionListener selectionListener = new ISelectionListener() {
 		public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
 			if (selection instanceof IStructuredSelection) {
-				IStructuredSelection structuredSelection = (IStructuredSelection)selection;
+				IStructuredSelection structuredSelection = (IStructuredSelection) selection;
 				Object element = structuredSelection.getFirstElement();
 				IJavaProject javaProject = null;
-				if(element instanceof IJavaProject) {
-					javaProject = (IJavaProject)element;
+				if (element instanceof IJavaProject) {
+					javaProject = (IJavaProject) element;
 					selectedPackageFragmentRoot = null;
 					selectedPackageFragment = null;
 					selectedCompilationUnit = null;
 					selectedType = null;
 					selectedMethod = null;
-				}
-				else if(element instanceof IPackageFragmentRoot) {
-					IPackageFragmentRoot packageFragmentRoot = (IPackageFragmentRoot)element;
+				} else if (element instanceof IPackageFragmentRoot) {
+					IPackageFragmentRoot packageFragmentRoot = (IPackageFragmentRoot) element;
 					javaProject = packageFragmentRoot.getJavaProject();
 					selectedPackageFragmentRoot = packageFragmentRoot;
 					selectedPackageFragment = null;
 					selectedCompilationUnit = null;
 					selectedType = null;
 					selectedMethod = null;
-				}
-				else if(element instanceof IPackageFragment) {
-					IPackageFragment packageFragment = (IPackageFragment)element;
+				} else if (element instanceof IPackageFragment) {
+					IPackageFragment packageFragment = (IPackageFragment) element;
 					javaProject = packageFragment.getJavaProject();
 					selectedPackageFragment = packageFragment;
 					selectedPackageFragmentRoot = null;
 					selectedCompilationUnit = null;
 					selectedType = null;
 					selectedMethod = null;
-				}
-				else if(element instanceof ICompilationUnit) {
-					ICompilationUnit compilationUnit = (ICompilationUnit)element;
+				} else if (element instanceof ICompilationUnit) {
+					ICompilationUnit compilationUnit = (ICompilationUnit) element;
 					javaProject = compilationUnit.getJavaProject();
 					selectedCompilationUnit = compilationUnit;
 					selectedPackageFragmentRoot = null;
 					selectedPackageFragment = null;
 					selectedType = null;
 					selectedMethod = null;
-				}
-				else if(element instanceof IType) {
-					IType type = (IType)element;
+				} else if (element instanceof IType) {
+					IType type = (IType) element;
 					javaProject = type.getJavaProject();
 					selectedType = type;
 					selectedPackageFragmentRoot = null;
 					selectedPackageFragment = null;
 					selectedCompilationUnit = null;
 					selectedMethod = null;
-				}
-				else if(element instanceof IMethod) {
-					IMethod method = (IMethod)element;
+				} else if (element instanceof IMethod) {
+					IMethod method = (IMethod) element;
 					javaProject = method.getJavaProject();
 					selectedMethod = method;
 					selectedPackageFragmentRoot = null;
@@ -316,10 +251,8 @@ public class LongMethod extends ViewPart {
 					selectedCompilationUnit = null;
 					selectedType = null;
 				}
-				if(javaProject != null && !javaProject.equals(selectedProject)) {
+				if (javaProject != null && !javaProject.equals(selectedProject)) {
 					selectedProject = javaProject;
-					/*if(sliceTable != null)
-						tableViewer.remove(sliceTable);*/
 					identifyBadSmellsAction.setEnabled(true);
 				}
 			}
@@ -345,74 +278,54 @@ public class LongMethod extends ViewPart {
 		treeViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
 		treeViewer.getTree().setLinesVisible(true);
 		treeViewer.getTree().setHeaderVisible(true);
-		TreeColumn column0 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+		TreeColumn column0 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
 		column0.setText("Refactoring Type");
 		column0.setResizable(true);
 		column0.pack();
-		TreeColumn column1 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+		TreeColumn column1 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
 		column1.setText("Source Method");
 		column1.setResizable(true);
 		column1.pack();
-		TreeColumn column2 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+		TreeColumn column2 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
 		column2.setText("Variable Criterion");
 		column2.setResizable(true);
 		column2.pack();
-		TreeColumn column3 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+		TreeColumn column3 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
 		column3.setText("Block-Based Region");
 		column3.setResizable(true);
 		column3.pack();
-		TreeColumn column4 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+		TreeColumn column4 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
 		column4.setText("Duplicated/Extracted");
 		column4.setResizable(true);
 		column4.pack();
-		
-		TreeColumn column5 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+
+		TreeColumn column5 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
 		column5.setText("Rate it!");
 		column5.setResizable(true);
 		column5.pack();
-		
-		TreeColumn column6 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+
+		TreeColumn column6 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
 		column6.setText("Do Refactoring");
 		column6.setResizable(true);
 		column6.pack();
-		
-		/*
-		Tree tree = treeViewer.getTree();
-		TreeItem[] items = tree.getItems();
-		
-		for(int i = 0; i < items.length; i++) {
-			TreeEditor editor = new TreeEditor(tree);
-			
-			TreeItem item = items[i];
-			
-			Button button = new Button(tree, SWT.PUSH);
-			
-			button.setText("TEST");
-			button.setSize(16, 16);
-			button.pack();
-			
-			editor.horizontalAlignment = SWT.RIGHT;
-		    editor.grabHorizontal = true;
-		    editor.minimumWidth = 50;
-			editor.setEditor(button, item);
-		}*/
+
 		treeViewer.expandAll();
-		
-		treeViewer.setColumnProperties(new String[] {"type", "source", "variable", "block", "duplicationRatio", "rate"});
-		treeViewer.setCellEditors(new CellEditor[] {
-				new TextCellEditor(), new TextCellEditor(), new TextCellEditor(), new TextCellEditor(), new TextCellEditor(),
-				new MyComboBoxCellEditor(treeViewer.getTree(), new String[] {"0", "1", "2", "3", "4", "5"}, SWT.READ_ONLY)
-		});
-		
+
+		treeViewer.setColumnProperties(
+				new String[] { "refactor type", "method name", "class", "parameter list", "number of parameters" });
+		treeViewer.setCellEditors(new CellEditor[] { new TextCellEditor(), new TextCellEditor(), new TextCellEditor(),
+				new TextCellEditor(), new TextCellEditor(), new MyComboBoxCellEditor(treeViewer.getTree(),
+						new String[] { "0", "1", "2", "3", "4"}, SWT.READ_ONLY) });
+
 		treeViewer.setCellModifier(new ICellModifier() {
 			public boolean canModify(Object element, String property) {
 				return property.equals("rate");
 			}
 
 			public Object getValue(Object element, String property) {
-				if(element instanceof ASTSlice) {
-					ASTSlice slice = (ASTSlice)element;
-					if(slice.getUserRate() != null)
+				if (element instanceof ASTSlice) {
+					ASTSlice slice = (ASTSlice) element;
+					if (slice.getUserRate() != null)
 						return slice.getUserRate();
 					else
 						return 0;
@@ -421,47 +334,62 @@ public class LongMethod extends ViewPart {
 			}
 
 			public void modify(Object element, String property, Object value) {
-				TreeItem item = (TreeItem)element;
+				TreeItem item = (TreeItem) element;
 				Object data = item.getData();
-				if(data instanceof ASTSlice) {
-					ASTSlice slice = (ASTSlice)data;
-					slice.setUserRate((Integer)value);
+				if (data instanceof ASTSlice) {
+					ASTSlice slice = (ASTSlice) data;
+					slice.setUserRate((Integer) value);
 					IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 					boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
-					if(allowUsageReporting) {
+					if (allowUsageReporting) {
 						Tree tree = treeViewer.getTree();
 						int groupPosition = -1;
 						int totalGroups = tree.getItemCount();
-						for(int i=0; i<tree.getItemCount(); i++) {
+						for (int i = 0; i < tree.getItemCount(); i++) {
 							TreeItem treeItem = tree.getItem(i);
-							ASTSliceGroup group = (ASTSliceGroup)treeItem.getData();
-							if(group.getCandidates().contains(slice)) {
+							ASTSliceGroup group = (ASTSliceGroup) treeItem.getData();
+							if (group.getCandidates().contains(slice)) {
 								groupPosition = i;
 								break;
 							}
 						}
 						try {
-							boolean allowSourceCodeReporting = store.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
-							String declaringClass = slice.getSourceTypeDeclaration().resolveBinding().getQualifiedName();
+							boolean allowSourceCodeReporting = store
+									.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
+							String declaringClass = slice.getSourceTypeDeclaration().resolveBinding()
+									.getQualifiedName();
 							String methodName = slice.getSourceMethodDeclaration().resolveBinding().toString();
 							String sourceMethodName = declaringClass + "::" + methodName;
-							String content = URLEncoder.encode("project_name", "UTF-8") + "=" + URLEncoder.encode(activeProject.getElementName(), "UTF-8");
-							content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "=" + URLEncoder.encode(sourceMethodName, "UTF-8");
-							content += "&" + URLEncoder.encode("variable_name", "UTF-8") + "=" + URLEncoder.encode(slice.getLocalVariableCriterion().resolveBinding().toString(), "UTF-8");
-							content += "&" + URLEncoder.encode("block", "UTF-8") + "=" + URLEncoder.encode("B" + slice.getBoundaryBlock().getId(), "UTF-8");
-							content += "&" + URLEncoder.encode("object_slice", "UTF-8") + "=" + URLEncoder.encode(slice.isObjectSlice() ? "1" : "0", "UTF-8");
+							String content = URLEncoder.encode("project_name", "UTF-8") + "="
+									+ URLEncoder.encode(activeProject.getElementName(), "UTF-8");
+							content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "="
+									+ URLEncoder.encode(sourceMethodName, "UTF-8");
+							content += "&" + URLEncoder.encode("variable_name", "UTF-8") + "=" + URLEncoder
+									.encode(slice.getLocalVariableCriterion().resolveBinding().toString(), "UTF-8");
+							content += "&" + URLEncoder.encode("block", "UTF-8") + "="
+									+ URLEncoder.encode("B" + slice.getBoundaryBlock().getId(), "UTF-8");
+							content += "&" + URLEncoder.encode("object_slice", "UTF-8") + "="
+									+ URLEncoder.encode(slice.isObjectSlice() ? "1" : "0", "UTF-8");
 							int numberOfSliceStatements = slice.getNumberOfSliceStatements();
 							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
-							content += "&" + URLEncoder.encode("duplicated_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfDuplicatedStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("extracted_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfSliceStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
-							content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
-							if(allowSourceCodeReporting) {
-								content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "=" + URLEncoder.encode(slice.getSourceMethodDeclaration().toString(), "UTF-8");
-								content += "&" + URLEncoder.encode("slice_statements", "UTF-8") + "=" + URLEncoder.encode(slice.sliceToString(), "UTF-8");
+							content += "&" + URLEncoder.encode("duplicated_statements", "UTF-8") + "="
+									+ URLEncoder.encode(String.valueOf(numberOfDuplicatedStatements), "UTF-8");
+							content += "&" + URLEncoder.encode("extracted_statements", "UTF-8") + "="
+									+ URLEncoder.encode(String.valueOf(numberOfSliceStatements), "UTF-8");
+							content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "="
+									+ URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
+							content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "="
+									+ URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
+							if (allowSourceCodeReporting) {
+								content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "="
+										+ URLEncoder.encode(slice.getSourceMethodDeclaration().toString(), "UTF-8");
+								content += "&" + URLEncoder.encode("slice_statements", "UTF-8") + "="
+										+ URLEncoder.encode(slice.sliceToString(), "UTF-8");
 							}
-							content += "&" + URLEncoder.encode("rating", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(slice.getUserRate()), "UTF-8");
-							content += "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
+							content += "&" + URLEncoder.encode("rating", "UTF-8") + "="
+									+ URLEncoder.encode(String.valueOf(slice.getUserRate()), "UTF-8");
+							content += "&" + URLEncoder.encode("username", "UTF-8") + "="
+									+ URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
 							content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("2", "UTF-8");
 							URL url = new URL(Activator.RANK_URL);
 							URLConnection urlConn = url.openConnection();
@@ -483,37 +411,40 @@ public class LongMethod extends ViewPart {
 				}
 			}
 		});
-		
+
 		makeActions();
 		hookDoubleClickAction();
 		contributeToActionBars();
 		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(selectionListener);
 		JavaCore.addElementChangedListener(ElementChangedListener.getInstance());
-		getSite().getWorkbenchWindow().getWorkbench().getOperationSupport().getOperationHistory().addOperationHistoryListener(new IOperationHistoryListener() {
-			public void historyNotification(OperationHistoryEvent event) {
-				int eventType = event.getEventType();
-				if(eventType == OperationHistoryEvent.UNDONE  || eventType == OperationHistoryEvent.REDONE ||
-						eventType == OperationHistoryEvent.OPERATION_ADDED || eventType == OperationHistoryEvent.OPERATION_REMOVED) {
-					if(activeProject != null && CompilationUnitCache.getInstance().getAffectedProjects().contains(activeProject)) {
-						applyRefactoringAction.setEnabled(false);
-						saveResultsAction.setEnabled(false);
-						//evolutionAnalysisAction.setEnabled(false);
+		getSite().getWorkbenchWindow().getWorkbench().getOperationSupport().getOperationHistory()
+				.addOperationHistoryListener(new IOperationHistoryListener() {
+					public void historyNotification(OperationHistoryEvent event) {
+						int eventType = event.getEventType();
+						if (eventType == OperationHistoryEvent.UNDONE || eventType == OperationHistoryEvent.REDONE
+								|| eventType == OperationHistoryEvent.OPERATION_ADDED
+								|| eventType == OperationHistoryEvent.OPERATION_REMOVED) {
+							if (activeProject != null && CompilationUnitCache.getInstance().getAffectedProjects()
+									.contains(activeProject)) {
+								applyRefactoringAction.setEnabled(false);
+								saveResultsAction.setEnabled(false);
+								// evolutionAnalysisAction.setEnabled(false);
+							}
+						}
 					}
-				}
-			}
-		});
+				});
 	}
 
 	private void contributeToActionBars() {
 		IActionBars bars = getViewSite().getActionBars();
 		fillLocalToolBar(bars.getToolBarManager());
 	}
-	
+
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
 		manager.add(applyRefactoringAction);
 		manager.add(saveResultsAction);
-		//manager.add(evolutionAnalysisAction);
+		// manager.add(evolutionAnalysisAction);
 	}
 
 	private void makeActions() {
@@ -521,13 +452,13 @@ public class LongMethod extends ViewPart {
 			public void run() {
 				activeProject = selectedProject;
 				CompilationUnitCache.getInstance().clearCache();
-				sliceGroupTable = getTable();
+				methodObjectTable = getTable();
 				treeViewer.setContentProvider(new ViewContentProvider());
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
-				
+
 				refactorButtonMaker.disposeButtons();
-				
+
 				Tree tree = treeViewer.getTree();
 				refactorButtonMaker.setTree(tree);
 				refactorButtonMaker.makeRefactoringButtons(6);
@@ -540,104 +471,83 @@ public class LongMethod extends ViewPart {
 			}
 		};
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
-		identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-			getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+		identifyBadSmellsAction.setImageDescriptor(
+				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		identifyBadSmellsAction.setEnabled(false);
-		
+
 		saveResultsAction = new Action() {
 			public void run() {
 				saveResults();
 			}
 		};
 		saveResultsAction.setToolTipText("Save Results");
-		saveResultsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-			getImageDescriptor(ISharedImages.IMG_ETOOL_SAVE_EDIT));
+		saveResultsAction.setImageDescriptor(
+				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_SAVE_EDIT));
 		saveResultsAction.setEnabled(false);
-		
-		/*evolutionAnalysisAction = new Action() {
-			public void run() {
-				methodEvolution = null;
-				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
-				if(selection.getFirstElement() instanceof ASTSlice) {
-					final ASTSlice slice = (ASTSlice)selection.getFirstElement();
-					try {
-						IWorkbench wb = PlatformUI.getWorkbench();
-						IProgressService ps = wb.getProgressService();
-						ps.busyCursorWhile(new IRunnableWithProgress() {
-							public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-								ProjectEvolution projectEvolution = new ProjectEvolution(selectedProject);
-								if(projectEvolution.getProjectEntries().size() > 1) {
-									methodEvolution = new MethodEvolution(projectEvolution, (IMethod)slice.getSourceMethodDeclaration().resolveBinding().getJavaElement(), monitor);
-								}
-							}
-						});
-						if(methodEvolution != null) {
-							EvolutionDialog dialog = new EvolutionDialog(getSite().getWorkbenchWindow(), methodEvolution, "Method Evolution", false);
-							dialog.open();
-						}
-						else
-							MessageDialog.openInformation(getSite().getShell(), "Method Evolution",
-							"Method evolution analysis cannot be performed, since only a single version of the examined project is loaded in the workspace.");
-					} catch (InvocationTargetException e) {
-						e.printStackTrace();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		};
-		evolutionAnalysisAction.setToolTipText("Evolution Analysis");
-		evolutionAnalysisAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-			getImageDescriptor(ISharedImages.IMG_OBJ_ELEMENT));
-		evolutionAnalysisAction.setEnabled(false);*/
-		
+
 		applyRefactoringAction = new Action() {
 			public void run() {
-				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
-				if(selection != null && selection.getFirstElement() instanceof ASTSlice) {
-					ASTSlice slice = (ASTSlice)selection.getFirstElement();
+				IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+				if (selection != null && selection.getFirstElement() instanceof ASTSlice) {
+					ASTSlice slice = (ASTSlice) selection.getFirstElement();
 					TypeDeclaration sourceTypeDeclaration = slice.getSourceTypeDeclaration();
 					System.out.println(sourceTypeDeclaration.getName());
-					CompilationUnit sourceCompilationUnit = (CompilationUnit)sourceTypeDeclaration.getRoot();
+					CompilationUnit sourceCompilationUnit = (CompilationUnit) sourceTypeDeclaration.getRoot();
 					IFile sourceFile = slice.getIFile();
 					IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
 					boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
-					if(allowUsageReporting) {
+					if (allowUsageReporting) {
 						Tree tree = treeViewer.getTree();
 						int groupPosition = -1;
 						int totalGroups = tree.getItemCount();
-						for(int i=0; i<tree.getItemCount(); i++) {
+						for (int i = 0; i < tree.getItemCount(); i++) {
 							TreeItem treeItem = tree.getItem(i);
-							ASTSliceGroup group = (ASTSliceGroup)treeItem.getData();
-							if(group.getCandidates().contains(slice)) {
+							ASTSliceGroup group = (ASTSliceGroup) treeItem.getData();
+							if (group.getCandidates().contains(slice)) {
 								groupPosition = i;
 								break;
 							}
 						}
 						try {
-							boolean allowSourceCodeReporting = store.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
-							String declaringClass = slice.getSourceTypeDeclaration().resolveBinding().getQualifiedName();
+							boolean allowSourceCodeReporting = store
+									.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
+							String declaringClass = slice.getSourceTypeDeclaration().resolveBinding()
+									.getQualifiedName();
 							String methodName = slice.getSourceMethodDeclaration().resolveBinding().toString();
 							String sourceMethodName = declaringClass + "::" + methodName;
-							String content = URLEncoder.encode("project_name", "UTF-8") + "=" + URLEncoder.encode(activeProject.getElementName(), "UTF-8");
-							content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "=" + URLEncoder.encode(sourceMethodName, "UTF-8");
-							content += "&" + URLEncoder.encode("variable_name", "UTF-8") + "=" + URLEncoder.encode(slice.getLocalVariableCriterion().resolveBinding().toString(), "UTF-8");
-							content += "&" + URLEncoder.encode("block", "UTF-8") + "=" + URLEncoder.encode("B" + slice.getBoundaryBlock().getId(), "UTF-8");
-							content += "&" + URLEncoder.encode("object_slice", "UTF-8") + "=" + URLEncoder.encode(slice.isObjectSlice() ? "1" : "0", "UTF-8");
+							String content = URLEncoder.encode("project_name", "UTF-8") + "="
+									+ URLEncoder.encode(activeProject.getElementName(), "UTF-8");
+							content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "="
+									+ URLEncoder.encode(sourceMethodName, "UTF-8");
+							content += "&" + URLEncoder.encode("variable_name", "UTF-8") + "=" + URLEncoder
+									.encode(slice.getLocalVariableCriterion().resolveBinding().toString(), "UTF-8");
+							content += "&" + URLEncoder.encode("block", "UTF-8") + "="
+									+ URLEncoder.encode("B" + slice.getBoundaryBlock().getId(), "UTF-8");
+							content += "&" + URLEncoder.encode("object_slice", "UTF-8") + "="
+									+ URLEncoder.encode(slice.isObjectSlice() ? "1" : "0", "UTF-8");
 							int numberOfSliceStatements = slice.getNumberOfSliceStatements();
 							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
-							content += "&" + URLEncoder.encode("duplicated_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfDuplicatedStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("extracted_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfSliceStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
-							content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
-							if(allowSourceCodeReporting) {
-								content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "=" + URLEncoder.encode(slice.getSourceMethodDeclaration().toString(), "UTF-8");
-								content += "&" + URLEncoder.encode("slice_statements", "UTF-8") + "=" + URLEncoder.encode(slice.sliceToString(), "UTF-8");
+							content += "&" + URLEncoder.encode("duplicated_statements", "UTF-8") + "="
+									+ URLEncoder.encode(String.valueOf(numberOfDuplicatedStatements), "UTF-8");
+							content += "&" + URLEncoder.encode("extracted_statements", "UTF-8") + "="
+									+ URLEncoder.encode(String.valueOf(numberOfSliceStatements), "UTF-8");
+							content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "="
+									+ URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
+							content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "="
+									+ URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
+							if (allowSourceCodeReporting) {
+								content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "="
+										+ URLEncoder.encode(slice.getSourceMethodDeclaration().toString(), "UTF-8");
+								content += "&" + URLEncoder.encode("slice_statements", "UTF-8") + "="
+										+ URLEncoder.encode(slice.sliceToString(), "UTF-8");
 							}
-							content += "&" + URLEncoder.encode("application", "UTF-8") + "=" + URLEncoder.encode(String.valueOf("1"), "UTF-8");
-							content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "=" + URLEncoder.encode(slice.getExtractedMethodName(), "UTF-8");
-							content += "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
+							content += "&" + URLEncoder.encode("application", "UTF-8") + "="
+									+ URLEncoder.encode(String.valueOf("1"), "UTF-8");
+							content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "="
+									+ URLEncoder.encode(slice.getExtractedMethodName(), "UTF-8");
+							content += "&" + URLEncoder.encode("username", "UTF-8") + "="
+									+ URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
 							content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("2", "UTF-8");
 							URL url = new URL(Activator.RANK_URL);
 							URLConnection urlConn = url.openConnection();
@@ -655,7 +565,7 @@ public class LongMethod extends ViewPart {
 							ioe.printStackTrace();
 						}
 					}
-					
+
 					Refactoring refactoring = new ExtractMethodRefactoring(sourceCompilationUnit, slice);
 					try {
 						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
@@ -666,46 +576,48 @@ public class LongMethod extends ViewPart {
 						e.printStackTrace();
 					}
 					MyRefactoringWizard wizard = new MyRefactoringWizard(refactoring, applyRefactoringAction);
-					RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
-					try { 
-						String titleForFailedChecks = ""; //$NON-NLS-1$ 
-						op.run(getSite().getShell(), titleForFailedChecks); 
-					} catch(InterruptedException e) {
+					RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard);
+					try {
+						String titleForFailedChecks = ""; //$NON-NLS-1$
+						op.run(getSite().getShell(), titleForFailedChecks);
+					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 				}
 			}
 		};
 		applyRefactoringAction.setToolTipText("Apply Refactoring");
-		applyRefactoringAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-				getImageDescriptor(ISharedImages.IMG_DEF_VIEW));
+		applyRefactoringAction.setImageDescriptor(
+				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_DEF_VIEW));
 		applyRefactoringAction.setEnabled(false);
-		
+
 		doubleClickAction = new Action() {
 			public void run() {
-				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
-				if(selection.getFirstElement() instanceof ASTSlice) {
-					ASTSlice slice = (ASTSlice)selection.getFirstElement();
+				IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+				if (selection.getFirstElement() instanceof ASTSlice) {
+					ASTSlice slice = (ASTSlice) selection.getFirstElement();
 					IFile sourceFile = slice.getIFile();
 					try {
 						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
-						ITextEditor sourceEditor = (ITextEditor)JavaUI.openInEditor(sourceJavaElement);
+						ITextEditor sourceEditor = (ITextEditor) JavaUI.openInEditor(sourceJavaElement);
 						Object[] highlightPositionMaps = slice.getHighlightPositions();
-						Map<Position, String> annotationMap = (Map<Position, String>)highlightPositionMaps[0];
-						Map<Position, Boolean> duplicationMap = (Map<Position, Boolean>)highlightPositionMaps[1];
-						AnnotationModel annotationModel = (AnnotationModel)sourceEditor.getDocumentProvider().getAnnotationModel(sourceEditor.getEditorInput());
+						Map<Position, String> annotationMap = (Map<Position, String>) highlightPositionMaps[0];
+						Map<Position, Boolean> duplicationMap = (Map<Position, Boolean>) highlightPositionMaps[1];
+						AnnotationModel annotationModel = (AnnotationModel) sourceEditor.getDocumentProvider()
+								.getAnnotationModel(sourceEditor.getEditorInput());
 						Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
-						while(annotationIterator.hasNext()) {
+						while (annotationIterator.hasNext()) {
 							Annotation currentAnnotation = annotationIterator.next();
-							if(currentAnnotation.getType().equals(SliceAnnotation.EXTRACTION) || currentAnnotation.getType().equals(SliceAnnotation.DUPLICATION)) {
+							if (currentAnnotation.getType().equals(SliceAnnotation.EXTRACTION)
+									|| currentAnnotation.getType().equals(SliceAnnotation.DUPLICATION)) {
 								annotationModel.removeAnnotation(currentAnnotation);
 							}
 						}
-						for(Position position : annotationMap.keySet()) {
+						for (Position position : annotationMap.keySet()) {
 							SliceAnnotation annotation = null;
 							String annotationText = annotationMap.get(position);
 							boolean duplicated = duplicationMap.get(position);
-							if(duplicated)
+							if (duplicated)
 								annotation = new SliceAnnotation(SliceAnnotation.DUPLICATION, annotationText);
 							else
 								annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, annotationText);
@@ -713,7 +625,7 @@ public class LongMethod extends ViewPart {
 						}
 						List<Position> positions = new ArrayList<Position>(annotationMap.keySet());
 						Position firstPosition = positions.get(0);
-						Position lastPosition = positions.get(positions.size()-1);
+						Position lastPosition = positions.get(positions.size() - 1);
 						int offset = firstPosition.getOffset();
 						int length = lastPosition.getOffset() + lastPosition.getLength() - firstPosition.getOffset();
 						sourceEditor.setHighlightRange(offset, length, true);
@@ -745,15 +657,14 @@ public class LongMethod extends ViewPart {
 		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(selectionListener);
 	}
 
-	private ASTSliceGroup[] getTable() {
-		ASTSliceGroup[] table = null;
+	private LPLMethodObject[] getTable() {
+		LPLMethodObject[] table = null;
 		try {
 			IWorkbench wb = PlatformUI.getWorkbench();
 			IProgressService ps = wb.getProgressService();
-			if(ASTReader.getSystemObject() != null && activeProject.equals(ASTReader.getExaminedProject())) {
+			if (ASTReader.getSystemObject() != null && activeProject.equals(ASTReader.getExaminedProject())) {
 				new ASTReader(activeProject, ASTReader.getSystemObject(), null);
-			}
-			else {
+			} else {
 				ps.busyCursorWhile(new IRunnableWithProgress() {
 					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 						try {
@@ -761,83 +672,59 @@ public class LongMethod extends ViewPart {
 						} catch (CompilationErrorDetectedException e) {
 							Display.getDefault().asyncExec(new Runnable() {
 								public void run() {
-									MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), MESSAGE_DIALOG_TITLE,
+									MessageDialog.openInformation(
+											PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+											MESSAGE_DIALOG_TITLE,
 											"Compilation errors were detected in the project. Fix the errors before using JDeodorant.");
 								}
 							});
 						}
 					}
 				});
-			}//아마 UI 관련 코드로 예상된다. 대부분의 smell code가 동일하게 가지고 있음
-			
-			
+			} // 아마 UI 관련 코드로 예상된다. 대부분의 smell code가 동일하게 가지고 있음
+
 			final SystemObject systemObject = ASTReader.getSystemObject();
-			if(systemObject != null) {
+			if (systemObject != null) {
 				final Set<ClassObject> classObjectsToBeExamined = new LinkedHashSet<ClassObject>();
-				final Set<AbstractMethodDeclaration> methodObjectsToBeExamined = new LinkedHashSet<AbstractMethodDeclaration>();
-				if(selectedPackageFragmentRoot != null) {
+				final Set<LPLMethodObject> methodObjectsToBeExamined = new LinkedHashSet<LPLMethodObject>();
+				if (selectedPackageFragmentRoot != null) {
 					System.out.println("In GetTable : classObjectsToBeExamined Prj");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragmentRoot));
-				}
-				else if(selectedPackageFragment != null) {
+				} else if (selectedPackageFragment != null) {
 					System.out.println("In GetTable : classObjectsToBeExamined Pac");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragment));
-				}
-				else if(selectedCompilationUnit != null) {
+				} else if (selectedCompilationUnit != null) {
 					System.out.println("In GetTable : classObjectsToBeExamined Compi");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedCompilationUnit));
-				}
-				else if(selectedType != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Type");
-					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedType));
-				}
-				else if(selectedMethod != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Method");
-					AbstractMethodDeclaration methodObject = systemObject.getMethodObject(selectedMethod);
-					if(methodObject != null) {
-						ClassObject declaringClass = systemObject.getClassObject(methodObject.getClassName());
-						if(declaringClass != null && !declaringClass.isEnum() && !declaringClass.isInterface() && methodObject.getMethodBody() != null)
-							methodObjectsToBeExamined.add(methodObject);
-					}
-				}
-				else {
+				} else {
 					System.out.println("In GetTable : classObjectsToBeExamined else");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
 				}
-				//각각의 단위별로 ClassObject를 받아오는 부분이다.
-				
-				
-				final List<ASTSliceGroup> extractedSliceGroups = new ArrayList<ASTSliceGroup>();
+
+				for (ClassObject classObject : classObjectsToBeExamined) {
+					if (!classObject.isEnum() && !classObject.isInterface()
+							&& !classObject.isGeneratedByParserGenenator()) {
+						ListIterator<MethodObject> methodIterator = classObject.getMethodIterator();
+						while (methodIterator.hasNext()) {
+							MethodObject methodObject = methodIterator.next();
+							methodObjectsToBeExamined.add(LPLMethodObject.createLPLMethodObjectFrom(methodObject));
+						}
+					}
+				}
+
+				final List<LPLMethodObject> detectedMethods = new ArrayList<LPLMethodObject>();
 
 				ps.busyCursorWhile(new IRunnableWithProgress() {
 					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-						if(!classObjectsToBeExamined.isEmpty()) {
-							int workSize = 0;
-							for(ClassObject classObject : classObjectsToBeExamined) {
-								workSize += classObject.getNumberOfMethods();
-							}
-							monitor.beginTask("Identification of Extract Method refactoring opportunities", workSize);
-							for(ClassObject classObject : classObjectsToBeExamined) {
-								if(!classObject.isEnum() && !classObject.isInterface() && !classObject.isGeneratedByParserGenenator()) {
-									ListIterator<MethodObject> methodIterator = classObject.getMethodIterator();
-									while(methodIterator.hasNext()) {
-										if(monitor.isCanceled())
-											throw new OperationCanceledException();
-										MethodObject methodObject = methodIterator.next();
-										processMethod(extractedSliceGroups,classObject, methodObject);
-										monitor.worked(1);
-									}
-								}
-							}
-						}
-						else if(!methodObjectsToBeExamined.isEmpty()) {
+						if (!methodObjectsToBeExamined.isEmpty()) {
 							int workSize = methodObjectsToBeExamined.size();
 							monitor.beginTask("Identification of Extract Method refactoring opportunities", workSize);
-							for(AbstractMethodDeclaration methodObject : methodObjectsToBeExamined) {
-								if(monitor.isCanceled())
+							for (LPLMethodObject methodObject : methodObjectsToBeExamined) {
+								if (monitor.isCanceled())
 									throw new OperationCanceledException();
-								ClassObject classObject = systemObject.getClassObject(methodObject.getClassName());
-								processMethod(extractedSliceGroups, classObject, methodObject);
+								if (methodObject.isLongParamterListMethod()) {
+									detectedMethods.add(methodObject);
+								}
 								monitor.worked(1);
 							}
 						}
@@ -845,9 +732,9 @@ public class LongMethod extends ViewPart {
 					}
 				});
 
-				table = new ASTSliceGroup[extractedSliceGroups.size()];
-				for(int i=0; i<extractedSliceGroups.size(); i++) {
-					table[i] = extractedSliceGroups.get(i);
+				table = new LPLMethodObject[detectedMethods.size()];
+				for (int i = 0; i < detectedMethods.size(); ++i) {
+					table[i] = detectedMethods.get(i);
 				}
 			}
 		} catch (InvocationTargetException e) {
@@ -855,120 +742,33 @@ public class LongMethod extends ViewPart {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (CompilationErrorDetectedException e) {
-			MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), MESSAGE_DIALOG_TITLE,
+			MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+					MESSAGE_DIALOG_TITLE,
 					"Compilation errors were detected in the project. Fix the errors before using JDeodorant.");
 		}
 		return table;
 	}
 
-	private void processMethod(final List<ASTSliceGroup> extractedSliceGroups, ClassObject classObject, AbstractMethodDeclaration methodObject) {
-		if(methodObject.getMethodBody() != null) {
-			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-			int minimumMethodSize = store.getInt(PreferenceConstants.P_MINIMUM_METHOD_SIZE);
-			StatementExtractor statementExtractor = new StatementExtractor();
-			int numberOfStatements = statementExtractor.getTotalNumberOfStatements(methodObject.getMethodBody().getCompositeStatement().getStatement());
-			if(numberOfStatements >= minimumMethodSize) {
-				ITypeRoot typeRoot = classObject.getITypeRoot();
-				CompilationUnitCache.getInstance().lock(typeRoot);
-				CFG cfg = new CFG(methodObject);
-				PDG pdg = new PDG(cfg, classObject.getIFile(), classObject.getFieldsAccessedInsideMethod(methodObject), null);
-				for(VariableDeclaration declaration : pdg.getVariableDeclarationsInMethod()) {
-					PlainVariable variable = new PlainVariable(declaration);
-					PDGSliceUnionCollection sliceUnionCollection = new PDGSliceUnionCollection(pdg, variable);
-					double sumOfExtractedStatementsInGroup = 0.0;
-					double sumOfDuplicatedStatementsInGroup = 0.0;
-					double sumOfDuplicationRatioInGroup = 0.0;
-					int maximumNumberOfExtractedStatementsInGroup = 0;
-					int groupSize = sliceUnionCollection.getSliceUnions().size();
-					ASTSliceGroup sliceGroup = new ASTSliceGroup();
-					for(PDGSliceUnion sliceUnion : sliceUnionCollection.getSliceUnions()) {
-						ASTSlice slice = new ASTSlice(sliceUnion);
-						if(!slice.isVariableCriterionDeclarationStatementIsDeeperNestedThanExtractedMethodInvocationInsertionStatement()) {
-							int numberOfExtractedStatements = slice.getNumberOfSliceStatements();
-							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
-							double duplicationRatio = (double)numberOfDuplicatedStatements/(double)numberOfExtractedStatements;
-							sumOfExtractedStatementsInGroup += numberOfExtractedStatements;
-							sumOfDuplicatedStatementsInGroup += numberOfDuplicatedStatements;
-							sumOfDuplicationRatioInGroup += duplicationRatio;
-							if(numberOfExtractedStatements > maximumNumberOfExtractedStatementsInGroup)
-								maximumNumberOfExtractedStatementsInGroup = numberOfExtractedStatements;
-							sliceGroup.addCandidate(slice);
-						}
-					}
-					if(!sliceGroup.getCandidates().isEmpty()) {
-						sliceGroup.setAverageNumberOfExtractedStatementsInGroup(sumOfExtractedStatementsInGroup/(double)groupSize);
-						sliceGroup.setAverageNumberOfDuplicatedStatementsInGroup(sumOfDuplicatedStatementsInGroup/(double)groupSize);
-						sliceGroup.setAverageDuplicationRatioInGroup(sumOfDuplicationRatioInGroup/(double)groupSize);
-						sliceGroup.setMaximumNumberOfExtractedStatementsInGroup(maximumNumberOfExtractedStatementsInGroup);
-						extractedSliceGroups.add(sliceGroup);
-					}
-				}
-				for(VariableDeclaration declaration : pdg.getVariableDeclarationsAndAccessedFieldsInMethod()) {
-					PlainVariable variable = new PlainVariable(declaration);
-					PDGObjectSliceUnionCollection objectSliceUnionCollection = new PDGObjectSliceUnionCollection(pdg, variable);
-					double sumOfExtractedStatementsInGroup = 0.0;
-					double sumOfDuplicatedStatementsInGroup = 0.0;
-					double sumOfDuplicationRatioInGroup = 0.0;
-					int maximumNumberOfExtractedStatementsInGroup = 0;
-					int groupSize = objectSliceUnionCollection.getSliceUnions().size();
-					ASTSliceGroup sliceGroup = new ASTSliceGroup();
-					for(PDGObjectSliceUnion objectSliceUnion : objectSliceUnionCollection.getSliceUnions()) {
-						ASTSlice slice = new ASTSlice(objectSliceUnion);
-						if(!slice.isVariableCriterionDeclarationStatementIsDeeperNestedThanExtractedMethodInvocationInsertionStatement()) {
-							int numberOfExtractedStatements = slice.getNumberOfSliceStatements();
-							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
-							double duplicationRatio = (double)numberOfDuplicatedStatements/(double)numberOfExtractedStatements;
-							sumOfExtractedStatementsInGroup += numberOfExtractedStatements;
-							sumOfDuplicatedStatementsInGroup += numberOfDuplicatedStatements;
-							sumOfDuplicationRatioInGroup += duplicationRatio;
-							if(numberOfExtractedStatements > maximumNumberOfExtractedStatementsInGroup)
-								maximumNumberOfExtractedStatementsInGroup = numberOfExtractedStatements;
-							sliceGroup.addCandidate(slice);
-						}
-					}
-					if(!sliceGroup.getCandidates().isEmpty()) {
-						sliceGroup.setAverageNumberOfExtractedStatementsInGroup(sumOfExtractedStatementsInGroup/(double)groupSize);
-						sliceGroup.setAverageNumberOfDuplicatedStatementsInGroup(sumOfDuplicatedStatementsInGroup/(double)groupSize);
-						sliceGroup.setAverageDuplicationRatioInGroup(sumOfDuplicationRatioInGroup/(double)groupSize);
-						sliceGroup.setMaximumNumberOfExtractedStatementsInGroup(maximumNumberOfExtractedStatementsInGroup);
-						extractedSliceGroups.add(sliceGroup);
-					}
-				}
-				CompilationUnitCache.getInstance().releaseLock();
-			}
-		}
-	}
-
 	private void saveResults() {
 		FileDialog fd = new FileDialog(getSite().getWorkbenchWindow().getShell(), SWT.SAVE);
 		fd.setText("Save Results");
-        String[] filterExt = { "*.txt" };
-        fd.setFilterExtensions(filterExt);
-        String selected = fd.open();
-        if(selected != null) {
-        	try {
-        		BufferedWriter out = new BufferedWriter(new FileWriter(selected));
-        		Tree tree = treeViewer.getTree();
-        		/*TreeColumn[] columns = tree.getColumns();
-        		for(int i=0; i<columns.length; i++) {
-        			if(i == columns.length-1)
-        				out.write(columns[i].getText());
-        			else
-        				out.write(columns[i].getText() + "\t");
-        		}
-        		out.newLine();*/
-        		for(int i=0; i<tree.getItemCount(); i++) {
+		String[] filterExt = { "*.txt" };
+		fd.setFilterExtensions(filterExt);
+		String selected = fd.open();
+		if (selected != null) {
+			try {
+				BufferedWriter out = new BufferedWriter(new FileWriter(selected));
+				Tree tree = treeViewer.getTree();
+				for (int i = 0; i < tree.getItemCount(); i++) {
 					TreeItem treeItem = tree.getItem(i);
-					ASTSliceGroup group = (ASTSliceGroup)treeItem.getData();
-					for(ASTSlice candidate : group.getCandidates()) {
-						out.write(candidate.toString());
-						out.newLine();
-					}
+					LPLMethodObject methodObject = (LPLMethodObject) treeItem.getData();
+					out.write(methodObject.toString());
+					out.newLine();
 				}
-        		out.close();
-        	} catch (IOException e) {
-        		e.printStackTrace();
-        	}
-        }
+				out.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

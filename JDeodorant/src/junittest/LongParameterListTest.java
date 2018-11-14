@@ -91,14 +91,12 @@ public class LongParameterListTest {
 
 	@BeforeAll
 	public static void setUpBeforeClass() {
-		System.out.println("Hi");
 		mockLPLMethodObject1 = createMockLPLMethodObject1();
 		mockLPLMethodObject2 = createMockLPLMethodObject2();
 	}
-
+	
 	@Test
 	public void testGetColumnText() {
-		System.out.println(mockLPLMethodObject1 == null);
 		assertEquals(mockLPLMethodObject1.getColumnText(0), "Long Parameter List");
 		assertEquals(mockLPLMethodObject1.getColumnText(1), "testMethod1");
 		assertEquals(mockLPLMethodObject1.getColumnText(2), "testClass");
