@@ -2,15 +2,46 @@ package junittest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import gr.uom.java.ast.ConstructorObject;
 import gr.uom.java.ast.LPLMethodObject;
 import gr.uom.java.ast.MethodObject;
+import gr.uom.java.ast.TypeObject;
 
 public class LongParameterListTest {
 	private static MethodObject createMockMethodObject1() {
-		return null;
+		ConstructorObject co = new ConstructorObject() {
+			@Override
+			public String getName(){
+				return "testMethod1";
+			}
+			@Override
+			public String getClassName() {
+				return "testClass";
+			}
+			@Override
+			public List<String> getParameterList() {
+				List<String> parameterList = new ArrayList<String>();
+				parameterList.add("a");
+				parameterList.add("b");
+				return parameterList;
+			}
+			@Override
+			public List<TypeObject> getParameterTypeList() {
+				List<TypeObject> parameterTypeList = new ArrayList<TypeObject>();
+				parameterTypeList.add(new TypeObject("int"));
+				parameterTypeList.add(new TypeObject("char"));
+				return parameterTypeList;
+			}
+		};
+		return new MethodObject(co);
 	}
 
 	private static LPLMethodObject createMockLPLMethodObject1() {
@@ -19,7 +50,35 @@ public class LongParameterListTest {
 	}
 
 	private static MethodObject createMockMethodObject2() {
-		return null;
+			ConstructorObject co = new ConstructorObject() {
+				@Override
+				public String getName(){
+					return "testMethod2";
+				}
+				@Override
+				public String getClassName() {
+					return "testClass";
+				}
+				@Override
+				public List<String> getParameterList() {
+					List<String> parameterList = new ArrayList<String>();
+					parameterList.add("a");
+					parameterList.add("b");
+					parameterList.add("c");
+					parameterList.add("d");
+					return parameterList;
+				}
+				@Override
+				public List<TypeObject> getParameterTypeList() {
+					List<TypeObject> parameterTypeList = new ArrayList<TypeObject>();
+					parameterTypeList.add(new TypeObject("int"));
+					parameterTypeList.add(new TypeObject("char"));
+					parameterTypeList.add(new TypeObject("String"));
+					parameterTypeList.add(new TypeObject("boolean"));
+					return parameterTypeList;
+				}
+			};
+			return new MethodObject(co);
 	}
 
 	private static LPLMethodObject createMockLPLMethodObject2() {
@@ -30,19 +89,21 @@ public class LongParameterListTest {
 	static LPLMethodObject mockLPLMethodObject1;
 	static LPLMethodObject mockLPLMethodObject2;
 
-	@BeforeClass
+	@BeforeAll
 	public static void setUpBeforeClass() {
+		System.out.println("Hi");
 		mockLPLMethodObject1 = createMockLPLMethodObject1();
 		mockLPLMethodObject2 = createMockLPLMethodObject2();
 	}
 
 	@Test
 	public void testGetColumnText() {
+		System.out.println(mockLPLMethodObject1 == null);
 		assertEquals(mockLPLMethodObject1.getColumnText(0), "Long Parameter List");
 		assertEquals(mockLPLMethodObject1.getColumnText(1), "testMethod1");
 		assertEquals(mockLPLMethodObject1.getColumnText(2), "testClass");
 		assertEquals(mockLPLMethodObject1.getColumnText(3), "int a, char b");
-		assertEquals(mockLPLMethodObject1.getColumnText(4), "4");
+		assertEquals(mockLPLMethodObject1.getColumnText(4), "2");
 
 	}
 
