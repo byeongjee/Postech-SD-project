@@ -135,7 +135,14 @@ public class LongMethod extends ViewPart {
 		
 		//To be implemented
 		public void pressRefactorButton(int index) {
-			System.out.println("Success");
+			System.out.println("Pressed parent refactor button");
+			System.out.println("index: " + index);
+		}
+		
+		//To be implemented
+		public void pressChildRefactorButton(int parentIndex, int childIndex) {
+			System.out.println("Pressed child refactor button");
+			System.out.println("index: " + parentIndex + " " + childIndex);
 		}
 	}
 	private LongMethodRefactoringButtonUI refactorButtonMaker;
@@ -376,26 +383,6 @@ public class LongMethod extends ViewPart {
 		column6.setResizable(true);
 		column6.pack();
 		
-		/*
-		Tree tree = treeViewer.getTree();
-		TreeItem[] items = tree.getItems();
-		
-		for(int i = 0; i < items.length; i++) {
-			TreeEditor editor = new TreeEditor(tree);
-			
-			TreeItem item = items[i];
-			
-			Button button = new Button(tree, SWT.PUSH);
-			
-			button.setText("TEST");
-			button.setSize(16, 16);
-			button.pack();
-			
-			editor.horizontalAlignment = SWT.RIGHT;
-		    editor.grabHorizontal = true;
-		    editor.minimumWidth = 50;
-			editor.setEditor(button, item);
-		}*/
 		treeViewer.expandAll();
 		
 		treeViewer.setColumnProperties(new String[] {"type", "source", "variable", "block", "duplicationRatio", "rate"});
