@@ -64,7 +64,6 @@ public class messageChainBasic {
 
 	@AfterClass
 	public static void afterClass() throws CoreException {
-    	bot.sleep(100000);
 		testProject.deleteProject();
 		bot.resetWorkbench();
 	}

@@ -61,7 +61,6 @@ public class SpeculativeGeneralityTest {
 
 	@AfterClass
 	public static void afterClass() throws CoreException {
-    	bot.sleep(100000);
 		testProject.deleteProject();
 		bot.resetWorkbench();
 	}
