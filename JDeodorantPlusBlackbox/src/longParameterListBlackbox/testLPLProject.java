@@ -19,13 +19,13 @@ import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
 
-public class testProject {
-	 public static void buildProject() throws CoreException {
+public class testLPLProject {
+	 public static void buildLPLProject() throws CoreException {
 	    	
 	    	IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 	    	
 	    	// Creating Project
-	    	IProject project = root.getProject("testProject");
+	    	IProject project = root.getProject("testLPLProject");
 	    	
 	    	project.create(null); 
 	    	project.open(null);
@@ -95,11 +95,11 @@ public class testProject {
 	    				"	 		}\r\n" + 
 	    				"	 	}";
 	    	source.append(strSimple);
-			_package.createCompilationUnit("Simple.java", source.toString(), false, null);
+			_package.createCompilationUnit("TestLPL.java", source.toString(), false, null);
 			
 	    }
 	    
-	    public static void deleteProject() throws CoreException {
+	    public static void deleteLPLProject() throws CoreException {
 	    	IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 	    	IProject project = root.getProject("testProject");
 	    	

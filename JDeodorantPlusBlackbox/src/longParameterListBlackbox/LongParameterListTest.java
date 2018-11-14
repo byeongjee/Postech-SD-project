@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.*;
 
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -52,85 +53,54 @@ public class LongParameterListTest {
 		dialog.activate();
 		bot.tree().getTreeItem("Java").expand().getNode("Package Explorer").doubleClick();
 	}
-	
+
 	@BeforeClass
 	public static void initBot() throws CoreException {
 		bot = new SWTWorkbenchBot();
 		bot.viewByTitle("Welcome").close();
-		
-		testProject.buildProject();
+
+		testLPLProject.buildLPLProject();
 		openPackageExplorer();
 	}
 
 	@AfterClass
 	public static void afterClass() throws CoreException {
-    	bot.sleep(100000);
-		testProject.deleteProject();
+		bot.sleep(100000);
+		testLPLProject.deleteLPLProject();
 		bot.resetWorkbench();
 	}
-	
+
 	@Test
-	public void testOpenSpeculativeGeneralityTab() {
+	public void testOpenLPLTab() {
 		bot.menu("Bad Smells").menu("Long Parameter List").click();
 		bot.viewByTitle("Long Parameter List");
 		assertTrue(bot.viewByTitle("Long Parameter List").isActive());
 	}
-	
-	@Test
-	public void testApplyingSGDetection() {
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-		
-		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").isEnabled());
-	}
 
 	@Test
-	public void testExpandingSGEntries() {
+	public void testApplyingLPLDetection() {
 		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
 		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-		
-		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
+		packageExplorer.bot().tree().getTreeItem("testLPLProject").doubleClick();
+		packageExplorer.bot().tree().getTreeItem("testLPLProject").getNode("src").doubleClick();
+		packageExplorer.bot().tree().getTreeItem("testLPLProject").getNode("src").getNode("LongParameterList").click();
+
+		SWTBotView detectionApplier = bot.viewByTitle("Long Parameter List");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
-		
-    	detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").expand();
-    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").getNode("NoChildInterface_Method").isEnabled());
 	}
-	
+
+	@Ignore
 	@Test
-	public void testApplyingSGRefactoring() {
-		// Applying Refactoring by Clicking ToolBar Button after selection Entry
+	public void testLPLRefactoringUI() {
 		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
 		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-		
-		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
+		packageExplorer.bot().tree().getTreeItem("testLPLProject").click();
+		bot.menu("Bad Smells").menu("Long Parameter List").click();
+		SWTBotView detectionApplier = bot.viewByTitle("Long Parameter List");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
-		
-    	detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").expand();
-    	detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").getNode("NoChildInterface_Method").click();
-    	
-    	detectionApplier.getToolbarButtons().get(1).click();
-    	
-    	// Assertion Message Checking
-    	SWTBotView assuranceChecker = bot.viewByTitle("Refactoring Assertion");
-    	assertTrue(assuranceChecker.bot().button(1).isEnabled()); // Might be "cancel" button
+		System.out.println(detectionApplier.bot().tree().getTreeItem("").getItems());
 	}
-	
-	@Test
-	public void testAppliedSGRefacctoring() {
-		// Applying Refactoring and Assure in Certain Steps
-		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-		
-    	// Assertion 
-		assertFalse(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").isEnabled()); // deleted
-	}
+
 }
