@@ -1,5 +1,8 @@
 package gr.uom.java.ast;
-
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Stack;
 import gr.uom.java.ast.decomposition.MethodBodyObject;
 import gr.uom.java.jdeodorant.refactoring.manipulators.TypeCheckElimination;
 
@@ -142,4 +145,84 @@ public class ClassObjectCandidate extends ClassObject {
         
         return sb.toString();
     }
+	public String getClassFullName()
+	{
+		StringBuilder sb = new StringBuilder();
+        if(!access.equals(Access.NONE))
+            sb.append(access.toString()).append(" ");
+        if(_static)
+            sb.append("static").append(" ");
+        if(_interface)
+            sb.append("interface").append(" ");
+        else if(_abstract)
+            sb.append("abstract class").append(" ");
+        else
+            sb.append("class").append(" ");
+        sb.append(name);
+        return sb.toString();
+	}
+	public List<String> getClassField()
+	{
+		String filepath=iFile.getLocation().toString();
+		List<String> result=new ArrayList<String>();
+		Stack<Character> stack=new Stack<Character>();
+		boolean readFlag=false;
+//		System.out.println("CLASS NAME: "+this.getClassFullName());
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(filepath));
+	        while(true) {
+	            String line = br.readLine();
+	            if (line==null) break;
+	            if(line.contains(this.getClassFullName()))
+	            {
+	            	readFlag=true;
+//		            System.out.println("readFlag into True");
+	            }
+	            
+	            if(readFlag)
+	            {
+	            	for(int i=0;i<line.length();i++)
+	            	{
+	            		if(line.charAt(i)=='{')
+	            		{
+	            			stack.push('{');
+//	        	            System.out.println("PUSH {");
+	            		}
+	            		else if(line.charAt(i)=='}')
+	            		{
+	            			if(stack.isEmpty())
+	            			{
+//	            				System.out.print("STACKERROR in getClassField Method");
+	            				return result;
+	            			}
+	            			else if(stack.peek()=='{')
+	            			{	
+	            				stack.pop();
+//	            				System.out.println("READ SUCCESS");
+	            			}
+	            			else
+	            			{
+	            				stack.push('}');
+//	            				System.out.println("PUSH }");
+	            			}
+	            		}
+	            	}
+	            }
+	            if(readFlag)
+	            	result.add(line);
+//	            System.out.println("STACK SIZE : "+stack.size());
+	            if(stack.isEmpty())
+	            {
+	            	readFlag=false;
+	            }
+	            	
+//	            System.out.println(line);
+	        }
+	        br.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		return result;
+	}
 }

@@ -132,6 +132,14 @@ public class SpeculativeGenerality extends ViewPart {
 		//To be implemented
 		public void pressRefactorButton(int index) {
 			System.out.println("Index of button pressed is " + index);
+			List<String> mystr=classObjectTable[index].getClassField();
+			System.out.println("CLASSTABLE SIZE :");
+			System.out.println("CLASS NAME :"+classObjectTable[index].getName());
+			System.out.println("SMELL TYPE : "+classObjectTable[index].getCodeSmellType());
+			for(int i=0;i<mystr.size();i++)
+			{
+				System.out.println(mystr.get(i));
+			}
 		}
 	}
 	private SpeculativeGeneralityRefactoringButtonUI refactorButtonMaker;
@@ -260,26 +268,27 @@ public class SpeculativeGenerality extends ViewPart {
 
 	class NameSorter extends ViewerSorter {
 		public int compare(Viewer viewer, Object obj1, Object obj2) {
-			if(obj1 instanceof ClassObjectCandidate && obj2 instanceof ClassObjectCandidate) {
-				ClassObjectCandidate classObject1 = (ClassObjectCandidate)obj1;
-				ClassObjectCandidate classObject2 = (ClassObjectCandidate)obj2;
-				return classObject1.getName().compareTo(classObject2.getName());
-			}
-			else if(obj1 instanceof ClassObject && obj2 instanceof ClassObject) {
-				ClassObject classObject1 = (ClassObject)obj1;
-				ClassObject classObject2 = (ClassObject)obj2;
-				return classObject1.getName().compareTo(classObject2.getName());
-			}
-			else if(obj1 instanceof MethodObject && obj2 instanceof MethodObject) {
-				MethodObject classObject1 = (MethodObject)obj1;
-				MethodObject classObject2 = (MethodObject)obj2;
-				return classObject1.getName().compareTo(classObject2.getName());
-			}
-			else
-			{
-				System.out.println("In NameSorter : else");
-				return 1;
-			}
+//			if(obj1 instanceof ClassObjectCandidate && obj2 instanceof ClassObjectCandidate) {
+//				ClassObjectCandidate classObject1 = (ClassObjectCandidate)obj1;
+//				ClassObjectCandidate classObject2 = (ClassObjectCandidate)obj2;
+//				return classObject1.getName().compareTo(classObject2.getName());
+//			}
+//			else if(obj1 instanceof ClassObject && obj2 instanceof ClassObject) {
+//				ClassObject classObject1 = (ClassObject)obj1;
+//				ClassObject classObject2 = (ClassObject)obj2;
+//				return classObject1.getName().compareTo(classObject2.getName());
+//			}
+//			else if(obj1 instanceof MethodObject && obj2 instanceof MethodObject) {
+//				MethodObject classObject1 = (MethodObject)obj1;
+//				MethodObject classObject2 = (MethodObject)obj2;
+//				return classObject1.getName().compareTo(classObject2.getName());
+//			}
+//			else
+//			{
+//				System.out.println("In NameSorter : else");
+//				return 1;
+//			}
+			return 1;
 		}
 	}
 	
