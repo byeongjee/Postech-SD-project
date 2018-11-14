@@ -61,7 +61,7 @@ public class SpeculativeGeneralityTest {
 
 	@AfterClass
 	public static void afterClass() throws CoreException {
-    	bot.sleep(100000);
+    	bot.sleep(10000000);
 		testProject.deleteProject();
 		bot.resetWorkbench();
 	}
@@ -72,12 +72,16 @@ public class SpeculativeGeneralityTest {
 		bot.viewByTitle("Speculative Generality");
 		assertTrue(bot.viewByTitle("Speculative Generality").isActive());
 	}
+
+	private void selectSGTarget() {
+		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
+		packageExplorer.show();
+		packageExplorer.bot().tree().getTreeItem("testProject").expand().getNode("src").expand().getNode("SpeculativeGenerality").click();
+	}
 	
 	@Test
 	public void testApplyingSGDetection() {
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
+		selectSGTarget();
 		
 		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
@@ -87,24 +91,19 @@ public class SpeculativeGeneralityTest {
 
 	@Test
 	public void testExpandingSGEntries() {
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
+		selectSGTarget();
 		
 		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
 		
     	detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").expand();
-    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").getNode("NoChildInterface_Method").isEnabled());
+    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").getNode("NoChildInterface_Method1").isEnabled());
 	}
 	
 	@Test
 	public void testApplyingSGRefactoring() {
-		// Applying Refactoring by Clicking ToolBar Button after selection Entry
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
+		selectSGTarget();
 		
 		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();

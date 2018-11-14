@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -26,6 +27,8 @@ import gr.uom.java.ast.CompilationUnitCache;
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.SystemObject;
 import gr.uom.java.ast.TypeObject;
+import gr.uom.java.ast.decomposition.AbstractStatement;
+import gr.uom.java.ast.decomposition.cfg.AbstractVariable;
 import gr.uom.java.ast.decomposition.cfg.CFG;
 import gr.uom.java.ast.decomposition.cfg.PDG;
 import gr.uom.java.ast.decomposition.cfg.PDGObjectSliceUnion;
@@ -39,6 +42,7 @@ import gr.uom.java.jdeodorant.refactoring.Activator;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSlice;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSliceGroup;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
+
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.resources.IFile;
@@ -125,30 +129,50 @@ public class SpeculativeGenerality extends ViewPart {
 	private ICompilationUnit selectedCompilationUnit;
 	private IType selectedType;
 	private IMethod selectedMethod;
+	private ClassObjectCandidate[] classObjectTable; 
 	
 	private class SpeculativeGeneralityRefactoringButtonUI extends RefactoringButtonUI {
-		
-		
-		//To be implemented
 		public void pressRefactorButton(int index) {
+			ClassObjectCandidate targetClass = classObjectTable[index];
+			
+			// Get Classes
 			System.out.println("Index of button pressed is " + index);
-			List<String> mystr=classObjectTable[index].getClassField();
+			List<String> mystr=targetClass.getClassField();
 			System.out.println("CLASSTABLE SIZE :");
-			System.out.println("CLASS NAME :"+classObjectTable[index].getName());
-			System.out.println("SMELL TYPE : "+classObjectTable[index].getCodeSmellType());
+			System.out.println("CLASS NAME :"+targetClass.getName());
+			System.out.println("SMELL TYPE : "+targetClass.getCodeSmellType());
+			System.out.println(targetClass.toString());
 			for(int i=0;i<mystr.size();i++)
 			{
 				System.out.println(mystr.get(i));
 			}
+			
+			// Switch w.r.t smell type and Details
+			if(targetClass.getCodeSmellType().equals("Abstract Class")) {
+				if(targetClass.getNumChild() == 0) {
+					// ToDo :: Check if there exists another class in JavaFile
+					
+				} else {
+					// ToDo :: Integrate Child and Parent
+										
+				}
+			} else if (targetClass.getCodeSmellType().equals("Interface Class")) {
+				if(targetClass.getNumChild() == 0) {
+					// ToDo :: Check if there exists another class in JavaFile
+					
+				} else {
+					// ToDo :: Integrate Child and Parent
+					
+				}
+			} else if (targetClass.getCodeSmellType().equals("Unnecessary Parameter")) {
+				
+			}
 		}
 	}
+	
 	private SpeculativeGeneralityRefactoringButtonUI refactorButtonMaker;
 	
-	// Exp : would-be extended to contain information of line, source-path, and so forth... (for UI)
-	private ClassObjectCandidate[] classObjectTable; 
-	
-	
-	class ViewContentProvider implements ITreeContentProvider {
+	public class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}
 		public void dispose() {
@@ -161,26 +185,18 @@ public class SpeculativeGenerality extends ViewPart {
 				return new ClassObjectCandidate[] {};
 			}
 		}
-		// Warn : Quite Sure a/ JuYongLee, JaeYeopLee
+		
 		public Object[] getChildren(Object arg) {
-			if(arg instanceof ClassObjectCandidate[]) {
+			/*if(arg instanceof ClassObjectCandidate[]) {
 				return (ClassObjectCandidate[])arg; 
-			} else if(arg instanceof ClassObjectCandidate){
-				Object[] res = ((ClassObjectCandidate) arg).getSmellingMethods().toArray();
-				
-				System.out.println("In ViewContentProvider : getChildren : Printing Children Methods");
-				for(int i = 0; i < res.length;  i++) {
-					System.out.println(((MethodObject) res[i]).getName());
-				}
-				System.out.println("In ViewContentProvider : getChildren : Printed Children Methods");
-				
+			} else*/ if(arg instanceof ClassObjectCandidate){
 				return ((ClassObjectCandidate) arg).getSmellingMethods().toArray(); 
 			} else {
 				ClassObjectCandidate[] res = { };
 				return res; 
 			}
 		}
-		// Warn : Quite Sure a/ JuYongLee, JaeYeopLee
+		
 		public Object getParent(Object arg0) {
 			if(arg0 instanceof ClassObjectCandidate[]) {
 				ClassObjectCandidate target = (ClassObjectCandidate)arg0;
@@ -285,7 +301,6 @@ public class SpeculativeGenerality extends ViewPart {
 //			}
 //			else
 //			{
-//				System.out.println("In NameSorter : else");
 //				return 1;
 //			}
 			return 1;
@@ -732,9 +747,7 @@ public class SpeculativeGenerality extends ViewPart {
 
 	private ClassObjectCandidate[] getTable() {
 		ClassObjectCandidate[] table = null;
-		System.out.println("In GetTable");
 		try {
-			System.out.println("In GetTable : Try");
 			IWorkbench wb = PlatformUI.getWorkbench();
 			IProgressService ps = wb.getProgressService();
 			if(ASTReader.getSystemObject() != null && activeProject.equals(ASTReader.getExaminedProject())) {
@@ -758,34 +771,18 @@ public class SpeculativeGenerality extends ViewPart {
 			}
 			SystemObject systemObject = ASTReader.getSystemObject();
 			if(systemObject != null) {
-				System.out.println("In GetTable : Before Declaring classObjectsToBeExamined");
-				Set<ClassObject> classObjectsToBeExamined = new LinkedHashSet<ClassObject>();
-				if(selectedPackageFragmentRoot != null) {
-					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragmentRoot));
-				}
-				else if(selectedPackageFragment != null) {
+				Set<ClassObject> classObjectsToBeExamined = new HashSet<ClassObject>();
+				// Package Selected
+				if(selectedPackageFragment != null) {
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragment));
 				}
-				else if(selectedCompilationUnit != null) {
-				}
-				else if(selectedType != null) {
-				}
 				else {
+					// ToDo :: 중복된 Class가 들어가는 오류가 있음!!!
+					System.out.println("+++Project (or else) Selected+++");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
 				}
-
-				final Set<String> classNamesToBeExamined = new LinkedHashSet<String>();
-				for(ClassObject classObject : classObjectsToBeExamined) {
-					if(!classObject.isEnum() && !classObject.isInterface() && !classObject.isGeneratedByParserGenenator())
-						classNamesToBeExamined.add(classObject.getName());
-				}
 				
-				System.out.println("In GetTable : Printing classObjectsToBeExamined");
-				for(ClassObject target : classObjectsToBeExamined) {
-					System.out.println(target.getName());
-				}
-				System.out.println("In GetTable : Printed classObjectsToBeExamined");
-				
+				// Pass classes in selected target to examine, and get smelling Classes
 				table=processMethod(classObjectsToBeExamined);
 			}
 		} catch (InvocationTargetException e) {
@@ -805,17 +802,15 @@ public class SpeculativeGenerality extends ViewPart {
 	 * @param classObjectsToBeExamined
 	 * @return Array of ClassObject
 	 */
-	private ClassObjectCandidate[] processMethod(final Set<ClassObject> classObjectsToBeExamined){	
-//		final List<ClassObject> classObjectswithSG = new ArrayList<ClassObject>();
-		final List<ClassObjectCandidate> classObjectswithSG = new ArrayList<ClassObjectCandidate>();
+	private ClassObjectCandidate[] processMethod(final Set<ClassObject> classObjectsToBeExamined){
+		final List<ClassObjectCandidate> smellingClassObjectCandidates = new ArrayList<ClassObjectCandidate>();
+		System.out.println("+++Process Method+++");
 		
-		for(ClassObject _ClassObject : classObjectsToBeExamined) {
-			ClassObjectCandidate targetClass = new ClassObjectCandidate(_ClassObject);
-			System.out.println("In ProcessMethod : Type Conversion Test");
-			System.out.println(targetClass.getName());
-			
-			// Unnecessary Abstraction
+		for(ClassObject targetClass : classObjectsToBeExamined) {	
+			// Abstract Class
 			if(targetClass.isAbstract()) {
+				ClassObjectCandidate target = new ClassObjectCandidate(targetClass);
+				
 				int childOfTargetNum = 0;
 				
 				for(ClassObject childCandidate : classObjectsToBeExamined) {
@@ -827,68 +822,86 @@ public class SpeculativeGenerality extends ViewPart {
 					if(superClass.getClassType().equals(targetClass.getName())){
 						childOfTargetNum++;
 					}
+					
 					if(childOfTargetNum >= 2)
 						break;
 				}
+				
 				if(childOfTargetNum < 2) {
-					targetClass.setCodeSmellType("Abstract Class");
-					classObjectswithSG.add(targetClass);
+					target.setNumChild(childOfTargetNum);
+					target.setCodeSmellType("Abstract Class");
+					smellingClassObjectCandidates.add(target);
 				}
 			}
+			
+			// Interface Class
 			else if(targetClass.isInterface()) {
+				ClassObjectCandidate target = new ClassObjectCandidate(targetClass);
+				
 				int childOfTargetNum = 0;
 				
 				for(ClassObject childCandidate : classObjectsToBeExamined) {
 					ListIterator<TypeObject> myIter=childCandidate.getInterfaceIterator();
 					while(myIter.hasNext()) {
-						//
 						if(myIter.next().getClassType().equals(targetClass.getName())) {
 							childOfTargetNum++;
 							break;
 						}
 					}
+					
 					if(childOfTargetNum >= 2)
 						break;
 				}
 				if(childOfTargetNum < 2) {
-					targetClass.setCodeSmellType("Interface Class");
-					classObjectswithSG.add(targetClass);
+					target.setNumChild(childOfTargetNum);
+					target.setCodeSmellType("Interface Class");	
+					smellingClassObjectCandidates.add(target);
 				}
 			}
 			
 			// Unnecsary Parameter
-			System.out.println("In ProcessMethod : for loop of methoditerator");
 			if(!targetClass.isEnum() && !targetClass.isInterface() && !targetClass.isGeneratedByParserGenenator()) {
-				List<MethodObject> _methodList = targetClass.getMethodList();
+				ClassObjectCandidate target = new ClassObjectCandidate(targetClass);
+				List<MethodObject> _methodList = target.getMethodList();
 				
 				for(int i = 0; i < _methodList.size(); i++) {
-					MethodObject target = _methodList.get(i);
+					boolean flagSmell = false;
+					MethodObject targetMethod = _methodList.get(i);
+					int unusedPNum = 0;
 					
-					System.out.println("In ProcessMethod : Printing");
-					System.out.println(target.getClassName() + "::" + target.getName());
-					for (int p = 0; p < target.getParameterList().size(); p++) {
-						System.out.println(target.getParameter(p).getName());
-						System.out.println(target.getClassName());
+					// GetStatements
+					String methodBodyStatements = targetMethod.getMethodBody().getCompositeStatement().getStatement().toString();
+					
+					// Get Parameters
+					int pNum = targetMethod.getParameterList().size();
+					
+					for (int p = 0; p < pNum; p++) {
+						// Check the Usage
+						String pTarget = targetMethod.getParameter(p).getName();
+						if(!methodBodyStatements.contains(pTarget)) {
+							flagSmell = true;
+							unusedPNum++;
+						}
 					}
-					System.out.println("In ProcessMethod : for loop of methoditerator");
-
-					if (!targetClass.getSmellingMethods().isEmpty()) {
-						// ToDo : Add target for each smelling Method
-						targetClass.setCodeSmellType("Unnecessary Parameters");
-						targetClass.addSmellingMethod(target);
-						classObjectswithSG.add(targetClass);
-					} 
+					
+					if(flagSmell) {
+						target.addNumUnusedParameter(unusedPNum);
+						target.addSmellingMethod(targetMethod);
+						target.setCodeSmellType("Unnecessary Parameters");
+						
+					}
+				}
+				
+				if(!target.getSmellingMethods().isEmpty()) {
+					smellingClassObjectCandidates.add(target);
 				}
 			}
 		}
 		
-		System.out.println("In ProcessMethod : Printing results which are smelling classes");
-		ClassObjectCandidate[] res = new ClassObjectCandidate[classObjectswithSG.size()];
-		for(int i=0;i<classObjectswithSG.size();i++) {
-			res[i]= classObjectswithSG.get(i);
-			System.out.println(res[i].getName());
+		ClassObjectCandidate[] res = new ClassObjectCandidate[smellingClassObjectCandidates.size()];
+		for(int i=0;i<smellingClassObjectCandidates.size();i++) {
+			res[i]= smellingClassObjectCandidates.get(i);
 		}
-		System.out.println("In ProcessMethod : Printed results which are smelling classes");
 		
 		return res;
 	}

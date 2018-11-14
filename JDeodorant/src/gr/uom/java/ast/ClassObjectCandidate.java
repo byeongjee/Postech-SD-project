@@ -23,6 +23,9 @@ public class ClassObjectCandidate extends ClassObject {
     private String refactorType;
     private List<MethodObject> smellingMethods;
     
+    private int numChild;
+    private List<Integer> numUnusedParameter;
+    
     public ClassObjectCandidate() {
     	this.name = "";
     	this.methodList = null;
@@ -43,6 +46,7 @@ public class ClassObjectCandidate extends ClassObject {
         this.codeSmellType = "Speculative Generality";
         this.refactorType = "_";
         this.smellingMethods = new ArrayList<MethodObject>();
+        this.numUnusedParameter  = new ArrayList<Integer>();
     }
     
     public ClassObjectCandidate(ClassObject co) {
@@ -63,15 +67,30 @@ public class ClassObjectCandidate extends ClassObject {
         this.typeDeclaration = co.typeDeclaration;
     	this.iFile = co.iFile;
         
+    	this.superclass = co.superclass;
+    	
         // Ext : JuYongLee & JaeYeop Lee
         this.codeSmellType = "Speculative Generality";
         this.refactorType = "_";
         this.smellingMethods = new ArrayList<MethodObject>();
+        this.numUnusedParameter  = new ArrayList<Integer>();
     }
 
     /*public ClassObject getClassObject() {
     	return this._root;
     }*/
+    
+    public void setNumChild(int arg) {
+    	this.numChild = arg;
+    }
+    
+    public int getNumChild() {
+    	return this.numChild;
+    }
+    
+    public void addNumUnusedParameter(int arg) {
+    	this.numUnusedParameter.add(arg);
+    }
     
 	public void setCodeSmellType(String arg) {
 		this.codeSmellType = arg;
