@@ -19,16 +19,22 @@ import gr.uom.java.jdeodorant.refactoring.Activator;
 
 public class RefactoringButtonUI {
 	private Tree tree;
-	private List<Button> buttonList;
+	private ArrayList<Button> buttonList;
+	private ArrayList<List <Button>> childButtonList;
 	
 	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
 	
 	public RefactoringButtonUI(){
 		buttonList = new ArrayList<Button>();
+		childButtonList = new ArrayList<List<Button>>();
 	}
 	
 	public List getButtonList() {
 		return buttonList;
+	}
+	
+	public List getChildrenButtonList() {
+		return childButtonList;
 	}
 	
 	public Tree getTree() {
@@ -47,6 +53,17 @@ public class RefactoringButtonUI {
 		
 		//Example : Print text of column 1 of pressed button
 		System.out.println(tree.getItem(index).getText(1));
+	}
+	
+	/**
+	 * 
+	 * @param parentIndex index of parent smell
+	 * @param childIndex index of child smell in parent smell
+	 */
+	public void pressChildRefactorButton(int parentIndex, int childIndex) {
+		System.out.println("Child refactor button pressed");
+		System.out.println("Parent index is " + parentIndex);
+		System.out.println("Child index is " + childIndex);
 	}
 
 	
@@ -89,10 +106,14 @@ public class RefactoringButtonUI {
 			TreeEditor editor = new TreeEditor(tree);
 			
 			TreeItem item1 = items[i];
+			
+			childButtonList.add(new ArrayList<Button>());
 						
 			for(int j = 0; j < item1.getItems().length; j++) {
 				TreeEditor editor2 = new TreeEditor(item1.getItem(j).getParent());
 				Button button = new Button(item1.getItem(j).getParent(), SWT.PUSH);	
+				button.setData("parentIndex", i);
+				button.setData("childIndex", j);
 	  
 				button.addPaintListener( new PaintListener() {
 					  //@Override
@@ -107,11 +128,22 @@ public class RefactoringButtonUI {
 				button.setSize(3, 3);
 				button.pack();
 				
+				button.addSelectionListener(new SelectionListener() {
+					public void widgetSelected(SelectionEvent event) {
+						Integer parentIndex = (Integer) event.widget.getData("parentIndex");
+						Integer childIndex = (Integer) event.widget.getData("childIndex");
+						pressChildRefactorButton(parentIndex, childIndex);
+					}
+					
+					public void widgetDefaultSelected(SelectionEvent event) {
+					}
+				});
+				
 				editor2.horizontalAlignment = SWT.RIGHT;
 				editor2.grabHorizontal = true;
 				editor2.minimumWidth = 50;
 				editor2.setEditor(button, item1.getItem(j), columnIndex);
-				buttonList.add(button);
+				childButtonList.get(i).add(button);
 			}
 		}
 	}
@@ -120,6 +152,14 @@ public class RefactoringButtonUI {
 		for(Button it : buttonList) {
 			it.dispose();
 		}
+		buttonList.clear();
+		for(List<Button> listIt : childButtonList) {
+			for(Button it : listIt) {
+				it.dispose();
+			}
+			listIt.clear();
+		}
+		childButtonList.clear();
 	}
 	
 }
