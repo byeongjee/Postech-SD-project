@@ -132,7 +132,7 @@ public class LongParameterList extends ViewPart {
 
 	// private MethodEvolution methodEvolution;
 	// private List<Button> buttonList = new ArrayList<Button>();
-	private class LongMethodRefactoringButtonUI extends RefactoringButtonUI {
+	private class LongParameterListRefactoringButtonUI extends RefactoringButtonUI {
 
 		// To be implemented
 		public void pressRefactorButton(int index) {
@@ -140,7 +140,7 @@ public class LongParameterList extends ViewPart {
 		}
 	}
 
-	private LongMethodRefactoringButtonUI refactorButtonMaker;
+	private LongParameterListRefactoringButtonUI refactorButtonMaker;
 
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
@@ -261,19 +261,19 @@ public class LongParameterList extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
-		refactorButtonMaker = new LongMethodRefactoringButtonUI();
+		refactorButtonMaker = new LongParameterListRefactoringButtonUI();
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
 		treeViewer.setSorter(new NameSorter());
 		treeViewer.setInput(getViewSite());
 		TableLayout layout = new TableLayout();
-		layout.addColumnData(new ColumnWeightData(20, true));
-		layout.addColumnData(new ColumnWeightData(60, true));
 		layout.addColumnData(new ColumnWeightData(40, true));
+		layout.addColumnData(new ColumnWeightData(30, true));
+		layout.addColumnData(new ColumnWeightData(40, true));
+		layout.addColumnData(new ColumnWeightData(80, true));
 		layout.addColumnData(new ColumnWeightData(20, true));
-		layout.addColumnData(new ColumnWeightData(20, true));
-		layout.addColumnData(new ColumnWeightData(20, true));
+		layout.addColumnData(new ColumnWeightData(40, true));
 		treeViewer.getTree().setLayout(layout);
 		treeViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
 		treeViewer.getTree().setLinesVisible(true);
@@ -287,28 +287,23 @@ public class LongParameterList extends ViewPart {
 		column1.setResizable(true);
 		column1.pack();
 		TreeColumn column2 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
-		column2.setText("Variable Criterion");
+		column2.setText("Class");
 		column2.setResizable(true);
 		column2.pack();
 		TreeColumn column3 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
-		column3.setText("Block-Based Region");
+		column3.setText("Parameter List");
 		column3.setResizable(true);
 		column3.pack();
 		TreeColumn column4 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
-		column4.setText("Duplicated/Extracted");
+		column4.setText("Number of Parameters");
 		column4.setResizable(true);
 		column4.pack();
-
-		TreeColumn column5 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
-		column5.setText("Rate it!");
+		TreeColumn column5 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+		column5.setText("Do Refactoring");
 		column5.setResizable(true);
 		column5.pack();
-
-		TreeColumn column6 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
-		column6.setText("Do Refactoring");
-		column6.setResizable(true);
-		column6.pack();
-
+		
+		treeViewer.expandAll();
 		treeViewer.expandAll();
 
 		treeViewer.setColumnProperties(
@@ -453,6 +448,7 @@ public class LongParameterList extends ViewPart {
 				activeProject = selectedProject;
 				CompilationUnitCache.getInstance().clearCache();
 				methodObjectTable = getTable();
+				System.out.println("methodObjectTable created");
 				treeViewer.setContentProvider(new ViewContentProvider());
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
@@ -461,11 +457,11 @@ public class LongParameterList extends ViewPart {
 
 				Tree tree = treeViewer.getTree();
 				refactorButtonMaker.setTree(tree);
-				refactorButtonMaker.makeRefactoringButtons(6);
+				refactorButtonMaker.makeRefactoringButtons(5);
 
 				tree.addListener(SWT.Expand, new Listener() {
 					public void handleEvent(Event e) {
-						refactorButtonMaker.makeChildrenRefactoringButtons(6);
+						refactorButtonMaker.makeChildrenRefactoringButtons(5);
 					}
 				});
 			}
@@ -484,106 +480,10 @@ public class LongParameterList extends ViewPart {
 		saveResultsAction.setImageDescriptor(
 				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_SAVE_EDIT));
 		saveResultsAction.setEnabled(false);
-
+		
 		applyRefactoringAction = new Action() {
 			public void run() {
-				IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
-				if (selection != null && selection.getFirstElement() instanceof ASTSlice) {
-					ASTSlice slice = (ASTSlice) selection.getFirstElement();
-					TypeDeclaration sourceTypeDeclaration = slice.getSourceTypeDeclaration();
-					System.out.println(sourceTypeDeclaration.getName());
-					CompilationUnit sourceCompilationUnit = (CompilationUnit) sourceTypeDeclaration.getRoot();
-					IFile sourceFile = slice.getIFile();
-					IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-
-					boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
-					if (allowUsageReporting) {
-						Tree tree = treeViewer.getTree();
-						int groupPosition = -1;
-						int totalGroups = tree.getItemCount();
-						for (int i = 0; i < tree.getItemCount(); i++) {
-							TreeItem treeItem = tree.getItem(i);
-							ASTSliceGroup group = (ASTSliceGroup) treeItem.getData();
-							if (group.getCandidates().contains(slice)) {
-								groupPosition = i;
-								break;
-							}
-						}
-						try {
-							boolean allowSourceCodeReporting = store
-									.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
-							String declaringClass = slice.getSourceTypeDeclaration().resolveBinding()
-									.getQualifiedName();
-							String methodName = slice.getSourceMethodDeclaration().resolveBinding().toString();
-							String sourceMethodName = declaringClass + "::" + methodName;
-							String content = URLEncoder.encode("project_name", "UTF-8") + "="
-									+ URLEncoder.encode(activeProject.getElementName(), "UTF-8");
-							content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "="
-									+ URLEncoder.encode(sourceMethodName, "UTF-8");
-							content += "&" + URLEncoder.encode("variable_name", "UTF-8") + "=" + URLEncoder
-									.encode(slice.getLocalVariableCriterion().resolveBinding().toString(), "UTF-8");
-							content += "&" + URLEncoder.encode("block", "UTF-8") + "="
-									+ URLEncoder.encode("B" + slice.getBoundaryBlock().getId(), "UTF-8");
-							content += "&" + URLEncoder.encode("object_slice", "UTF-8") + "="
-									+ URLEncoder.encode(slice.isObjectSlice() ? "1" : "0", "UTF-8");
-							int numberOfSliceStatements = slice.getNumberOfSliceStatements();
-							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
-							content += "&" + URLEncoder.encode("duplicated_statements", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(numberOfDuplicatedStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("extracted_statements", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(numberOfSliceStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
-							content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
-							if (allowSourceCodeReporting) {
-								content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "="
-										+ URLEncoder.encode(slice.getSourceMethodDeclaration().toString(), "UTF-8");
-								content += "&" + URLEncoder.encode("slice_statements", "UTF-8") + "="
-										+ URLEncoder.encode(slice.sliceToString(), "UTF-8");
-							}
-							content += "&" + URLEncoder.encode("application", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf("1"), "UTF-8");
-							content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "="
-									+ URLEncoder.encode(slice.getExtractedMethodName(), "UTF-8");
-							content += "&" + URLEncoder.encode("username", "UTF-8") + "="
-									+ URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
-							content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("2", "UTF-8");
-							URL url = new URL(Activator.RANK_URL);
-							URLConnection urlConn = url.openConnection();
-							urlConn.setDoInput(true);
-							urlConn.setDoOutput(true);
-							urlConn.setUseCaches(false);
-							urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-							DataOutputStream printout = new DataOutputStream(urlConn.getOutputStream());
-							printout.writeBytes(content);
-							printout.flush();
-							printout.close();
-							DataInputStream input = new DataInputStream(urlConn.getInputStream());
-							input.close();
-						} catch (IOException ioe) {
-							ioe.printStackTrace();
-						}
-					}
-
-					Refactoring refactoring = new ExtractMethodRefactoring(sourceCompilationUnit, slice);
-					try {
-						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
-						JavaUI.openInEditor(sourceJavaElement);
-					} catch (PartInitException e) {
-						e.printStackTrace();
-					} catch (JavaModelException e) {
-						e.printStackTrace();
-					}
-					MyRefactoringWizard wizard = new MyRefactoringWizard(refactoring, applyRefactoringAction);
-					RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard);
-					try {
-						String titleForFailedChecks = ""; //$NON-NLS-1$
-						op.run(getSite().getShell(), titleForFailedChecks);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
+				System.out.println("hi");
 			}
 		};
 		applyRefactoringAction.setToolTipText("Apply Refactoring");
@@ -711,7 +611,7 @@ public class LongParameterList extends ViewPart {
 						}
 					}
 				}
-
+				
 				final List<LPLMethodObject> detectedMethods = new ArrayList<LPLMethodObject>();
 
 				ps.busyCursorWhile(new IRunnableWithProgress() {

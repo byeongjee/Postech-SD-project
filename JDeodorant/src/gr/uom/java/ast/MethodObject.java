@@ -702,6 +702,10 @@ public class MethodObject implements AbstractMethodDeclaration {
     public List<String> getParameterList() {
     	return constructorObject.getParameterList();
     }
+    
+    public List<String> getParameterTypeAndNameList() {
+    	return constructorObject.getParameterTypeAndNameList();
+    }
 
     public boolean equals(MethodInvocationObject mio) {
     	return this.getClassName().equals(mio.getOriginClassName()) && this.getName().equals(mio.getMethodName()) &&

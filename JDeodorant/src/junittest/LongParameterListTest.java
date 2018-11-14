@@ -34,10 +34,10 @@ public class LongParameterListTest {
 				return parameterList;
 			}
 			@Override
-			public List<TypeObject> getParameterTypeList() {
-				List<TypeObject> parameterTypeList = new ArrayList<TypeObject>();
-				parameterTypeList.add(new TypeObject("int"));
-				parameterTypeList.add(new TypeObject("char"));
+			public List<String> getParameterTypeAndNameList() {
+				List<String> parameterTypeList = new ArrayList<String>();
+				parameterTypeList.add("int a");
+				parameterTypeList.add("char b");
 				return parameterTypeList;
 			}
 		};
@@ -69,12 +69,12 @@ public class LongParameterListTest {
 					return parameterList;
 				}
 				@Override
-				public List<TypeObject> getParameterTypeList() {
-					List<TypeObject> parameterTypeList = new ArrayList<TypeObject>();
-					parameterTypeList.add(new TypeObject("int"));
-					parameterTypeList.add(new TypeObject("char"));
-					parameterTypeList.add(new TypeObject("String"));
-					parameterTypeList.add(new TypeObject("boolean"));
+				public List<String> getParameterTypeAndNameList() {
+					List<String> parameterTypeList = new ArrayList<String>();
+					parameterTypeList.add("int a");
+					parameterTypeList.add("char b");
+					parameterTypeList.add("String c");
+					parameterTypeList.add("boolean d");
 					return parameterTypeList;
 				}
 			};
@@ -100,7 +100,7 @@ public class LongParameterListTest {
 		assertEquals(mockLPLMethodObject1.getColumnText(0), "Long Parameter List");
 		assertEquals(mockLPLMethodObject1.getColumnText(1), "testMethod1");
 		assertEquals(mockLPLMethodObject1.getColumnText(2), "testClass");
-		assertEquals(mockLPLMethodObject1.getColumnText(3), "int a, char b");
+		assertEquals(mockLPLMethodObject1.getColumnText(3), "[int a, char b]");
 		assertEquals(mockLPLMethodObject1.getColumnText(4), "2");
 
 	}

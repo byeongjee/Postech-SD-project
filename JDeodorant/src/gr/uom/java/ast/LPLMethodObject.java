@@ -35,7 +35,7 @@ public class LPLMethodObject extends MethodObject {
 		case 2:
 			return getClassName();
 		case 3:
-			return getParameterList().toString();
+			return getParameterTypeAndNameList().toString();
 		case 4:
 			return Integer.toString(getParameterList().size());
 		default:
