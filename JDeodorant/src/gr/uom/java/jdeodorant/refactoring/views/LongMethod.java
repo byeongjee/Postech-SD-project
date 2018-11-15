@@ -132,17 +132,17 @@ public class LongMethod extends ViewPart {
 	//private List<Button> buttonList = new ArrayList<Button>();
 	private class LongMethodRefactoringButtonUI extends RefactoringButtonUI {
 		
-		
-		//To be implemented
 		public void pressRefactorButton(int index) {
 			System.out.println("Pressed parent refactor button");
 			System.out.println("index: " + index);
+			refactorLongMethodSmell(index, -1);
 		}
 		
 		//To be implemented
 		public void pressChildRefactorButton(int parentIndex, int childIndex) {
 			System.out.println("Pressed child refactor button");
 			System.out.println("index: " + parentIndex + " " + childIndex);
+			refactorLongMethodSmell(parentIndex, childIndex);
 		}
 	}
 	private LongMethodRefactoringButtonUI refactorButtonMaker;
@@ -490,6 +490,101 @@ public class LongMethod extends ViewPart {
 			}
 		});
 	}
+	
+	
+	
+	private void refactorLongMethodSmell(int parentIndex, int childIndex) {
+		//IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+		//Tree selectionTree = treeViewer.getTree();
+		if(childIndex == -1 && parentIndex == -1) {
+			//selectionTree.setSelection(selectionTree.getItem(parentIndex));
+			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex));
+		}
+		else {
+			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex).getItem(childIndex));
+		}
+		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+		if(selection != null && selection.getFirstElement() instanceof ASTSlice) {
+			ASTSlice slice = (ASTSlice)selection.getFirstElement();
+			TypeDeclaration sourceTypeDeclaration = slice.getSourceTypeDeclaration();
+			System.out.println(sourceTypeDeclaration.getName());
+			CompilationUnit sourceCompilationUnit = (CompilationUnit)sourceTypeDeclaration.getRoot();
+			IFile sourceFile = slice.getIFile();
+			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+
+			boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
+			if(allowUsageReporting) {
+				Tree tree = treeViewer.getTree();
+				int groupPosition = -1;
+				int totalGroups = tree.getItemCount();
+				for(int i=0; i<tree.getItemCount(); i++) {
+					TreeItem treeItem = tree.getItem(i);
+					ASTSliceGroup group = (ASTSliceGroup)treeItem.getData();
+					if(group.getCandidates().contains(slice)) {
+						groupPosition = i;
+						break;
+					}
+				}
+				try {
+					boolean allowSourceCodeReporting = store.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
+					String declaringClass = slice.getSourceTypeDeclaration().resolveBinding().getQualifiedName();
+					String methodName = slice.getSourceMethodDeclaration().resolveBinding().toString();
+					String sourceMethodName = declaringClass + "::" + methodName;
+					String content = URLEncoder.encode("project_name", "UTF-8") + "=" + URLEncoder.encode(activeProject.getElementName(), "UTF-8");
+					content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "=" + URLEncoder.encode(sourceMethodName, "UTF-8");
+					content += "&" + URLEncoder.encode("variable_name", "UTF-8") + "=" + URLEncoder.encode(slice.getLocalVariableCriterion().resolveBinding().toString(), "UTF-8");
+					content += "&" + URLEncoder.encode("block", "UTF-8") + "=" + URLEncoder.encode("B" + slice.getBoundaryBlock().getId(), "UTF-8");
+					content += "&" + URLEncoder.encode("object_slice", "UTF-8") + "=" + URLEncoder.encode(slice.isObjectSlice() ? "1" : "0", "UTF-8");
+					int numberOfSliceStatements = slice.getNumberOfSliceStatements();
+					int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
+					content += "&" + URLEncoder.encode("duplicated_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfDuplicatedStatements), "UTF-8");
+					content += "&" + URLEncoder.encode("extracted_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfSliceStatements), "UTF-8");
+					content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
+					content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
+					if(allowSourceCodeReporting) {
+						content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "=" + URLEncoder.encode(slice.getSourceMethodDeclaration().toString(), "UTF-8");
+						content += "&" + URLEncoder.encode("slice_statements", "UTF-8") + "=" + URLEncoder.encode(slice.sliceToString(), "UTF-8");
+					}
+					content += "&" + URLEncoder.encode("application", "UTF-8") + "=" + URLEncoder.encode(String.valueOf("1"), "UTF-8");
+					content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "=" + URLEncoder.encode(slice.getExtractedMethodName(), "UTF-8");
+					content += "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
+					content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("2", "UTF-8");
+					URL url = new URL(Activator.RANK_URL);
+					URLConnection urlConn = url.openConnection();
+					urlConn.setDoInput(true);
+					urlConn.setDoOutput(true);
+					urlConn.setUseCaches(false);
+					urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+					DataOutputStream printout = new DataOutputStream(urlConn.getOutputStream());
+					printout.writeBytes(content);
+					printout.flush();
+					printout.close();
+					DataInputStream input = new DataInputStream(urlConn.getInputStream());
+					input.close();
+				} catch (IOException ioe) {
+					ioe.printStackTrace();
+				}
+			}
+			
+			Refactoring refactoring = new ExtractMethodRefactoring(sourceCompilationUnit, slice);
+			try {
+				IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
+				JavaUI.openInEditor(sourceJavaElement);
+			} catch (PartInitException e) {
+				e.printStackTrace();
+			} catch (JavaModelException e) {
+				e.printStackTrace();
+			}
+			MyRefactoringWizard wizard = new MyRefactoringWizard(refactoring, applyRefactoringAction);
+			RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
+			try { 
+				String titleForFailedChecks = ""; //$NON-NLS-1$ 
+				op.run(getSite().getShell(), titleForFailedChecks); 
+			} catch(InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 	private void contributeToActionBars() {
 		IActionBars bars = getViewSite().getActionBars();
@@ -498,7 +593,8 @@ public class LongMethod extends ViewPart {
 	
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
-		manager.add(applyRefactoringAction);
+		//uncomment below line to make refactor button appear
+		//manager.add(applyRefactoringAction);
 		manager.add(saveResultsAction);
 		//manager.add(evolutionAnalysisAction);
 	}
