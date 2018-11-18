@@ -138,9 +138,9 @@ public class LongParameterList extends ViewPart {
 		// To be implemented
 		public void pressRefactorButton(int index) {
 			System.out.println("Success");
-			LPLRefactorWizard wizard = new LPLRefactorWizard();
-			WizardDialog dialog = new WizardDialog(
-					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+			LPLMethodObject methodToRefactor = methodObjectTable[methodObjectTable.length - index - 1];
+			LPLRefactorWizard wizard = new LPLRefactorWizard(null, methodToRefactor);
+			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
 					wizard);
 			dialog.open();
 		}
@@ -304,11 +304,11 @@ public class LongParameterList extends ViewPart {
 		column4.setText("Number of Parameters");
 		column4.setResizable(true);
 		column4.pack();
-		TreeColumn column5 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+		TreeColumn column5 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
 		column5.setText("Do Refactoring");
 		column5.setResizable(true);
 		column5.pack();
-		
+
 		treeViewer.expandAll();
 		treeViewer.expandAll();
 
@@ -316,7 +316,7 @@ public class LongParameterList extends ViewPart {
 				new String[] { "refactor type", "method name", "class", "parameter list", "number of parameters" });
 		treeViewer.setCellEditors(new CellEditor[] { new TextCellEditor(), new TextCellEditor(), new TextCellEditor(),
 				new TextCellEditor(), new TextCellEditor(), new MyComboBoxCellEditor(treeViewer.getTree(),
-						new String[] { "0", "1", "2", "3", "4"}, SWT.READ_ONLY) });
+						new String[] { "0", "1", "2", "3", "4" }, SWT.READ_ONLY) });
 
 		makeActions();
 		hookDoubleClickAction();
@@ -391,7 +391,7 @@ public class LongParameterList extends ViewPart {
 		saveResultsAction.setImageDescriptor(
 				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_SAVE_EDIT));
 		saveResultsAction.setEnabled(false);
-		
+
 		applyRefactoringAction = new Action() {
 			public void run() {
 				System.out.println("hi");
@@ -522,7 +522,7 @@ public class LongParameterList extends ViewPart {
 						}
 					}
 				}
-				
+
 				final List<LPLMethodObject> detectedMethods = new ArrayList<LPLMethodObject>();
 
 				ps.busyCursorWhile(new IRunnableWithProgress() {

@@ -10,14 +10,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import gr.uom.java.ast.LPLMethodObject;
+
 public class LPLRefactorInitialPage extends WizardPage {
 	private Text text1;
     private Composite container;
+    private LPLMethodObject methodToRefactor;
 
-    public LPLRefactorInitialPage() {
+    public LPLRefactorInitialPage(LPLMethodObject methodToRefactor) {
         super("First Page");
-        setTitle("First Page");
-        setDescription("Fake Wizard: First page");
+        this.methodToRefactor = methodToRefactor;
+        setTitle(methodToRefactor.getName());
+        setDescription("HIIIIIIII");
     }
 
     //@Override

@@ -1,13 +1,20 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.wizard.Wizard;
 
+import gr.uom.java.ast.LPLMethodObject;
+
 public class LPLRefactorWizard extends Wizard {
-	protected LPLRefactorInitialPage page;
+	private IJavaProject javaProject;
+	private LPLMethodObject methodToRefactor;
+	private LPLRefactorInitialPage page;
 	
-	public LPLRefactorWizard() {
+	public LPLRefactorWizard(IJavaProject javaProject, LPLMethodObject methodToRefactor) {
 		super();
 		setNeedsProgressMonitor(true);
+		this.javaProject = javaProject;
+		this.methodToRefactor = methodToRefactor;
 	}
 	
 	@Override
@@ -17,7 +24,7 @@ public class LPLRefactorWizard extends Wizard {
 	
 	@Override
 	public void addPages() {
-		page = new LPLRefactorInitialPage();
+		page = new LPLRefactorInitialPage(methodToRefactor);
 		addPage(page);
 	}
 	
