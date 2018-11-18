@@ -138,7 +138,7 @@ public class LongParameterList extends ViewPart {
 		// To be implemented
 		public void pressRefactorButton(int index) {
 			System.out.println("Success");
-			ImportClonesWizard wizard = new ImportClonesWizard(selectedProject);
+			LPLRefactorWizard wizard = new LPLRefactorWizard();
 			WizardDialog dialog = new WizardDialog(
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
 					wizard);
