@@ -120,4 +120,54 @@ public class SpeculativeGeneralityUnitTest {
 		Object result_fail = makeViewContentProvider().getParent(_classObjectCandidate);
 		assertEquals(result_fail, null);
 	}
+	
+	@Test
+	public void testApplyRefactoring() {
+		
+	}
+	
+	@Test
+	public void testRefactroingNoChild() {
+		
+		// Abstract, Interface 둘 다
+		
+	}
+	
+	@Test
+	public void testRefactoringOneChildInterface() {
+		
+		// Interface 지워진것 확인
+		
+	}
+	
+	@Test
+	public void testRefactoringOneChildAbstract() {
+		
+		
+		// 올바른 이름의 파일이 제대로 생겼는지
+		
+		// 그 안의 내용이랑 정답 비교
+	
+	}
+	
+	@Test
+	public void testRefactoringOneChildAbstractwithExceptionalConstructor() {
+		
+		
+		// 올바른 이름의 파일이 제대로 생겼는지
+		
+		// 그 안의 내용이랑 정답 비교
+	
+	}
+	
+	@Test
+	public void testRefactoringUnnecessaryParameterMethod() {
+		
+		// 정답 확인
+	}
+	
+	@Test
+	public void testRefactoringMany() {
+		
+	}
 }

@@ -18,7 +18,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 /**
  * Extension of ClassObject for Speculative Generality Code Smell
- * @author 이주용, 이재엽
+ * @author 이주용, 이재엽, 손태영
  */
 public class ClassObjectCandidate extends ClassObject {
 	//private ClassObject _root;
