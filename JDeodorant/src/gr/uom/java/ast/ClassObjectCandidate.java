@@ -1,5 +1,8 @@
 package gr.uom.java.ast;
-
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Stack;
 import gr.uom.java.ast.decomposition.MethodBodyObject;
 import gr.uom.java.jdeodorant.refactoring.manipulators.TypeCheckElimination;
 
@@ -13,12 +16,18 @@ import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+/**
+ * Extension of ClassObject for Speculative Generality Code Smell
+ * @author 이주용, 이재엽
+ */
 public class ClassObjectCandidate extends ClassObject {
-    // Ext : JuYongLee & JaeYeop Lee
 	//private ClassObject _root;
     private String codeSmellType;
     private String refactorType;
     private List<MethodObject> smellingMethods;
+    
+    private int numChild = 0;
+    private List<Integer> numUnusedParameter;
     
     public ClassObjectCandidate() {
     	this.name = "";
@@ -40,6 +49,7 @@ public class ClassObjectCandidate extends ClassObject {
         this.codeSmellType = "Speculative Generality";
         this.refactorType = "_";
         this.smellingMethods = new ArrayList<MethodObject>();
+        this.numUnusedParameter  = new ArrayList<Integer>();
     }
     
     public ClassObjectCandidate(ClassObject co) {
@@ -60,28 +70,47 @@ public class ClassObjectCandidate extends ClassObject {
         this.typeDeclaration = co.typeDeclaration;
     	this.iFile = co.iFile;
         
+    	this.superclass = co.superclass;
+    	
         // Ext : JuYongLee & JaeYeop Lee
         this.codeSmellType = "Speculative Generality";
         this.refactorType = "_";
         this.smellingMethods = new ArrayList<MethodObject>();
+        this.numUnusedParameter  = new ArrayList<Integer>();
     }
 
     /*public ClassObject getClassObject() {
     	return this._root;
     }*/
     
+    public void setNumChild(int arg) {
+    	this.numChild = arg;
+    }
+    
+    public int getNumChild() {
+    	return this.numChild;
+    }
+    
+    public void addNumUnusedParameter(int arg) {
+    	this.numUnusedParameter.add(arg);
+    }
+    
+    public List<Integer> getNumUnusedParameter() {
+    	return this.numUnusedParameter;
+    }
+    
 	public void setCodeSmellType(String arg) {
 		this.codeSmellType = arg;
 	}
 	
-	public void getRefactorType(String arg) {
+	public void setRefactorType(String arg) {
 		this.refactorType = arg;
 	}
 	
 	public void setSmellingMethods(List<MethodObject> arg) {
 		this.smellingMethods = arg;
 	}
-    
+	
 	public String getCodeSmellType() {
 		return this.codeSmellType;
 	}
@@ -102,12 +131,71 @@ public class ClassObjectCandidate extends ClassObject {
 		this.smellingMethods.add(target);
 	}
 	
-    public ClassObjectCandidate getClassObjectCandidate() {
-    	return this;
-    }
+	public List<FieldObject> getFieldList()
+	{
+		return this.fieldList;
+	}
+	
+	public List<String> getClassField()
+	{
+		String filepath = iFile.getLocation().toString();
+		List<String> result = new ArrayList<String>();
+		Stack<Character> stack = new Stack<Character>();
+		boolean readFlag = false;
 
-	public String toString() {
-        StringBuilder sb = new StringBuilder();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(filepath));
+	        while(true) {
+	            String line = br.readLine();
+	            if (line==null) break;
+	            if(line.contains(this.getClassFullName()))
+	            {
+	            	readFlag=true;
+	            }
+	            
+	            if(readFlag)
+	            {
+	            	for(int i=0;i<line.length();i++)
+	            	{
+	            		if(line.charAt(i)=='{')
+	            		{
+	            			stack.push('{');
+	            		}
+	            		else if(line.charAt(i)=='}')
+	            		{
+	            			if(stack.isEmpty())
+	            			{
+	            				return result;
+	            			}
+	            			else if(stack.peek()=='{')
+	            			{	
+	            				stack.pop();
+	            			}
+	            			else
+	            			{
+	            				stack.push('}');
+	            			}
+	            		}
+	            	}
+	            }
+	            if(readFlag)
+	            	result.add(line);
+	            if(stack.isEmpty())
+	            {
+	            	readFlag=false;
+	            }
+	        }
+	        br.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		return result;
+	}
+	
+	public String getClassFullName()
+	{
+		StringBuilder sb = new StringBuilder();
         if(!access.equals(Access.NONE))
             sb.append(access.toString()).append(" ");
         if(_static)
@@ -118,28 +206,7 @@ public class ClassObjectCandidate extends ClassObject {
             sb.append("abstract class").append(" ");
         else
             sb.append("class").append(" ");
-        sb.append(name).append(" ");
-        sb.append("extends ").append(superclass);
-        if(!interfaceList.isEmpty()) {
-            sb.append(" ").append("implements ");
-            for(int i=0; i<interfaceList.size()-1; i++)
-                sb.append(interfaceList.get(i)).append(", ");
-            sb.append(interfaceList.get(interfaceList.size()-1));
-        }
-        sb.append("\n\n").append("Fields:");
-        for(FieldObject field : fieldList)
-            sb.append("\n").append(field.toString());
-
-        sb.append("\n\n").append("Constructors:");
-        for(ConstructorObject constructor : constructorList)
-            sb.append("\n").append(constructor.toString());
-
-        sb.append("\n\n").append("Methods:");
-        for(MethodObject method : methodList)
-            sb.append("\n").append(method.toString());
-
-        //ToDo : Add some string for types and targets 
-        
+        sb.append(name);
         return sb.toString();
-    }
+	}
 }

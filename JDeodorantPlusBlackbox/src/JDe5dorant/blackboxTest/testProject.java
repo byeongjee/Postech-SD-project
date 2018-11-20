@@ -40,7 +40,6 @@ public class testProject {
 	 *  reference :: https://jaxenter.com/introduction-functional-testing-swtbot-123449.html 
 	 */
     public static void buildProject() throws CoreException {
-    	
     	IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
     	
     	// Creating Project
@@ -89,7 +88,8 @@ public class testProject {
     	source = new StringBuffer();
     	source.append("package " + _package.getElementName() + ";\n");
     	String strNoChildInterface = "public interface NoChildInterface {\r\n" + 
-    							  	 "	int NoChildInterface_Method(int input);\r\n" +
+			  	 					 "	int NoChildInterface_Method1(int input);\r\n" +
+    							  	 "	int NoChildInterface_Method2(int input);\r\n" +
     							  	 "}";
     	source.append(strNoChildInterface);
 		ICompilationUnit classNoChildInterface = _package.createCompilationUnit("NoChildInterface.java", source.toString(), false, null);

@@ -1,4 +1,5 @@
 package junittest;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
@@ -7,8 +8,8 @@ import java.util.List;
 import gr.uom.java.jdeodorant.refactoring.views.MessageChain;
 import gr.uom.java.jdeodorant.refactoring.views.MessageChain.ViewContentProvider;
 import gr.uom.java.jdeodorant.refactoring.views.MessageChainStructure;
-public class JUnitTest {
 
+public class MessageChainUnitTest {
 	public ViewContentProvider makeViewContentProvider() {
 		MessageChain msgChain = new MessageChain();
 		return msgChain.new ViewContentProvider();
@@ -29,7 +30,6 @@ public class JUnitTest {
 	    assertTrue(((MessageChainStructure) result[0]).getStart()==15);
 	    assertTrue(result2.length == 0);
 	    assertTrue(result3.length == 0);
-		
 	}
 	
 	@Test
