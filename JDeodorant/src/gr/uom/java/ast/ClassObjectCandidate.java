@@ -136,7 +136,7 @@ public class ClassObjectCandidate extends ClassObject {
 		return this.fieldList;
 	}
 	
-	public List<String> getClassField()
+	public List<String> getContent()
 	{
 		String filepath = iFile.getLocation().toString();
 		List<String> result = new ArrayList<String>();

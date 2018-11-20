@@ -3,6 +3,7 @@ package gr.uom.java.jdeodorant.refactoring.views;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -49,6 +50,8 @@ import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -144,13 +147,14 @@ public class SpeculativeGenerality extends ViewPart {
 			
 			// Get Classes
 			System.out.println("Index of button pressed is " + index);
-			List<String> classBody = targetClass.getClassField();
 			System.out.println("CLASSTABLE SIZE :");
-			System.out.println("CLASS NAME :"+targetClass.getName());
+			System.out.println("CLASS NAME : " +targetClass.getName());
 			System.out.println("SMELL TYPE : "+targetClass.getCodeSmellType());
 			System.out.println(targetClass.toString());
 			System.out.println();
-			for(int i=0;i<classBody.size();i++)
+			
+			List<String> classBody = targetClass.getContent();
+			for(int i=0;i < classBody.size();i++)
 			{
 				System.out.println(classBody.get(i));
 			}
@@ -180,8 +184,12 @@ public class SpeculativeGenerality extends ViewPart {
 				}
 			} else if (targetClass.getCodeSmellType().equals("Interface Class")) {
 				if(targetClass.getNumChild() == 0) {
-					// ToDo :: Check if there exists another class in JavaFile
-					
+					try {
+						// WARN :: ¹ºÁö ¸ð¸¦ exceptionÀÌ ¶ä.
+						targetClass.getIFile().delete(true, false, null);
+					} catch (CoreException e) {
+						e.printStackTrace();
+					}
 				} else {
 					// ToDo :: Integrate Child and Parent
 					
