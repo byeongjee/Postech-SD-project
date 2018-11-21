@@ -38,11 +38,14 @@ import gr.uom.java.ast.decomposition.cfg.PDGSliceUnion;
 import gr.uom.java.ast.decomposition.cfg.PDGSliceUnionCollection;
 import gr.uom.java.ast.decomposition.cfg.PlainVariable;
 import gr.uom.java.ast.util.StatementExtractor;
+import gr.uom.java.distance.CandidateRefactoring;
+import gr.uom.java.distance.MoveMethodCandidateRefactoring;
 import gr.uom.java.jdeodorant.preferences.PreferenceConstants;
 import gr.uom.java.jdeodorant.refactoring.Activator;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSlice;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSliceGroup;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
+import gr.uom.java.jdeodorant.refactoring.manipulators.MoveMethodRefactoring;
 
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
@@ -97,6 +100,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
@@ -130,9 +135,16 @@ public class MessageChain extends ViewPart {
 	// private MethodEvolution methodEvolution;
 	/* Mine */
 	public MessageChainStructure[] targets;
+	private Map<String, Map<Integer, List<MethodInvocationObject>>> originCodeSmells; // for storing origin map
+	//private IJavaProject 
 	private class MessageChainRefactoringButtonUI extends RefactoringButtonUI{
 		public void pressRefactoringButton(int index) {
-			//gg
+			System.out.println("Clicked index : "+index);
+		}
+		public void pressChildRefactorButton(int parentIndex, int childIndex) {
+			System.out.println("Pressed child refactor button");
+			System.out.println("index: " + parentIndex + " " + childIndex);
+			messageChainRefactoring(parentIndex, childIndex);
 		}
 	}
 	private MessageChainRefactoringButtonUI refactorButtonMaker;
@@ -150,13 +162,6 @@ public class MessageChain extends ViewPart {
 			else {
 				return new MessageChainStructure[] {};
 			}
-
-	         /*if(parent != null && parent instanceof MessageChainStructure) {
-	            return (MessageChainStructure[])((MessageChainStructure)parent).getChildren().toArray();
-	         }
-	         else {
-	            return (MessageChainStructure[])new MessageChainStructure[] {};
-	         }*/
 	      }
 
 	      public Object[] getChildren(Object arg) {
@@ -175,14 +180,6 @@ public class MessageChain extends ViewPart {
 	      }
 
 	      public Object getParent(Object arg0) {
-	         /*if (arg0 instanceof ASTSlice) {
-	            ASTSlice slice = (ASTSlice) arg0;
-	            for (int i = 0; i < sliceGroupTable.length; i++) {
-	               if (sliceGroupTable[i].getCandidates().contains(slice))
-	                  return sliceGroupTable[i];
-	            }
-	         }
-	         return null;*/
 	         return ((MessageChainStructure)arg0).getParent();
 	      }
 
@@ -196,59 +193,7 @@ public class MessageChain extends ViewPart {
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
 		public String getColumnText(Object obj, int index) {
 			System.out.println("I am at Label Provider>>>>>>>>");
-			/*switch(index){
-			case 0:
-				return "aaaa";
-			case 1:
-				return "ddcd";
-			case 2:
-				return "efef";
-			case 3:
-				return "aaaa";
-			case 4:
-				return "aaaa";
-			case 5:
-				return "aaaa";
-			default:
-				return "";
-			}*/
-			/*if (obj instanceof ASTSlice) {
-				ASTSlice entry = (ASTSlice) obj;
-				switch (index) {
-				case 0:
-					return "Extract Method";*/
-				/*
-				 * case 1: String declaringClass =
-				 * entry.getSourceTypeDeclaration().resolveBinding().getQualifiedName(); String
-				 * methodName = entry.getSourceMethodDeclaration().resolveBinding().toString();
-				 * return declaringClass + "::" + methodName; case 2: return
-				 * entry.getLocalVariableCriterion().getName().getIdentifier();
-				 */
-				/*case 3:
-					return "B" + entry.getBoundaryBlock().getId();
-				case 4:
-					int numberOfSliceStatements = entry.getNumberOfSliceStatements();
-					int numberOfDuplicatedStatements = entry.getNumberOfDuplicatedStatements();
-					return numberOfDuplicatedStatements + "/" + numberOfSliceStatements;
-				case 5:
-					Integer userRate = entry.getUserRate();
-					return (userRate == null) ? "" : userRate.toString();
-				default:
-					return "";
-				}
-			} else if (obj instanceof ASTSliceGroup) {
-				ASTSliceGroup entry = (ASTSliceGroup) obj;
-				switch (index) {
-				case 1:
-					String declaringClass = entry.getSourceTypeDeclaration().resolveBinding().getQualifiedName();
-					String methodName = entry.getSourceMethodDeclaration().resolveBinding().toString();
-					return declaringClass + "::" + methodName;
-				case 2:
-					return entry.getLocalVariableCriterion().getName().getIdentifier();
-				default:
-					return "";
-				}
-			}*/
+
 			if(obj instanceof MessageChainStructure) {
 				System.out.println("I am at Label Provider of mc");
 				MessageChainStructure entry = (MessageChainStructure)obj;
@@ -265,12 +210,6 @@ public class MessageChain extends ViewPart {
 						return "";
 					}
 					return String.valueOf(entry.getLength());
-				case 3:
-					return "aaaa";
-				case 4:
-					return "aaaa";
-				case 5:
-					return "aaaa";
 				default:
 					return "";
 				}
@@ -389,6 +328,7 @@ public class MessageChain extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		refactorButtonMaker = new MessageChainRefactoringButtonUI();
+		originCodeSmells = null;
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
@@ -421,19 +361,11 @@ public class MessageChain extends ViewPart {
 		column3.setText("Refactoring");
 		column3.setResizable(true);
 		column3.pack();
-		/*TreeColumn column4 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
-		column4.setText("Duplicated/Extracted");
-		column4.setResizable(true);
-		column4.pack();
 
-		TreeColumn column5 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
-		column5.setText("Rate it!");
-		column5.setResizable(true);
-		column5.pack();*/
 		treeViewer.expandAll();
 
 		treeViewer.setColumnProperties(
-				new String[] { "type", "source", "variable", "block" });
+				new String[] { "Start Position", "Name", "Length", "Refactoring" });
 		treeViewer.setCellEditors(new CellEditor[] { new TextCellEditor(), new TextCellEditor(), new TextCellEditor(),
 				new TextCellEditor(), new TextCellEditor(), new MyComboBoxCellEditor(treeViewer.getTree(),
 						new String[] { "0", "1", "2", "3" }, SWT.READ_ONLY) });
@@ -570,6 +502,110 @@ public class MessageChain extends ViewPart {
 		manager.add(saveResultsAction);
 		// manager.add(evolutionAnalysisAction);
 	}
+	
+	public void messageChainRefactoring(int parentIndex, int childIndex) {
+		//IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
+		if(childIndex == -1 && parentIndex == -1) {
+			//selectionTree.setSelection(selectionTree.getItem(parentIndex));
+			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex));
+		}
+		else {
+			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex).getItem(childIndex));
+		}
+		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+		MessageChainStructure targetSmell = ((MessageChainStructure)selection.getFirstElement());
+		if(targetSmell != null && targetSmell.getStart() != -1 && targetSmell.getLength() != -1) {
+			SystemObject systemObject = ASTReader.getSystemObject();
+			if(systemObject != null) {
+				ClassObject classWithCodeSmell = systemObject.getClassObject(targetSmell.getParent().getName());
+				//String className = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getOriginClassName();
+				ClassObject classOfMethodInvocation = systemObject.getClassObject(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getOriginClassName());
+				IFile fileWithCodeSmell = classWithCodeSmell.getIFile();
+				IFile fileOfMethodInvocation = classOfMethodInvocation.getIFile();
+				
+				//MethodObject newMethod = new MethodObject(null);
+				
+				System.out.println("Code smell detected Class Name : "+classOfMethodInvocation.getName());
+			}
+		}
+		/*if(entry != null && entry.getSourceClassTypeDeclaration() != null && entry.getTargetClassTypeDeclaration() != null) {
+			IFile sourceFile = entry.getSourceIFile();
+			IFile targetFile = entry.getTargetIFile();
+			CompilationUnit sourceCompilationUnit = (CompilationUnit)entry.getSourceClassTypeDeclaration().getRoot();
+			CompilationUnit targetCompilationUnit = (CompilationUnit)entry.getTargetClassTypeDeclaration().getRoot();
+			Refactoring refactoring = null;
+			if(entry instanceof MoveMethodCandidateRefactoring) {
+				MoveMethodCandidateRefactoring candidate = (MoveMethodCandidateRefactoring)entry;
+				IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+				boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
+				if(allowUsageReporting) {
+					Table table = tableViewer.getTable();
+					int rankingPosition = -1;
+					for(int i=0; i<table.getItemCount(); i++) {
+						TableItem tableItem = table.getItem(i);
+						if(tableItem.getData().equals(candidate)) {
+							rankingPosition = i;
+							break;
+						}
+					}
+					try {
+						boolean allowSourceCodeReporting = store.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
+						String declaringClass = candidate.getSourceClassTypeDeclaration().resolveBinding().getQualifiedName();
+						String methodName = candidate.getSourceMethodDeclaration().resolveBinding().toString();
+						String sourceMethodName = declaringClass + "::" + methodName;
+						String content = URLEncoder.encode("project_name", "UTF-8") + "=" + URLEncoder.encode(activeProject.getElementName(), "UTF-8");
+						content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "=" + URLEncoder.encode(sourceMethodName, "UTF-8");
+						content += "&" + URLEncoder.encode("target_class_name", "UTF-8") + "=" + URLEncoder.encode(candidate.getTarget(), "UTF-8");
+						content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(rankingPosition), "UTF-8");
+						content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(table.getItemCount()), "UTF-8");
+						content += "&" + URLEncoder.encode("EP", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(0.0), "UTF-8");
+						content += "&" + URLEncoder.encode("envied_elements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(candidate.getNumberOfDistinctEnviedElements()), "UTF-8");
+						if(allowSourceCodeReporting)
+							content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "=" + URLEncoder.encode(candidate.getSourceMethodDeclaration().toString(), "UTF-8");
+						content += "&" + URLEncoder.encode("application", "UTF-8") + "=" + URLEncoder.encode("1", "UTF-8");
+						content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "=" + URLEncoder.encode(candidate.getMovedMethodName(), "UTF-8");
+						content += "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
+						content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("0", "UTF-8");
+						URL url = new URL(Activator.RANK_URL);
+						URLConnection urlConn = url.openConnection();
+						urlConn.setDoInput(true);
+						urlConn.setDoOutput(true);
+						urlConn.setUseCaches(false);
+						urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+						DataOutputStream printout = new DataOutputStream(urlConn.getOutputStream());
+						printout.writeBytes(content);
+						printout.flush();
+						printout.close();
+						DataInputStream input = new DataInputStream(urlConn.getInputStream());
+						input.close();
+					} catch (IOException ioe) {
+						ioe.printStackTrace();
+					}
+				}
+				refactoring = new MoveMethodRefactoring(sourceCompilationUnit, targetCompilationUnit,
+						candidate.getSourceClassTypeDeclaration(), candidate.getTargetClassTypeDeclaration(), candidate.getSourceMethodDeclaration(),
+						candidate.getAdditionalMethodsToBeMoved(), candidate.leaveDelegate(), candidate.getMovedMethodName());
+			}
+			try {
+				IJavaElement targetJavaElement = JavaCore.create(targetFile);
+				JavaUI.openInEditor(targetJavaElement);
+				IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
+				JavaUI.openInEditor(sourceJavaElement);
+			} catch (PartInitException e) {
+				e.printStackTrace();
+			} catch (JavaModelException e) {
+				e.printStackTrace();
+			}
+			MyRefactoringWizard wizard = new MyRefactoringWizard(refactoring, applyRefactoringAction);
+			RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
+			try { 
+				String titleForFailedChecks = ""; //$NON-NLS-1$ 
+				op.run(getSite().getShell(), titleForFailedChecks); 
+			} catch(InterruptedException e) {
+				e.printStackTrace();
+			}
+		}*/
+	}
 
 	private void makeActions() {
 		identifyBadSmellsAction = new Action() {
@@ -612,32 +648,6 @@ public class MessageChain extends ViewPart {
 				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_SAVE_EDIT));
 		saveResultsAction.setEnabled(false);
 
-		/*
-		 * evolutionAnalysisAction = new Action() { public void run() { methodEvolution
-		 * = null; IStructuredSelection selection =
-		 * (IStructuredSelection)treeViewer.getSelection();
-		 * if(selection.getFirstElement() instanceof ASTSlice) { final ASTSlice slice =
-		 * (ASTSlice)selection.getFirstElement(); try { IWorkbench wb =
-		 * PlatformUI.getWorkbench(); IProgressService ps = wb.getProgressService();
-		 * ps.busyCursorWhile(new IRunnableWithProgress() { public void
-		 * run(IProgressMonitor monitor) throws InvocationTargetException,
-		 * InterruptedException { ProjectEvolution projectEvolution = new
-		 * ProjectEvolution(selectedProject);
-		 * if(projectEvolution.getProjectEntries().size() > 1) { methodEvolution = new
-		 * MethodEvolution(projectEvolution,
-		 * (IMethod)slice.getSourceMethodDeclaration().resolveBinding().getJavaElement()
-		 * , monitor); } } }); if(methodEvolution != null) { EvolutionDialog dialog =
-		 * new EvolutionDialog(getSite().getWorkbenchWindow(), methodEvolution,
-		 * "Method Evolution", false); dialog.open(); } else
-		 * MessageDialog.openInformation(getSite().getShell(), "Method Evolution",
-		 * "Method evolution analysis cannot be performed, since only a single version of the examined project is loaded in the workspace."
-		 * ); } catch (InvocationTargetException e) { e.printStackTrace(); } catch
-		 * (InterruptedException e) { e.printStackTrace(); } } } };
-		 * evolutionAnalysisAction.setToolTipText("Evolution Analysis");
-		 * evolutionAnalysisAction.setImageDescriptor(PlatformUI.getWorkbench().
-		 * getSharedImages(). getImageDescriptor(ISharedImages.IMG_OBJ_ELEMENT));
-		 * evolutionAnalysisAction.setEnabled(false);
-		 */
 
 		applyRefactoringAction = new Action() {
 			public void run() {
@@ -810,7 +820,7 @@ public class MessageChain extends ViewPart {
 
 	private MessageChainStructure[] getTable() {
 		
-		Map<String, Map<Integer, List<MethodInvocation>>> table = null;
+		Map<String, Map<Integer, List<MethodInvocationObject>>> table = null;
 		List<MessageChainStructure> listTargets = new ArrayList<MessageChainStructure> ();
 		try {
 			IWorkbench wb = PlatformUI.getWorkbench();
@@ -844,6 +854,7 @@ public class MessageChain extends ViewPart {
 				} else if (selectedPackageFragment != null) {
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragment));
 				} else if (selectedCompilationUnit != null) {
+//					selectedCompilationUnit.getTypes()[0].createMethod(arg0, arg1, arg2, arg3)
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedCompilationUnit));
 				} else if (selectedType != null) {
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedType));
@@ -867,6 +878,7 @@ public class MessageChain extends ViewPart {
 				}
 				
 				table = processMethod(methodObjectsToBeExamined);
+				originCodeSmells = table;
 				listTargets = convertMap2MCS(table);
 				}
 		} catch (InvocationTargetException e) {
@@ -886,28 +898,12 @@ public class MessageChain extends ViewPart {
 		}
 		
 		return arrayTargets;
-		/*MessageChainStructure parent = new MessageChainStructure("ParentClass");
-		MessageChainStructure parentSub = new MessageChainStructure("SubParentClass");
-		MessageChainStructure child = new MessageChainStructure(15, parent, "A().B().C()");
-		MessageChainStructure child2 = new MessageChainStructure(12, parent, "A().B().C()");
-		parentSub.addChild(child);
-		parent.addChild(child2);
-		parent.addChild(parentSub);
-		MessageChainStructure parent2 = new MessageChainStructure("ParentClass2");
-		MessageChainStructure child21 = new MessageChainStructure(151, parent, "A().B()");
-		MessageChainStructure child22 = new MessageChainStructure(112, parent, "A().B().C()");
-		parent2.addChild(child21);
-		parent2.addChild(child22);
-		MessageChainStructure[] dummy = new MessageChainStructure[2];
-		dummy[0] = parent;
-		dummy[1] = parent2;*/
-		//System.out.println(dummy[0].getName());
 	}
 	
 	
 
-	private Map<String, Map<Integer, List<MethodInvocation>>> processMethod(Set<AbstractMethodDeclaration> methodObjects) {
-		Map<String, Map<Integer, List<MethodInvocation>>> store = new HashMap<String, Map<Integer, List<MethodInvocation>>>();
+	private Map<String, Map<Integer, List<MethodInvocationObject>>> processMethod(Set<AbstractMethodDeclaration> methodObjects) {
+		Map<String, Map<Integer, List<MethodInvocationObject>>> store = new HashMap<String, Map<Integer, List<MethodInvocationObject>>>();
 		MethodObject[] dummy = new MethodObject[3];
 		//System.out.println("Test at process Method at given objects of " + methodObjects.size());
 		for (AbstractMethodDeclaration methodObject : methodObjects) {
@@ -925,22 +921,22 @@ public class MessageChain extends ViewPart {
 					System.out.println("method name: " + methodInvo.getMethodName());*/
 					
 					if(store.containsKey(cls)) {
-						Map<Integer, List<MethodInvocation>> inner = store.get(cls);
+						Map<Integer, List<MethodInvocationObject>> inner = store.get(cls);
 						if(inner.containsKey(startPos)) {
-							inner.get(startPos).add(methodInvocation);
+							inner.get(startPos).add(methodInvo);
 							//System.out.println("if-if");
 						}
 						else {
-							List<MethodInvocation> temp = new ArrayList<MethodInvocation>();
-							temp.add(methodInvocation);
+							List<MethodInvocationObject> temp = new ArrayList<MethodInvocationObject>();
+							temp.add(methodInvo);
 							inner.put(startPos, temp);
 							//System.out.println("if-else");
 						}
 					}
 					else {
-						List<MethodInvocation> temp = new ArrayList<MethodInvocation>();
-						temp.add(methodInvocation);
-						Map<Integer, List<MethodInvocation>> tmp = new HashMap<Integer, List<MethodInvocation>>();
+						List<MethodInvocationObject> temp = new ArrayList<MethodInvocationObject>();
+						temp.add(methodInvo);
+						Map<Integer, List<MethodInvocationObject>> tmp = new HashMap<Integer, List<MethodInvocationObject>>();
 						tmp.put(startPos, temp);
 						store.put(cls, tmp);
 						//System.out.println("else");
@@ -949,7 +945,7 @@ public class MessageChain extends ViewPart {
 				
 				List<Integer> deleteList = new ArrayList<Integer>();
 				for(String type : store.keySet()) {
-					Map<Integer, List<MethodInvocation>> innerMap = store.get(type);
+					Map<Integer, List<MethodInvocationObject>> innerMap = store.get(type);
 					for(Integer i : innerMap.keySet()) {
 						if(innerMap.get(i).size() <= 2) {
 							//System.out.println("startPos " + i + " has been deleted since its size is " + innerMap.get(i).size());
@@ -959,49 +955,34 @@ public class MessageChain extends ViewPart {
 				}
 				
 				for(String type : store.keySet()) {
-					Map<Integer, List<MethodInvocation>> innerMap = store.get(type);
+					Map<Integer, List<MethodInvocationObject>> innerMap = store.get(type);
 					for(Integer i: deleteList) {
 						innerMap.remove(i);
 					}
 				}
 
-				/*
-				 * for (MethodInvocationObject methodInvo : test) { MethodInvocation
-				 * methodInvocation = methodInvo.getMethodInvocation(); int startPos =
-				 * methodInvocation.getStartPosition();
-				 * 
-				 * if (store.containsKey(startPos)) { store.get(startPos).add(methodInvocation);
-				 * } else { List<MethodInvocation> temp = new ArrayList<MethodInvocation>();
-				 * temp.add(methodInvocation); store.put(startPos, temp); } }
-				 * 
-				 * List<Integer> deleteList = new ArrayList<Integer>();
-				 * System.out.println("Finish Map!!!"); for (Integer i : store.keySet()) { //
-				 * System.out.println(i+": "); if (store.get(i).size() <= 2) { //
-				 * System.out.println("It is not code smell>>>>>>>"); deleteList.add(i); } }
-				 * 
-				 * for (Integer del : deleteList) { store.remove(del); } for (Integer i :
-				 * store.keySet()) { System.out.println(i + ": "); for (MethodInvocation met :
-				 * store.get(i)) { System.out.println(met.getName());
-				 * System.out.println(met.arguments().toString());
-				 * System.out.println(met.getLength()); //
-				 * System.out.println(met.getExpression().toString()); }
-				 * 
-				 * } }
-				 */
-				//System.out.println("Finish Print>>>>>>>>>>>!!!");
+
 			}
 		}
-		/*for(String type: store.keySet()) {
-			System.out.println("Code Smell under ==> " + type + " total of " + store.get(type).size());
-			Map<Integer, List<MethodInvocation>> innerMap = store.get(type);
-			for(Integer i: innerMap.keySet()) {
-				for(MethodInvocation met : innerMap.get(i)) {
-					System.out.println("	Method name : " + met.getName());
-					System.out.println("	Method args : " + met.arguments().toString());
-					System.out.println("	Method leng : " + met.getLength());
+		List<String> tempTrashCan = new ArrayList<String> ();
+		if(store.keySet().size()>0) {
+			for(String cls : store.keySet()) {
+				System.out.println("Class name : !!!!"+cls+">>>>>>");
+				if(store.get(cls).keySet().size() == 0) {
+					System.out.println("Map size : "+store.get(cls).keySet().size());
+					tempTrashCan.add(cls);
+					//store.remove(cls);
 				}
 			}
-		}*/
+		}
+		if(tempTrashCan.size()>0) {
+			for(String cls : tempTrashCan) {
+				store.remove(cls);
+				System.out.println("I remove class : "+cls);
+			}
+		}
+		
+		
 		return store;
 	}
 
@@ -1034,18 +1015,20 @@ public class MessageChain extends ViewPart {
 			}
 		}
 	}
-	private List<MessageChainStructure> convertMap2MCS(Map<String, Map<Integer, List<MethodInvocation>>> arg){
+	private List<MessageChainStructure> convertMap2MCS(Map<String, Map<Integer, List<MethodInvocationObject>>> arg){
 		List<MessageChainStructure> ret = new ArrayList<MessageChainStructure>();
+		if(arg == null) return ret;
 		for(String className : arg.keySet()) {
-			Map<Integer, List<MethodInvocation>> innerMap = arg.get(className);
+			Map<Integer, List<MethodInvocationObject>> innerMap = arg.get(className);
 			MessageChainStructure cls = new MessageChainStructure(className);
 			ret.add(cls);
 			for(Integer i : innerMap.keySet()) {
 				String methodName = "";
 				int codeLength = -1;
-				for(MethodInvocation methodinvocation : innerMap.get(i)) {
-					methodName += methodinvocation.getName().toString() + "->";
-					codeLength = codeLength > methodinvocation.getLength() ? codeLength : methodinvocation.getLength();
+				for(MethodInvocationObject methodinvocation : innerMap.get(i)) {
+					MethodInvocation methodInvocation = methodinvocation.getMethodInvocation();
+					methodName += methodInvocation.getName().toString() + "->";
+					codeLength = codeLength > methodInvocation.getLength() ? codeLength : methodInvocation.getLength();
 					System.out.println(codeLength);
 				}
 				methodName = methodName.substring(0, methodName.length()-2);
