@@ -100,6 +100,22 @@ public class messageChainBasic {
     	detectionApplier.bot().tree().getTreeItem("").expand();
     	assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode("536").isEnabled());
 	}
+	
+	// Add in Iteration 3
+	@Test
+	public void testDoubleClick() {
+		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
+		packageExplorer.show();
+		packageExplorer.bot().tree().getTreeItem("testProject").click();
+		
+		SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
+		detectionApplier.show();
+		detectionApplier.getToolbarButtons().get(0).click();
+		detectionApplier.bot().tree().getTreeItem("").select();
+    	detectionApplier.bot().tree().getTreeItem("").expand();
+    	detectionApplier.bot().tree().getTreeItem("").getNode(0).select();
+    	detectionApplier.bot().tree().getTreeItem("").getNode(0).doubleClick();
 
-
+    	//assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode("536").isEnabled());
+	}
 }

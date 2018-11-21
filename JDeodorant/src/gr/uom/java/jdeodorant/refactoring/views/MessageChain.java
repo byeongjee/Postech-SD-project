@@ -755,6 +755,39 @@ public class MessageChain extends ViewPart {
 		doubleClickAction = new Action() {
 			public void run() {
 				IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+				MessageChainStructure targetSmell = ((MessageChainStructure)selection.getFirstElement());
+				
+				if(targetSmell != null && targetSmell.getStart() != -1 && targetSmell.getLength() != -1) {
+					SystemObject systemObject = ASTReader.getSystemObject();
+					if(systemObject != null) {
+						ClassObject classwithCodeSmell = systemObject.getClassObject(targetSmell.getParent().getName());
+						IFile fileWithCodeSmell = classwithCodeSmell.getIFile();
+						IJavaElement sourceJavaElement = JavaCore.create(fileWithCodeSmell);
+						try {
+							ITextEditor sourceEditor = (ITextEditor) JavaUI.openInEditor(sourceJavaElement);
+							AnnotationModel annotationModel = (AnnotationModel) sourceEditor.getDocumentProvider()
+									.getAnnotationModel(sourceEditor.getEditorInput());
+							Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
+							while (annotationIterator.hasNext()) {
+								Annotation currentAnnotation = annotationIterator.next();
+								annotationModel.removeAnnotation(currentAnnotation);
+							}
+							Position position = new Position(targetSmell.getStart(), (targetSmell.getLength() + 1));
+							SliceAnnotation annotation = null;
+							annotation = new SliceAnnotation(SliceAnnotation.DUPLICATION, null);
+							annotationModel.addAnnotation(annotation, position);
+					
+							sourceEditor.setHighlightRange(position.getOffset(), position.getLength(), true);
+
+						} catch (PartInitException e) {
+							e.printStackTrace();
+						} catch (JavaModelException e) {
+							e.printStackTrace();
+						}
+					}
+				}				
+				
+				/*
 				if (selection.getFirstElement() instanceof ASTSlice) {
 					ASTSlice slice = (ASTSlice) selection.getFirstElement();
 					IFile sourceFile = slice.getIFile();
@@ -796,6 +829,7 @@ public class MessageChain extends ViewPart {
 						e.printStackTrace();
 					}
 				}
+				*/
 			}
 		};
 	}

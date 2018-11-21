@@ -676,7 +676,9 @@ public class LongMethod extends ViewPart {
 		
 		applyRefactoringAction = new Action() {
 			public void run() {
-				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+				//System.out.println(111);
+				 IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+				// System.out.println(selection.toString());
 				if(selection != null && selection.getFirstElement() instanceof ASTSlice) {
 					ASTSlice slice = (ASTSlice)selection.getFirstElement();
 					TypeDeclaration sourceTypeDeclaration = slice.getSourceTypeDeclaration();
