@@ -703,6 +703,10 @@ public class MethodObject implements AbstractMethodDeclaration {
     	return constructorObject.getParameterList();
     }
     
+    public List<String> getParameterNameList(){
+    	return constructorObject.getParameterNameList();
+    }
+    
     public List<String> getParameterTypeAndNameList() {
     	return constructorObject.getParameterTypeAndNameList();
     }
