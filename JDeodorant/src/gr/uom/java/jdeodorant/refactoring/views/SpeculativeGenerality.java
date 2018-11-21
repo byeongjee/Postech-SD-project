@@ -154,6 +154,7 @@ public class SpeculativeGenerality extends ViewPart {
 			System.out.println();
 			
 			List<String> classBody = targetClass.getContent();
+			System.out.println("ClassBody size : " + String.valueOf(classBody.size()));
 			for(int i=0;i < classBody.size();i++)
 			{
 				System.out.println(classBody.get(i));
@@ -170,10 +171,11 @@ public class SpeculativeGenerality extends ViewPart {
 					
 					// Get Child Class
 					for(ClassObject examiningClass : _classObjectToBeExamined) {
+						if(examiningClass.getName().equals(targetClass.getName())) continue;
 						if(examiningClass.getSuperclass().getClassType().equals(targetClass.getName()))
 						{
 							childClass = new ClassObjectCandidate(examiningClass);
-
+							targetClass.MergeContents(childClass);
 						}
 					}
 					
