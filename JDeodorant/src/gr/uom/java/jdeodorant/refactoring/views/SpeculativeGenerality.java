@@ -660,15 +660,14 @@ public class SpeculativeGenerality extends ViewPart {
 		doubleClickAction = new Action() {
 			public void run() {
 				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
-				if(selection.getFirstElement() instanceof ASTSlice) {
-					ASTSlice slice = (ASTSlice)selection.getFirstElement();
+				if(selection.getFirstElement() instanceof ClassObjectCandidate) {
+					ClassObjectCandidate slice = (ClassObjectCandidate)selection.getFirstElement();
 					IFile sourceFile = slice.getIFile();
 					try {
 						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
 						ITextEditor sourceEditor = (ITextEditor)JavaUI.openInEditor(sourceJavaElement);
 						Object[] highlightPositionMaps = slice.getHighlightPositions();
 						Map<Position, String> annotationMap = (Map<Position, String>)highlightPositionMaps[0];
-						Map<Position, Boolean> duplicationMap = (Map<Position, Boolean>)highlightPositionMaps[1];
 						AnnotationModel annotationModel = (AnnotationModel)sourceEditor.getDocumentProvider().getAnnotationModel(sourceEditor.getEditorInput());
 						Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
 						while(annotationIterator.hasNext()) {
@@ -680,11 +679,7 @@ public class SpeculativeGenerality extends ViewPart {
 						for(Position position : annotationMap.keySet()) {
 							SliceAnnotation annotation = null;
 							String annotationText = annotationMap.get(position);
-							boolean duplicated = duplicationMap.get(position);
-							if(duplicated)
-								annotation = new SliceAnnotation(SliceAnnotation.DUPLICATION, annotationText);
-							else
-								annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, annotationText);
+							annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, annotationText);
 							annotationModel.addAnnotation(annotation, position);
 						}
 						List<Position> positions = new ArrayList<Position>(annotationMap.keySet());
@@ -698,6 +693,7 @@ public class SpeculativeGenerality extends ViewPart {
 					} catch (JavaModelException e) {
 						e.printStackTrace();
 					}
+						
 				}
 			}
 		};

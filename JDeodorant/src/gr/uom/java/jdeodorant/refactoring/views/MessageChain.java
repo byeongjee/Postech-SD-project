@@ -23,6 +23,7 @@ import java.util.Set;
 import gr.uom.java.ast.ASTReader;
 import gr.uom.java.ast.AbstractMethodDeclaration;
 import gr.uom.java.ast.ClassObject;
+import gr.uom.java.ast.ClassObjectCandidate;
 import gr.uom.java.ast.CompilationErrorDetectedException;
 import gr.uom.java.ast.CompilationUnitCache;
 import gr.uom.java.ast.MethodInvocationObject;
@@ -744,39 +745,32 @@ public class MessageChain extends ViewPart {
 
 		doubleClickAction = new Action() {
 			public void run() {
-				IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
-				if (selection.getFirstElement() instanceof ASTSlice) {
-					ASTSlice slice = (ASTSlice) selection.getFirstElement();
+				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+				if(selection.getFirstElement() instanceof ASTSlice) {
+					ASTSlice slice = (ASTSlice)selection.getFirstElement();
 					IFile sourceFile = slice.getIFile();
 					try {
 						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
-						ITextEditor sourceEditor = (ITextEditor) JavaUI.openInEditor(sourceJavaElement);
+						ITextEditor sourceEditor = (ITextEditor)JavaUI.openInEditor(sourceJavaElement);
 						Object[] highlightPositionMaps = slice.getHighlightPositions();
-						Map<Position, String> annotationMap = (Map<Position, String>) highlightPositionMaps[0];
-						Map<Position, Boolean> duplicationMap = (Map<Position, Boolean>) highlightPositionMaps[1];
-						AnnotationModel annotationModel = (AnnotationModel) sourceEditor.getDocumentProvider()
-								.getAnnotationModel(sourceEditor.getEditorInput());
+						Map<Position, String> annotationMap = (Map<Position, String>)highlightPositionMaps[0];
+						AnnotationModel annotationModel = (AnnotationModel)sourceEditor.getDocumentProvider().getAnnotationModel(sourceEditor.getEditorInput());
 						Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
-						while (annotationIterator.hasNext()) {
+						while(annotationIterator.hasNext()) {
 							Annotation currentAnnotation = annotationIterator.next();
-							if (currentAnnotation.getType().equals(SliceAnnotation.EXTRACTION)
-									|| currentAnnotation.getType().equals(SliceAnnotation.DUPLICATION)) {
+							if(currentAnnotation.getType().equals(SliceAnnotation.EXTRACTION) || currentAnnotation.getType().equals(SliceAnnotation.DUPLICATION)) {
 								annotationModel.removeAnnotation(currentAnnotation);
 							}
 						}
-						for (Position position : annotationMap.keySet()) {
+						for(Position position : annotationMap.keySet()) {
 							SliceAnnotation annotation = null;
 							String annotationText = annotationMap.get(position);
-							boolean duplicated = duplicationMap.get(position);
-							if (duplicated)
-								annotation = new SliceAnnotation(SliceAnnotation.DUPLICATION, annotationText);
-							else
-								annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, annotationText);
+							annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, annotationText);
 							annotationModel.addAnnotation(annotation, position);
 						}
 						List<Position> positions = new ArrayList<Position>(annotationMap.keySet());
 						Position firstPosition = positions.get(0);
-						Position lastPosition = positions.get(positions.size() - 1);
+						Position lastPosition = positions.get(positions.size()-1);
 						int offset = firstPosition.getOffset();
 						int length = lastPosition.getOffset() + lastPosition.getLength() - firstPosition.getOffset();
 						sourceEditor.setHighlightRange(offset, length, true);
@@ -785,6 +779,7 @@ public class MessageChain extends ViewPart {
 					} catch (JavaModelException e) {
 						e.printStackTrace();
 					}
+						
 				}
 			}
 		};

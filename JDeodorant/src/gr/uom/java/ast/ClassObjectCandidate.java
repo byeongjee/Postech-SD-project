@@ -5,13 +5,16 @@ import gr.uom.java.jdeodorant.refactoring.manipulators.TypeCheckElimination;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.ListIterator;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jface.text.Position;
 
 public class ClassObjectCandidate extends ClassObject {
     // Ext : JuYongLee & JaeYeop Lee
@@ -69,7 +72,13 @@ public class ClassObjectCandidate extends ClassObject {
     /*public ClassObject getClassObject() {
     	return this._root;
     }*/
-    
+    public Object[] getHighlightPositions() {
+    	Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
+    	Position position = new Position(10, 20);
+		annotationMap.put(position, "HELLO");
+		return new Object[] {annotationMap};
+		
+    }
 	public void setCodeSmellType(String arg) {
 		this.codeSmellType = arg;
 	}
