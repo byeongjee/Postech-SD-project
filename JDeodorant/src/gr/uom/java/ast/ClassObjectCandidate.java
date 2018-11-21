@@ -289,10 +289,7 @@ public class ClassObjectCandidate extends ClassObject {
 		return ret;
 	}
 	
-	private String refineString(String methodName) {
-		return null;
-	}
-	public List<String> MergeContents(ClassObjectCandidate child){
+	public void MergeContents(ClassObjectCandidate child){
 		List<String> myContent = this.getContent();
 		List<String> childContent = child.getContent();
 		List<String> myMethodObjectList = this.StringMethodList();
@@ -390,6 +387,5 @@ public class ClassObjectCandidate extends ClassObject {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
 	}
 }
