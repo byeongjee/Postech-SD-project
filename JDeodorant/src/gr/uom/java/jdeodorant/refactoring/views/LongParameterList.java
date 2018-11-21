@@ -138,11 +138,19 @@ public class LongParameterList extends ViewPart {
 		// To be implemented
 		public void pressRefactorButton(int index) {
 			System.out.println("Success");
-			LPLMethodObject methodToRefactor = methodObjectTable[methodObjectTable.length - index - 1];
-			LPLRefactorWizard wizard = new LPLRefactorWizard(null, methodToRefactor);
+
+		LPLMethodObject methodToRefactor = methodObjectTable[methodObjectTable.length - index - 1];
+		try {
+			IMethod convertedIMethod = methodToRefactor.toIMethod(selectedProject);
+			System.out.println(convertedIMethod.getElementName());
+		} catch (JavaModelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			/*				LPLRefactorWizard wizard = new LPLRefactorWizard(null, methodToRefactor);
 			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
 					wizard);
-			dialog.open();
+			dialog.open();*/
 		}
 	}
 
