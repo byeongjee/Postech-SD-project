@@ -31,15 +31,15 @@ public class ClassObjectCandidate extends ClassObject {
     private String codeSmellType;
     private String refactorType;
     private List<MethodObject> smellingMethods;
-    
+
     private int numChild = 0;
     private List<Integer> numUnusedParameter;
-    
+
     public ClassObjectCandidate() {
     	this.name = "";
     	this.methodList = null;
     	this.fieldList = null;
-    	this.commentList = null;	
+    	this.commentList = null;
 		this.constructorList = new ArrayList<ConstructorObject>();
 		this.interfaceList = new ArrayList<TypeObject>();
 		this.enumConstantDeclarationList = new ArrayList<EnumConstantDeclarationObject>();
@@ -50,20 +50,20 @@ public class ClassObjectCandidate extends ClassObject {
         this.access = Access.NONE;
         this.typeDeclaration = null;
     	this.iFile = null;
-    	
+
         // Ext : JuYongLee & JaeYeop Lee
         this.codeSmellType = "Speculative Generality";
         this.refactorType = "_";
         this.smellingMethods = new ArrayList<MethodObject>();
         this.numUnusedParameter  = new ArrayList<Integer>();
     }
-    
+
     public ClassObjectCandidate(ClassObject co) {
     	this.name = co.name;
     	this.methodList = co.methodList;
     	this.fieldList = co.fieldList;
     	this.commentList = co.commentList;
-    	
+
 		this.constructorList = co.constructorList;
 		this.interfaceList = co.interfaceList;
 		this.enumConstantDeclarationList = co.enumConstantDeclarationList;
@@ -72,12 +72,12 @@ public class ClassObjectCandidate extends ClassObject {
         this._static = co._static;
         this._enum = co._enum;
         this.access = co.access;
-        
+
         this.typeDeclaration = co.typeDeclaration;
     	this.iFile = co.iFile;
-        
+
     	this.superclass = co.superclass;
-    	
+
         // Ext : JuYongLee & JaeYeop Lee
         this.codeSmellType = "Speculative Generality";
         this.refactorType = "_";
@@ -88,43 +88,43 @@ public class ClassObjectCandidate extends ClassObject {
     /*public ClassObject getClassObject() {
     	return this._root;
     }*/
-    
+
     public void setNumChild(int arg) {
     	this.numChild = arg;
     }
-    
+
     public int getNumChild() {
     	return this.numChild;
     }
-    
+
     public void addNumUnusedParameter(int arg) {
     	this.numUnusedParameter.add(arg);
     }
-    
+
     public List<Integer> getNumUnusedParameter() {
     	return this.numUnusedParameter;
     }
-    
+
 	public void setCodeSmellType(String arg) {
 		this.codeSmellType = arg;
 	}
-	
+
 	public void setRefactorType(String arg) {
 		this.refactorType = arg;
 	}
-	
+
 	public void setSmellingMethods(List<MethodObject> arg) {
 		this.smellingMethods = arg;
 	}
-	
+
 	public String getCodeSmellType() {
 		return this.codeSmellType;
 	}
-	
+
 	public String getRefactorType() {
 		return this.refactorType;
 	}
-	
+
 	public List<MethodObject> getSmellingMethods() {
 		if(codeSmellType.equals("Unnecessary Parameters")) {
 			return this.smellingMethods;
@@ -132,16 +132,16 @@ public class ClassObjectCandidate extends ClassObject {
 			return this.getMethodList();
 		}
 	}
-    
+
 	public void addSmellingMethod(MethodObject target) {
 		this.smellingMethods.add(target);
 	}
-	
+
 	public List<FieldObject> getFieldList()
 	{
 		return this.fieldList;
 	}
-	
+
 	public List<String> getContent()
 	{
 		String filepath = iFile.getLocation().toString();
@@ -160,7 +160,7 @@ public class ClassObjectCandidate extends ClassObject {
 	            {
 	            	readFlag=true;
 	            }
-	            
+
 	            if(readFlag)
 	            {
 	            	for(int i=0;i<line.length();i++)
@@ -176,7 +176,7 @@ public class ClassObjectCandidate extends ClassObject {
 	            				return result;
 	            			}
 	            			else if(stack.peek()=='{')
-	            			{	
+	            			{
 	            				stack.pop();
 	            			}
 	            			else
@@ -197,10 +197,10 @@ public class ClassObjectCandidate extends ClassObject {
 		}catch(IOException e){
 			e.printStackTrace();
 		}
-		
+
 		return result;
 	}
-	
+
 	public String getClassFullName()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -218,6 +218,11 @@ public class ClassObjectCandidate extends ClassObject {
         return sb.toString();
 	}
 
+    /**
+     * @author Taeyoung Son
+     * @param to_be_parsed string to be parsed which contains dot
+     * @return the last string of given string split with dot
+     */
 	private String dotParser(String to_be_parsed) {
 		String[] tokens = to_be_parsed.split("\\.");
 		/*for(String s: tokens) {
@@ -225,7 +230,11 @@ public class ClassObjectCandidate extends ClassObject {
 		}*/
 		return tokens[tokens.length-1];
 	}
-	
+
+    /**
+     * @author Taeyoung Son
+     * @return List<String> form of fieldList
+     */
 	private List<String> StringFieldList(){
 		List<String> ret = new ArrayList<String>();
 		//ret.add("\n");
@@ -257,7 +266,11 @@ public class ClassObjectCandidate extends ClassObject {
 		}
 		return ret;
 	}
-	
+
+    /**
+     * @author Taeyoung Son
+     * @return List<String> form of MethodList
+     */
 	private List<String> StringMethodList(){
 		List<String> ret = new ArrayList<String>();
 		for(MethodObject mo : this.methodList) {
@@ -268,7 +281,13 @@ public class ClassObjectCandidate extends ClassObject {
 		}
 		return ret;
 	}
-	
+
+    /**
+     * @author Taeyoung Son
+     * @param fullContent the content collected by getContent()
+     * @param methodName the name of method you want from content
+     * @return content of specific method of given name
+     */
 	private List<String> contentCreator(List<String> fullContent, String methodName) {
 		List<String> ret = new ArrayList<String>();
 		int _brackets = 0;
@@ -288,20 +307,24 @@ public class ClassObjectCandidate extends ClassObject {
 		}
 		return ret;
 	}
-	
+
+    /**
+     * @author Taeyoung Son
+     * @param child the ClassObjectCandidate to merge with this ClassObjectCandidate
+     */
 	public void MergeContents(ClassObjectCandidate child){
 		List<String> myContent = this.getContent();
 		List<String> childContent = child.getContent();
 		List<String> myMethodObjectList = this.StringMethodList();
 		List<String> childMethodObjectList = child.StringMethodList();
-		
+
 		List<String> newFieldList = new ArrayList<String>();
 		List<String> newMethodList = new ArrayList<String>();
 		List<String> newFile = new ArrayList<String>();
-		
+
 		newFieldList.addAll(this.StringFieldList());
 		newFieldList.addAll(child.StringFieldList());
-		
+
 		for(String s: myMethodObjectList) {
 			if(childMethodObjectList.contains(s) || s.contains("abstract") || s.contains(dotParser(this.name))) {
 				//overriden method
@@ -332,7 +355,7 @@ public class ClassObjectCandidate extends ClassObject {
 						s = s + " " + tokens[i];
 					}
 					s = s.substring(1);
-					
+
 				}
 				System.out.println("overriden method... grabbing " + s);
 				for(String t : this.contentCreator(childContent, s)) {
@@ -350,7 +373,7 @@ public class ClassObjectCandidate extends ClassObject {
 				}
 			}
 		}
-		
+
 		for(String s: childMethodObjectList) {
 			if(s.contains(dotParser(child.getName()))) {
 				continue;
@@ -364,13 +387,13 @@ public class ClassObjectCandidate extends ClassObject {
 				}
 			}
 		}
-		
+
 		newFile.add(childContent.get(0) + "\n");
 		newFile.add("public class " + dotParser(child.getName()) + "{");
 		newFile.addAll(newFieldList);
 		newFile.addAll(newMethodList);
 		newFile.add("}");
-		
+
 		try {
 			File makeFile = new File(child.getIFile().getLocation().toString());
 			FileWriter fileWriter = new FileWriter(makeFile);
