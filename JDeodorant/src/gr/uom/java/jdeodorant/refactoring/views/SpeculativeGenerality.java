@@ -142,23 +142,13 @@ public class SpeculativeGenerality extends ViewPart {
 	private Set<ClassObject> _classObjectToBeExamined=new HashSet<ClassObject>();
 	
 	private class SpeculativeGeneralityRefactoringButtonUI extends RefactoringButtonUI {
+		/**
+		 * Action on Refactoring Button
+		 * 
+		 * @author 손태영, 이주용 
+		 */
 		public void pressRefactorButton(int index) {
 			ClassObjectCandidate targetClass = classObjectTable[index];
-			
-			// Get Classes
-			System.out.println("Index of button pressed is " + index);
-			System.out.println("CLASSTABLE SIZE :");
-			System.out.println("CLASS NAME : " +targetClass.getName());
-			System.out.println("SMELL TYPE : "+targetClass.getCodeSmellType());
-			System.out.println(targetClass.toString());
-			System.out.println();
-			
-			List<String> classBody = targetClass.getContent();
-			System.out.println("ClassBody size : " + String.valueOf(classBody.size()));
-			for(int i=0;i < classBody.size();i++)
-			{
-				System.out.println(classBody.get(i));
-			}
 			
 			// Switch w.r.t smell type and Details
 			if(targetClass.getCodeSmellType().equals("Abstract Class")) {
@@ -166,23 +156,29 @@ public class SpeculativeGenerality extends ViewPart {
 					// ToDo :: Check if there exists another class in JavaFile
 					
 				} else {
-					// ToDo :: Integrate Child and Parent
+					// Integrate Child and Parent
 					ClassObjectCandidate childClass;
-					
-					// Get Child Class
+
 					for(ClassObject examiningClass : _classObjectToBeExamined) {
 						if(examiningClass.getName().equals(targetClass.getName())) continue;
-						if(examiningClass.getSuperclass().getClassType().equals(targetClass.getName()))
-						{
-							childClass = new ClassObjectCandidate(examiningClass);
-							targetClass.MergeContents(childClass);
+						
+						TypeObject superClass = examiningClass.getSuperclass();
+						if(superClass != null) {
+							if (superClass.getClassType().equals(targetClass.getName())) {
+								childClass = new ClassObjectCandidate(examiningClass);
+
+								// Merge TargetClass(Parent) and its Child
+								targetClass.mergeIntoChild(childClass);
+							}
 						}
 					}
 					
-					
-					List<FieldObject> parentField = targetClass.getFieldList();
-					
-										
+					// Delete The Target
+					try {
+						targetClass.getIFile().delete(true, false, null);
+					} catch (CoreException e) {
+						e.printStackTrace();
+					}
 				}
 			} else if (targetClass.getCodeSmellType().equals("Interface Class")) {
 				if(targetClass.getNumChild() == 0) {
@@ -192,12 +188,39 @@ public class SpeculativeGenerality extends ViewPart {
 					} catch (CoreException e) {
 						e.printStackTrace();
 					}
-				} else {
-					// ToDo :: Integrate Child and Parent
+				} else {					
+					// Integrate Child and Parent
+					ClassObjectCandidate childClass;
+
+					for(ClassObject examiningClass : _classObjectToBeExamined) {
+						if(examiningClass.getName().equals(targetClass.getName())) continue;
+						
+						ListIterator<TypeObject> parentClasses = examiningClass.getInterfaceIterator();
+						while(parentClasses.hasNext()) {
+							TypeObject parentClass = parentClasses.next();
+							if (parentClass.getClassType().equals(targetClass.getName())) {
+								childClass = new ClassObjectCandidate(examiningClass);
+
+								// Merge TargetClass(Parent) and its Child
+								targetClass.mergeIntoChild(childClass);
+								break;
+							}
+						}
+					}
 					
+					// Delete The Target
+					try {
+						targetClass.getIFile().delete(true, false, null);
+					} catch (CoreException e) {
+						e.printStackTrace();
+					}
 				}
-			} else if (targetClass.getCodeSmellType().equals("Unnecessary Parameter")) {
+			} else if (targetClass.getCodeSmellType().equals("Unnecessary Parameters")) {
+				List<MethodObject> _smellingMethods = targetClass.getSmellingMethods();
 				
+				for(MethodObject target : _smellingMethods) {
+					targetClass.resolveUnnecessaryParameters(target);
+				}
 			}
 		}
 	}
@@ -911,8 +934,10 @@ public class SpeculativeGenerality extends ViewPart {
 				
 				List<MethodObject> _methodList = target.getMethodList();
 				for(int i = 0; i < _methodList.size(); i++) {
+					// WARN :: This can be overridden Method
 					MethodObject targetMethod = _methodList.get(i);
 					
+					List<String> unusedPList = new ArrayList<String>();
 					int unusedPNum = 0;
 					
 					// GetStatements
@@ -935,13 +960,16 @@ public class SpeculativeGenerality extends ViewPart {
 						for (int p = 0; p < pNum; p++) {
 							// Check the Usage
 							String pTarget = targetMethod.getParameter(p).getName();
-							if (!methodBodyStatements.contains(pTarget)) {
+
+							if (!methodContains(methodBodyStatements, pTarget)) {
+								unusedPList.add(pTarget);
 								unusedPNum++;
 							}
 						}
 					}
 					
 					if(unusedPNum > 0) {
+						target.addUnusedParameterList(unusedPList);
 						target.addNumUnusedParameter(unusedPNum);
 						target.addSmellingMethod(targetMethod);
 					}
@@ -959,6 +987,23 @@ public class SpeculativeGenerality extends ViewPart {
 		}
 		
 		return res;
+	}
+
+	private boolean methodContains(String method, String var) {
+		String[] operator = { " ", "(", ")", "[", "]", ".",	"+", "-", "*", "/", "%",
+				"!", "~", "++", "--", "<<", ">>", ">>>", ">", "<", ">= ", "<=", "==", "!=",
+				"&", "^", "|", "&&", "||", "?", "=", "+=", "/=", "&=", "*=", "-=", 
+				"<<=", ">>=", ">>>=", "^=", "|=", "%=", ";"}; 
+		
+		for(int i = 0; i < operator.length; i++) {
+			for(int j = 0; j < operator.length; j++) {
+				if(method.contains(operator[i] + var + operator[j])) {
+					return true;
+				}
+			}
+		}
+		 
+		return false;
 	}
 
 	private void saveResults() {
