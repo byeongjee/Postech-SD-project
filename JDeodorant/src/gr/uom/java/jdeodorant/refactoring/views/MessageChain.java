@@ -50,18 +50,24 @@ import gr.uom.java.jdeodorant.refactoring.manipulators.MoveMethodRefactoring;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -72,6 +78,8 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationModel;
@@ -105,6 +113,8 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.text.edits.MalformedTreeException;
+import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
@@ -192,10 +202,10 @@ public class MessageChain extends ViewPart {
 
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
 		public String getColumnText(Object obj, int index) {
-			System.out.println("I am at Label Provider>>>>>>>>");
+			//System.out.println("I am at Label Provider>>>>>>>>");
 
 			if(obj instanceof MessageChainStructure) {
-				System.out.println("I am at Label Provider of mc");
+				//System.out.println("I am at Label Provider of mc");
 				MessageChainStructure entry = (MessageChainStructure)obj;
 				switch(index){
 				case 0:
@@ -518,14 +528,92 @@ public class MessageChain extends ViewPart {
 			SystemObject systemObject = ASTReader.getSystemObject();
 			if(systemObject != null) {
 				ClassObject classWithCodeSmell = systemObject.getClassObject(targetSmell.getParent().getName());
+				//classWithCodeSmell.
 				//String className = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getOriginClassName();
 				ClassObject classOfMethodInvocation = systemObject.getClassObject(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getOriginClassName());
 				IFile fileWithCodeSmell = classWithCodeSmell.getIFile();
 				IFile fileOfMethodInvocation = classOfMethodInvocation.getIFile();
 				
-				//MethodObject newMethod = new MethodObject(null);
+				ICompilationUnit compUnitWithCodeSmell = (ICompilationUnit) JavaCore.create(fileWithCodeSmell);
+				ICompilationUnit compUnitOfMethodInvocation = (ICompilationUnit) JavaCore.create(fileOfMethodInvocation);
 				
-				System.out.println("Code smell detected Class Name : "+classOfMethodInvocation.getName());
+
+				
+				try {
+					
+					ICompilationUnit workingCopyOfMethodInvocation = compUnitOfMethodInvocation.getWorkingCopy(new WorkingCopyOwner() {}, null);
+
+					   // Modify buffer and reconcile
+				    
+				    IBuffer bufferOfMethodInvocation = ((IOpenable)workingCopyOfMethodInvocation).getBuffer();
+				    
+				    int length = bufferOfMethodInvocation.getLength();
+				    bufferOfMethodInvocation.replace(length-2,1,"void newMethod(){}\r\n");
+				    workingCopyOfMethodInvocation.reconcile(ICompilationUnit.NO_AST,false,null,null);
+				    workingCopyOfMethodInvocation.commitWorkingCopy(false,null);
+				    workingCopyOfMethodInvocation.discardWorkingCopy();
+				    
+				    ICompilationUnit workingCopyWithCodeSmell = compUnitWithCodeSmell.getWorkingCopy(new WorkingCopyOwner() {}, null);
+				    IBuffer bufferWithCodeSmell = ((IOpenable)workingCopyWithCodeSmell).getBuffer();
+				    
+				    /*System.out.println("Before buffer leng: "+bufferWithCodeSmell.getLength());
+				    String temp = bufferWithCodeSmell.getText(targetSmell.getStart(), targetSmell.getLength());
+				    System.out.println("After buffer leng: "+bufferWithCodeSmell.getLength());
+				    System.out.println("Method Name:>>"+originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getMethodName());
+					System.out.println("getStart: " + targetSmell.getStart());
+				    int startPos = temp.indexOf(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getMethodName());
+				    System.out.println(startPos);
+					if(startPos!=targetSmell.getStart()) {
+				    	int minus = startPos - targetSmell.getStart();
+					    bufferWithCodeSmell.replace(startPos, targetSmell.getLength()-minus, "newMethod()");
+				    }
+				    else {*/
+				    	bufferWithCodeSmell.replace(targetSmell.getStart(), targetSmell.getLength(), "newMethod()");
+				    //}				    
+				    workingCopyWithCodeSmell.reconcile(ICompilationUnit.NO_AST,false,null,null);
+				    workingCopyWithCodeSmell.commitWorkingCopy(false, null);
+				    workingCopyWithCodeSmell.discardWorkingCopy();
+					//buffer = ((IOpenable)workingCopy).getBuffer();
+					//buffer.replace(targetSmell.getStart(), targetSmell.getLength(), "newMethod()");
+					/*String temp = buffer.getText(targetSmell.getStart(), targetSmell.getLength());
+					int startPos = temp.indexOf();
+					if (startPos != targetSmell.getStart())
+					{
+						buffer.replace(startPos,length,)
+					}*/
+					
+				    //workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
+				    
+				    // Commit changes
+				    //workingCopy.commitWorkingCopy(false, null);
+				    
+				    // Destroy working copy
+				   // workingCopy.discardWorkingCopy();
+				    System.out.println("I am done!!!!!!");
+					
+				} catch (JavaModelException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			    
+				
+				
+				
+ 				
+				//TextEdit a = new TextEdit();
+				//selectedCompilationUnit.applyTextEdit(arg0, arg1)
+				//System.out.println("Code smell detected Class Name : "+classOfMethodInvocation.getName());
+				/*
+				 Document document=new Document(src.getBuffer().getContents());
+  TextEdit edits=node.rewrite(document,src.getJavaProject().getOptions(true));
+  edits.apply(document);
+  src.getBuffer().setContents(document.get());
+  if (src.isWorkingCopy()) {
+    src.commitWorkingCopy(false,null);
+  }
+  src.save(null,false);
+				 */
+				
 			}
 		}
 		/*if(entry != null && entry.getSourceClassTypeDeclaration() != null && entry.getTargetClassTypeDeclaration() != null) {
