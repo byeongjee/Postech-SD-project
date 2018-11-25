@@ -537,82 +537,47 @@ public class MessageChain extends ViewPart {
 				ICompilationUnit compUnitWithCodeSmell = (ICompilationUnit) JavaCore.create(fileWithCodeSmell);
 				ICompilationUnit compUnitOfMethodInvocation = (ICompilationUnit) JavaCore.create(fileOfMethodInvocation);
 				
+				int sizeOfMethodInvocation = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).size();
+				System.out.println("Last return type!!!: "+originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(sizeOfMethodInvocation-1).getReturnType().toString());
 
 				
 				try {
 					
 					ICompilationUnit workingCopyOfMethodInvocation = compUnitOfMethodInvocation.getWorkingCopy(new WorkingCopyOwner() {}, null);
-
-					   // Modify buffer and reconcile
-				    
 				    IBuffer bufferOfMethodInvocation = ((IOpenable)workingCopyOfMethodInvocation).getBuffer();
 				    
 				    int length = bufferOfMethodInvocation.getLength();
-				    bufferOfMethodInvocation.replace(length-2,1,"void newMethod(){}\r\n");
-				    workingCopyOfMethodInvocation.reconcile(ICompilationUnit.NO_AST,false,null,null);
+	                int count = 0;
+	                for(int i=length - 1;i>=0;i--, count++)
+	                {
+	                   if(bufferOfMethodInvocation.getChar(i) == '}')
+	                   {
+	                      count++;
+	                      break;
+	                   }
+	                }
+	                bufferOfMethodInvocation.replace(length-count,0,"\r\n\tvoid newMethod(){}\r\n");
+	                workingCopyOfMethodInvocation.reconcile(ICompilationUnit.NO_AST,false,null,null);
 				    workingCopyOfMethodInvocation.commitWorkingCopy(false,null);
 				    workingCopyOfMethodInvocation.discardWorkingCopy();
 				    
 				    ICompilationUnit workingCopyWithCodeSmell = compUnitWithCodeSmell.getWorkingCopy(new WorkingCopyOwner() {}, null);
 				    IBuffer bufferWithCodeSmell = ((IOpenable)workingCopyWithCodeSmell).getBuffer();
 				    
-				    /*System.out.println("Before buffer leng: "+bufferWithCodeSmell.getLength());
 				    String temp = bufferWithCodeSmell.getText(targetSmell.getStart(), targetSmell.getLength());
-				    System.out.println("After buffer leng: "+bufferWithCodeSmell.getLength());
-				    System.out.println("Method Name:>>"+originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getMethodName());
-					System.out.println("getStart: " + targetSmell.getStart());
 				    int startPos = temp.indexOf(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getMethodName());
-				    System.out.println(startPos);
-					if(startPos!=targetSmell.getStart()) {
-				    	int minus = startPos - targetSmell.getStart();
-					    bufferWithCodeSmell.replace(startPos, targetSmell.getLength()-minus, "newMethod()");
-				    }
-				    else {*/
-				    	bufferWithCodeSmell.replace(targetSmell.getStart(), targetSmell.getLength(), "newMethod()");
-				    //}				    
-				    workingCopyWithCodeSmell.reconcile(ICompilationUnit.NO_AST,false,null,null);
-				    workingCopyWithCodeSmell.commitWorkingCopy(false, null);
-				    workingCopyWithCodeSmell.discardWorkingCopy();
-					//buffer = ((IOpenable)workingCopy).getBuffer();
-					//buffer.replace(targetSmell.getStart(), targetSmell.getLength(), "newMethod()");
-					/*String temp = buffer.getText(targetSmell.getStart(), targetSmell.getLength());
-					int startPos = temp.indexOf();
-					if (startPos != targetSmell.getStart())
-					{
-						buffer.replace(startPos,length,)
-					}*/
+					String strOfRefactor = "newMethod()";
+				    bufferWithCodeSmell.replace(targetSmell.getStart() + startPos, targetSmell.getLength()-startPos, strOfRefactor);
+					workingCopyWithCodeSmell.reconcile(ICompilationUnit.NO_AST,false,null,null);
+					workingCopyWithCodeSmell.commitWorkingCopy(false, null);
+					workingCopyWithCodeSmell.discardWorkingCopy();
 					
-				    //workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
-				    
-				    // Commit changes
-				    //workingCopy.commitWorkingCopy(false, null);
-				    
-				    // Destroy working copy
-				   // workingCopy.discardWorkingCopy();
 				    System.out.println("I am done!!!!!!");
 					
 				} catch (JavaModelException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			    
-				
-				
-				
- 				
-				//TextEdit a = new TextEdit();
-				//selectedCompilationUnit.applyTextEdit(arg0, arg1)
-				//System.out.println("Code smell detected Class Name : "+classOfMethodInvocation.getName());
-				/*
-				 Document document=new Document(src.getBuffer().getContents());
-  TextEdit edits=node.rewrite(document,src.getJavaProject().getOptions(true));
-  edits.apply(document);
-  src.getBuffer().setContents(document.get());
-  if (src.isWorkingCopy()) {
-    src.commitWorkingCopy(false,null);
-  }
-  src.save(null,false);
-				 */
 				
 			}
 		}
