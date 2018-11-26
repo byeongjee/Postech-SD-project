@@ -74,6 +74,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -229,7 +230,7 @@ public class MessageChain extends ViewPart {
 		}
 
 		public Image getColumnImage(Object obj, int index) {
-			Image image = null;
+			/*Image image = null;
 			if(obj instanceof ASTSlice) {
 				ASTSlice entry = (ASTSlice)obj;
 				int rate = -1;
@@ -244,8 +245,8 @@ public class MessageChain extends ViewPart {
 				default:
 					break;
 				}
-			}
-			return image;
+			}*/
+			return null;
 		}
 		public Image getImage(Object obj) {
 			return null;
@@ -253,7 +254,7 @@ public class MessageChain extends ViewPart {
 
 	}
 
-	class NameSorter extends ViewerSorter {
+	/*class NameSorter extends ViewerSorter {
 		public int compare(Viewer viewer, Object obj1, Object obj2) {
 			/*if (obj1 instanceof ASTSliceGroup && obj2 instanceof ASTSliceGroup) {
 				ASTSliceGroup sliceGroup1 = (ASTSliceGroup) obj1;
@@ -265,10 +266,10 @@ public class MessageChain extends ViewPart {
 				// slices belong to the same group
 				return Integer.valueOf(slice1.getBoundaryBlock().getId())
 						.compareTo(Integer.valueOf(slice2.getBoundaryBlock().getId()));
-			}*/
+			}
 			return 1;
 		}
-	}
+	}*/
 
 	private ISelectionListener selectionListener = new ISelectionListener() {
 		public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
@@ -342,7 +343,7 @@ public class MessageChain extends ViewPart {
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
-		treeViewer.setSorter(new NameSorter());
+		//treeViewer.setSorter(new NameSorter());
 		treeViewer.setInput(getViewSite());
 		TableLayout layout = new TableLayout();
 		layout.addColumnData(new ColumnWeightData(30, true));
@@ -380,7 +381,7 @@ public class MessageChain extends ViewPart {
 				new TextCellEditor(), new TextCellEditor(), new MyComboBoxCellEditor(treeViewer.getTree(),
 						new String[] { "0", "1", "2", "3" }, SWT.READ_ONLY) });
 
-		treeViewer.setCellModifier(new ICellModifier() {
+		/*treeViewer.setCellModifier(new ICellModifier() {
 			public boolean canModify(Object element, String property) {
 				return property.equals("rate");
 			}
@@ -476,7 +477,7 @@ public class MessageChain extends ViewPart {
 					treeViewer.update(data, null);
 				}
 			}
-		});
+		});*/
 
 		makeActions();
 		hookDoubleClickAction();
@@ -492,8 +493,8 @@ public class MessageChain extends ViewPart {
 								|| eventType == OperationHistoryEvent.OPERATION_REMOVED) {
 							if (activeProject != null && CompilationUnitCache.getInstance().getAffectedProjects()
 									.contains(activeProject)) {
-								applyRefactoringAction.setEnabled(false);
-								saveResultsAction.setEnabled(false);
+								//applyRefactoringAction.setEnabled(false);
+								//saveResultsAction.setEnabled(false);
 								// evolutionAnalysisAction.setEnabled(false);
 							}
 						}
@@ -508,12 +509,72 @@ public class MessageChain extends ViewPart {
 
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
-		manager.add(applyRefactoringAction);
-		manager.add(saveResultsAction);
+		//manager.add(applyRefactoringAction);
+		//manager.add(saveResultsAction);
 		// manager.add(evolutionAnalysisAction);
 	}
+ 	
+	public String makeNewMethodCode (String newMethodName, String returnType, List<String> stringOfArgumentType, List<Integer> numOfArgumentOfEachMethod, List<String> stringOfMethodInvocation) {
+		String strOfMethod = "";
+		strOfMethod += "public ";
+		strOfMethod += returnType;
+		strOfMethod += " ";
+		strOfMethod += newMethodName;
+		strOfMethod += "(";
+		for(int i = 0; i<stringOfArgumentType.size(); i++) {
+			strOfMethod += stringOfArgumentType.get(i);
+			strOfMethod += " ";
+			strOfMethod += "x";
+			strOfMethod += Integer.toString(i);
+			strOfMethod += ", ";
+		}
+		if(stringOfArgumentType.size() > 0) {
+			strOfMethod = strOfMethod.substring(0,strOfMethod.length()-2);
+		}				
+		strOfMethod += ")";
+		strOfMethod += " {\r\n";
+		strOfMethod += "\treturn ";
+		int numOfArg = 0;
+		int numOfMethod = 0;
+		for(String method : stringOfMethodInvocation) {
+			strOfMethod += method;
+			strOfMethod += "(";
+			for(int i = 0; i< numOfArgumentOfEachMethod.get(numOfMethod); i++, numOfArg++) {
+				strOfMethod += "x";
+				strOfMethod += Integer.toString(numOfArg);
+				strOfMethod += ", ";
+			}
+			if(numOfArgumentOfEachMethod.get(numOfMethod)>0) {
+				strOfMethod = strOfMethod.substring(0,strOfMethod.length()-2);
+			}					
+			strOfMethod += ")";
+			strOfMethod += ".";
+			numOfMethod++;
+		}
+		strOfMethod = strOfMethod.substring(0,strOfMethod.length()-1);
+		strOfMethod += ";\r\n";
+		strOfMethod += "}\r\n";
+		return strOfMethod;
+	}
 	
+	public String makeNewRefactorCode(String newMethodName, List<String> stringOfArgument) {
+		String strOfRefact = "";
+		strOfRefact += newMethodName;
+		strOfRefact += "(";
+		for (String arg : stringOfArgument) {
+			System.out.println("argument list : " +arg);
+			strOfRefact += arg;
+			strOfRefact += ", ";
+		}
+		if(stringOfArgument.size() > 0) {
+			strOfRefact = strOfRefact.substring(0, strOfRefact.length() - 2);
+		}				
+		strOfRefact += ")";
+		return strOfRefact;
+	}
+	 
 	public void messageChainRefactoring(int parentIndex, int childIndex) {
+		System.out.println("Click refactoring button!");
 		//IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
 		if(childIndex == -1 && parentIndex == -1) {
 			//selectionTree.setSelection(selectionTree.getItem(parentIndex));
@@ -528,8 +589,6 @@ public class MessageChain extends ViewPart {
 			SystemObject systemObject = ASTReader.getSystemObject();
 			if(systemObject != null) {
 				ClassObject classWithCodeSmell = systemObject.getClassObject(targetSmell.getParent().getName());
-				//classWithCodeSmell.
-				//String className = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getOriginClassName();
 				ClassObject classOfMethodInvocation = systemObject.getClassObject(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getOriginClassName());
 				IFile fileWithCodeSmell = classWithCodeSmell.getIFile();
 				IFile fileOfMethodInvocation = classOfMethodInvocation.getIFile();
@@ -537,8 +596,28 @@ public class MessageChain extends ViewPart {
 				ICompilationUnit compUnitWithCodeSmell = (ICompilationUnit) JavaCore.create(fileWithCodeSmell);
 				ICompilationUnit compUnitOfMethodInvocation = (ICompilationUnit) JavaCore.create(fileOfMethodInvocation);
 				
+				String newMethodName = "myMethod";//TODO : we have to get methodName from user
+				
 				int sizeOfMethodInvocation = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).size();
-				System.out.println("Last return type!!!: "+originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(sizeOfMethodInvocation-1).getReturnType().toString());
+				String stringOfMethod = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(sizeOfMethodInvocation-1).getReturnType().toString();
+	            String returnType = getClassName(sizeOfMethodInvocation, stringOfMethod);
+	            
+				List<String> stringOfMethodInvocation = new ArrayList<String> ();
+				List<String> stringOfArgumentType = new ArrayList<String> ();
+				List<Integer> numOfArgumentOfEachMethod = new ArrayList<Integer>();
+				List<String> stringOfArgument = new ArrayList<String> ();
+				for(int i = 0; i<sizeOfMethodInvocation;i++) {
+					stringOfMethodInvocation.add(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(i).getMethodName());
+					for(Object arg : originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(i).getMethodInvocation().arguments() ) {
+						System.out.println("argument ::: "+arg.toString());
+						stringOfArgument.add(arg.toString());
+					}
+					stringOfArgumentType.addAll(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(i).getParameterList());
+					numOfArgumentOfEachMethod.add(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(i).getParameterList().size());
+				}			
+				
+				String strOfRefact = makeNewRefactorCode(newMethodName, stringOfArgument);
+				String strOfMethod = makeNewMethodCode(newMethodName, returnType, stringOfArgumentType, numOfArgumentOfEachMethod, stringOfMethodInvocation);
 
 				
 				try {
@@ -546,17 +625,8 @@ public class MessageChain extends ViewPart {
 					ICompilationUnit workingCopyOfMethodInvocation = compUnitOfMethodInvocation.getWorkingCopy(new WorkingCopyOwner() {}, null);
 				    IBuffer bufferOfMethodInvocation = ((IOpenable)workingCopyOfMethodInvocation).getBuffer();
 				    
-				    int length = bufferOfMethodInvocation.getLength();
-	                int count = 0;
-	                for(int i=length - 1;i>=0;i--, count++)
-	                {
-	                   if(bufferOfMethodInvocation.getChar(i) == '}')
-	                   {
-	                      count++;
-	                      break;
-	                   }
-	                }
-	                bufferOfMethodInvocation.replace(length-count,0,"\r\n\tvoid newMethod(){}\r\n");
+				    int modifyPosition = getModifyPosition(bufferOfMethodInvocation);
+	                bufferOfMethodInvocation.replace(modifyPosition,0,strOfMethod);
 	                workingCopyOfMethodInvocation.reconcile(ICompilationUnit.NO_AST,false,null,null);
 				    workingCopyOfMethodInvocation.commitWorkingCopy(false,null);
 				    workingCopyOfMethodInvocation.discardWorkingCopy();
@@ -566,8 +636,8 @@ public class MessageChain extends ViewPart {
 				    
 				    String temp = bufferWithCodeSmell.getText(targetSmell.getStart(), targetSmell.getLength());
 				    int startPos = temp.indexOf(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getMethodName());
-					String strOfRefactor = "newMethod()";
-				    bufferWithCodeSmell.replace(targetSmell.getStart() + startPos, targetSmell.getLength()-startPos, strOfRefactor);
+					
+				    bufferWithCodeSmell.replace(targetSmell.getStart() + startPos, targetSmell.getLength()-startPos, strOfRefact);
 					workingCopyWithCodeSmell.reconcile(ICompilationUnit.NO_AST,false,null,null);
 					workingCopyWithCodeSmell.commitWorkingCopy(false, null);
 					workingCopyWithCodeSmell.discardWorkingCopy();
@@ -578,95 +648,70 @@ public class MessageChain extends ViewPart {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
+				findCodeSmell();
 			}
 		}
-		/*if(entry != null && entry.getSourceClassTypeDeclaration() != null && entry.getTargetClassTypeDeclaration() != null) {
-			IFile sourceFile = entry.getSourceIFile();
-			IFile targetFile = entry.getTargetIFile();
-			CompilationUnit sourceCompilationUnit = (CompilationUnit)entry.getSourceClassTypeDeclaration().getRoot();
-			CompilationUnit targetCompilationUnit = (CompilationUnit)entry.getTargetClassTypeDeclaration().getRoot();
-			Refactoring refactoring = null;
-			if(entry instanceof MoveMethodCandidateRefactoring) {
-				MoveMethodCandidateRefactoring candidate = (MoveMethodCandidateRefactoring)entry;
-				IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-				boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
-				if(allowUsageReporting) {
-					Table table = tableViewer.getTable();
-					int rankingPosition = -1;
-					for(int i=0; i<table.getItemCount(); i++) {
-						TableItem tableItem = table.getItem(i);
-						if(tableItem.getData().equals(candidate)) {
-							rankingPosition = i;
-							break;
-						}
-					}
-					try {
-						boolean allowSourceCodeReporting = store.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
-						String declaringClass = candidate.getSourceClassTypeDeclaration().resolveBinding().getQualifiedName();
-						String methodName = candidate.getSourceMethodDeclaration().resolveBinding().toString();
-						String sourceMethodName = declaringClass + "::" + methodName;
-						String content = URLEncoder.encode("project_name", "UTF-8") + "=" + URLEncoder.encode(activeProject.getElementName(), "UTF-8");
-						content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "=" + URLEncoder.encode(sourceMethodName, "UTF-8");
-						content += "&" + URLEncoder.encode("target_class_name", "UTF-8") + "=" + URLEncoder.encode(candidate.getTarget(), "UTF-8");
-						content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(rankingPosition), "UTF-8");
-						content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(table.getItemCount()), "UTF-8");
-						content += "&" + URLEncoder.encode("EP", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(0.0), "UTF-8");
-						content += "&" + URLEncoder.encode("envied_elements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(candidate.getNumberOfDistinctEnviedElements()), "UTF-8");
-						if(allowSourceCodeReporting)
-							content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "=" + URLEncoder.encode(candidate.getSourceMethodDeclaration().toString(), "UTF-8");
-						content += "&" + URLEncoder.encode("application", "UTF-8") + "=" + URLEncoder.encode("1", "UTF-8");
-						content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "=" + URLEncoder.encode(candidate.getMovedMethodName(), "UTF-8");
-						content += "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
-						content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("0", "UTF-8");
-						URL url = new URL(Activator.RANK_URL);
-						URLConnection urlConn = url.openConnection();
-						urlConn.setDoInput(true);
-						urlConn.setDoOutput(true);
-						urlConn.setUseCaches(false);
-						urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-						DataOutputStream printout = new DataOutputStream(urlConn.getOutputStream());
-						printout.writeBytes(content);
-						printout.flush();
-						printout.close();
-						DataInputStream input = new DataInputStream(urlConn.getInputStream());
-						input.close();
-					} catch (IOException ioe) {
-						ioe.printStackTrace();
-					}
-				}
-				refactoring = new MoveMethodRefactoring(sourceCompilationUnit, targetCompilationUnit,
-						candidate.getSourceClassTypeDeclaration(), candidate.getTargetClassTypeDeclaration(), candidate.getSourceMethodDeclaration(),
-						candidate.getAdditionalMethodsToBeMoved(), candidate.leaveDelegate(), candidate.getMovedMethodName());
-			}
-			try {
-				IJavaElement targetJavaElement = JavaCore.create(targetFile);
-				JavaUI.openInEditor(targetJavaElement);
-				IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
-				JavaUI.openInEditor(sourceJavaElement);
-			} catch (PartInitException e) {
-				e.printStackTrace();
-			} catch (JavaModelException e) {
-				e.printStackTrace();
-			}
-			MyRefactoringWizard wizard = new MyRefactoringWizard(refactoring, applyRefactoringAction);
-			RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
-			try { 
-				String titleForFailedChecks = ""; //$NON-NLS-1$ 
-				op.run(getSite().getShell(), titleForFailedChecks); 
-			} catch(InterruptedException e) {
-				e.printStackTrace();
-			}
-		}*/
 	}
+	
+	public String getClassName(int sizeOfMethodInvocation, String stringOfMethodInvocation)
+	   {
+	      int count = 0;
+	      for(int i = stringOfMethodInvocation.length()-1; i >= 0; i--)
+	      {
+	         if(stringOfMethodInvocation.charAt(i) == '.')
+	         {
+	            count = i + 1;
+	            break;
+	         }
+	      }
+	      return stringOfMethodInvocation.substring(count, stringOfMethodInvocation.length());
+	   }
+	   
+	 public int getModifyPosition(IBuffer bufferOfMethodInvocation)
+	   {   
+	       int length = bufferOfMethodInvocation.getLength();
+	        int count = 0;
+	        for(int i=length - 1;i>=0;i--, count++)
+	        {
+	           if(bufferOfMethodInvocation.getChar(i) == '}')
+	              break;
+	        }
+	        return length - (count + 1);
+	   }
 
+	 private void findCodeSmell() {
+		 //activeProject = selectedProject;
+			CompilationUnitCache.getInstance().clearCache();
+			// sliceGroupTable = getTable();
+			/* Mine */
+			targets = getTable();
+			treeViewer.setContentProvider(new ViewContentProvider());
+			//applyRefactoringAction.setEnabled(true);
+			//saveResultsAction.setEnabled(true);
+			// evolutionAnalysisAction.setEnabled(true);
+			
+			refactorButtonMaker.disposeButtons();
+			
+			Tree tree = treeViewer.getTree();
+			refactorButtonMaker.setTree(tree);
+			refactorButtonMaker.makeRefactoringButtons(3);
+
+			tree.addListener(SWT.Expand, new Listener() {
+				public void handleEvent(Event e) {
+					refactorButtonMaker.makeChildrenRefactoringButtons(3);
+				}
+			});
+	 }
+	 
 	private void makeActions() {
 		identifyBadSmellsAction = new Action() {
 			public void run() {
 				activeProject = selectedProject;
+				findCodeSmell();
+				/*activeProject = selectedProject;
 				CompilationUnitCache.getInstance().clearCache();
 				// sliceGroupTable = getTable();
-				/* Mine */
+				
 				targets = getTable();
 				treeViewer.setContentProvider(new ViewContentProvider());
 				applyRefactoringAction.setEnabled(true);
@@ -683,7 +728,7 @@ public class MessageChain extends ViewPart {
 					public void handleEvent(Event e) {
 						refactorButtonMaker.makeChildrenRefactoringButtons(3);
 					}
-				});
+				});*/
 			}
 		};
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
@@ -691,7 +736,7 @@ public class MessageChain extends ViewPart {
 				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		identifyBadSmellsAction.setEnabled(false);
 
-		saveResultsAction = new Action() {
+		/*saveResultsAction = new Action() {
 			public void run() {
 				saveResults();
 			}
@@ -699,10 +744,10 @@ public class MessageChain extends ViewPart {
 		saveResultsAction.setToolTipText("Save Results");
 		saveResultsAction.setImageDescriptor(
 				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_SAVE_EDIT));
-		saveResultsAction.setEnabled(false);
+		saveResultsAction.setEnabled(false);*/
 
 
-		applyRefactoringAction = new Action() {
+		/*applyRefactoringAction = new Action() {
 			public void run() {
 				IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
 				if (selection != null && selection.getFirstElement() instanceof ASTSlice) {
@@ -803,7 +848,7 @@ public class MessageChain extends ViewPart {
 		applyRefactoringAction.setToolTipText("Apply Refactoring");
 		applyRefactoringAction.setImageDescriptor(
 				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_DEF_VIEW));
-		applyRefactoringAction.setEnabled(false);
+		applyRefactoringAction.setEnabled(false);*/
 
 		doubleClickAction = new Action() {
 			public void run() {
@@ -1073,7 +1118,7 @@ public class MessageChain extends ViewPart {
 		return store;
 	}
 
-	private void saveResults() {
+	/*private void saveResults() {
 		FileDialog fd = new FileDialog(getSite().getWorkbenchWindow().getShell(), SWT.SAVE);
 		fd.setText("Save Results");
 		String[] filterExt = { "*.txt" };
@@ -1083,11 +1128,7 @@ public class MessageChain extends ViewPart {
 			try {
 				BufferedWriter out = new BufferedWriter(new FileWriter(selected));
 				Tree tree = treeViewer.getTree();
-				/*
-				 * TreeColumn[] columns = tree.getColumns(); for(int i=0; i<columns.length; i++)
-				 * { if(i == columns.length-1) out.write(columns[i].getText()); else
-				 * out.write(columns[i].getText() + "\t"); } out.newLine();
-				 */
+
 				for (int i = 0; i < tree.getItemCount(); i++) {
 					TreeItem treeItem = tree.getItem(i);
 					ASTSliceGroup group = (ASTSliceGroup) treeItem.getData();
@@ -1101,7 +1142,7 @@ public class MessageChain extends ViewPart {
 				e.printStackTrace();
 			}
 		}
-	}
+	}*/
 	private List<MessageChainStructure> convertMap2MCS(Map<String, Map<Integer, List<MethodInvocationObject>>> arg){
 		List<MessageChainStructure> ret = new ArrayList<MessageChainStructure>();
 		if(arg == null) return ret;
