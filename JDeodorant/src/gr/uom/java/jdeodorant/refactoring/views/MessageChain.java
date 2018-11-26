@@ -147,6 +147,8 @@ public class MessageChain extends ViewPart {
 	/* Mine */
 	public MessageChainStructure[] targets;
 	private Map<String, Map<Integer, List<MethodInvocationObject>>> originCodeSmells; // for storing origin map
+	private List<String> newRefactoringMethod;//store method's name and class name of refactoring code. We will add new method name whenever we do refactoring
+	
 	//private IJavaProject 
 	private class MessageChainRefactoringButtonUI extends RefactoringButtonUI{
 		public void pressRefactoringButton(int index) {
@@ -230,22 +232,6 @@ public class MessageChain extends ViewPart {
 		}
 
 		public Image getColumnImage(Object obj, int index) {
-			/*Image image = null;
-			if(obj instanceof ASTSlice) {
-				ASTSlice entry = (ASTSlice)obj;
-				int rate = -1;
-				Integer userRate = entry.getUserRate();
-				if(userRate != null)
-					rate = userRate;
-				switch(index) {
-				case 5:
-					if(rate != -1) {
-						image = Activator.getImageDescriptor("/icons/" + String.valueOf(rate) + ".jpg").createImage();
-					}
-				default:
-					break;
-				}
-			}*/
 			return null;
 		}
 		public Image getImage(Object obj) {
@@ -254,22 +240,6 @@ public class MessageChain extends ViewPart {
 
 	}
 
-	/*class NameSorter extends ViewerSorter {
-		public int compare(Viewer viewer, Object obj1, Object obj2) {
-			/*if (obj1 instanceof ASTSliceGroup && obj2 instanceof ASTSliceGroup) {
-				ASTSliceGroup sliceGroup1 = (ASTSliceGroup) obj1;
-				ASTSliceGroup sliceGroup2 = (ASTSliceGroup) obj2;
-				return sliceGroup1.compareTo(sliceGroup2);
-			} else {
-				ASTSlice slice1 = (ASTSlice) obj1;
-				ASTSlice slice2 = (ASTSlice) obj2;
-				// slices belong to the same group
-				return Integer.valueOf(slice1.getBoundaryBlock().getId())
-						.compareTo(Integer.valueOf(slice2.getBoundaryBlock().getId()));
-			}
-			return 1;
-		}
-	}*/
 
 	private ISelectionListener selectionListener = new ISelectionListener() {
 		public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
@@ -338,6 +308,7 @@ public class MessageChain extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
+		newRefactoringMethod = new ArrayList<String>();
 		refactorButtonMaker = new MessageChainRefactoringButtonUI();
 		originCodeSmells = null;
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
@@ -381,110 +352,13 @@ public class MessageChain extends ViewPart {
 				new TextCellEditor(), new TextCellEditor(), new MyComboBoxCellEditor(treeViewer.getTree(),
 						new String[] { "0", "1", "2", "3" }, SWT.READ_ONLY) });
 
-		/*treeViewer.setCellModifier(new ICellModifier() {
-			public boolean canModify(Object element, String property) {
-				return property.equals("rate");
-			}
-
-			public Object getValue(Object element, String property) {
-				if (element instanceof ASTSlice) {
-					ASTSlice slice = (ASTSlice) element;
-					if (slice.getUserRate() != null)
-						return slice.getUserRate();
-					else
-						return 0;
-				}
-				if(element instanceof MessageChainStructure) {
-				}
-
-				return 0;
-			}
-
-			public void modify(Object element, String property, Object value) {
-				TreeItem item = (TreeItem) element;
-				Object data = item.getData();
-				if (data instanceof ASTSlice) {
-					ASTSlice slice = (ASTSlice) data;
-					slice.setUserRate((Integer) value);
-					IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-					boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
-					if (allowUsageReporting) {
-						Tree tree = treeViewer.getTree();
-						int groupPosition = -1;
-						int totalGroups = tree.getItemCount();
-						for (int i = 0; i < tree.getItemCount(); i++) {
-							TreeItem treeItem = tree.getItem(i);
-							ASTSliceGroup group = (ASTSliceGroup) treeItem.getData();
-							if (group.getCandidates().contains(slice)) {
-								groupPosition = i;
-								break;
-							}
-						}
-						try {
-							boolean allowSourceCodeReporting = store
-									.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
-							String declaringClass = slice.getSourceTypeDeclaration().resolveBinding()
-									.getQualifiedName();
-							String methodName = slice.getSourceMethodDeclaration().resolveBinding().toString();
-							String sourceMethodName = declaringClass + "::" + methodName;
-							String content = URLEncoder.encode("project_name", "UTF-8") + "="
-									+ URLEncoder.encode(activeProject.getElementName(), "UTF-8");
-							content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "="
-									+ URLEncoder.encode(sourceMethodName, "UTF-8");
-							content += "&" + URLEncoder.encode("variable_name", "UTF-8") + "=" + URLEncoder
-									.encode(slice.getLocalVariableCriterion().resolveBinding().toString(), "UTF-8");
-							content += "&" + URLEncoder.encode("block", "UTF-8") + "="
-									+ URLEncoder.encode("B" + slice.getBoundaryBlock().getId(), "UTF-8");
-							content += "&" + URLEncoder.encode("object_slice", "UTF-8") + "="
-									+ URLEncoder.encode(slice.isObjectSlice() ? "1" : "0", "UTF-8");
-							int numberOfSliceStatements = slice.getNumberOfSliceStatements();
-							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
-							content += "&" + URLEncoder.encode("duplicated_statements", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(numberOfDuplicatedStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("extracted_statements", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(numberOfSliceStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
-							content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
-							if (allowSourceCodeReporting) {
-								content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "="
-										+ URLEncoder.encode(slice.getSourceMethodDeclaration().toString(), "UTF-8");
-								content += "&" + URLEncoder.encode("slice_statements", "UTF-8") + "="
-										+ URLEncoder.encode(slice.sliceToString(), "UTF-8");
-							}
-							content += "&" + URLEncoder.encode("rating", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(slice.getUserRate()), "UTF-8");
-							content += "&" + URLEncoder.encode("username", "UTF-8") + "="
-									+ URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
-							content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("2", "UTF-8");
-							URL url = new URL(Activator.RANK_URL);
-							URLConnection urlConn = url.openConnection();
-							urlConn.setDoInput(true);
-							urlConn.setDoOutput(true);
-							urlConn.setUseCaches(false);
-							urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-							DataOutputStream printout = new DataOutputStream(urlConn.getOutputStream());
-							printout.writeBytes(content);
-							printout.flush();
-							printout.close();
-							DataInputStream input = new DataInputStream(urlConn.getInputStream());
-							input.close();
-						} catch (IOException ioe) {
-							ioe.printStackTrace();
-						}
-					}
-					treeViewer.update(data, null);
-				}
-			}
-		});*/
 
 		makeActions();
 		hookDoubleClickAction();
 		contributeToActionBars();
 		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(selectionListener);
 		JavaCore.addElementChangedListener(ElementChangedListener.getInstance());
-		getSite().getWorkbenchWindow().getWorkbench().getOperationSupport().getOperationHistory()
+		/*getSite().getWorkbenchWindow().getWorkbench().getOperationSupport().getOperationHistory()
 				.addOperationHistoryListener(new IOperationHistoryListener() {
 					public void historyNotification(OperationHistoryEvent event) {
 						int eventType = event.getEventType();
@@ -493,13 +367,10 @@ public class MessageChain extends ViewPart {
 								|| eventType == OperationHistoryEvent.OPERATION_REMOVED) {
 							if (activeProject != null && CompilationUnitCache.getInstance().getAffectedProjects()
 									.contains(activeProject)) {
-								//applyRefactoringAction.setEnabled(false);
-								//saveResultsAction.setEnabled(false);
-								// evolutionAnalysisAction.setEnabled(false);
 							}
 						}
 					}
-				});
+				});*/
 	}
 
 	private void contributeToActionBars() {
@@ -509,9 +380,6 @@ public class MessageChain extends ViewPart {
 
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
-		//manager.add(applyRefactoringAction);
-		//manager.add(saveResultsAction);
-		// manager.add(evolutionAnalysisAction);
 	}
  	
 	public String makeNewMethodCode (String newMethodName, String returnType, List<String> stringOfArgumentType, List<Integer> numOfArgumentOfEachMethod, List<String> stringOfMethodInvocation) {
@@ -588,10 +456,13 @@ public class MessageChain extends ViewPart {
 		if(targetSmell != null && targetSmell.getStart() != -1 && targetSmell.getLength() != -1) {
 			SystemObject systemObject = ASTReader.getSystemObject();
 			if(systemObject != null) {
+				String classNameOfMethodInvocation = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getOriginClassName();
 				ClassObject classWithCodeSmell = systemObject.getClassObject(targetSmell.getParent().getName());
-				ClassObject classOfMethodInvocation = systemObject.getClassObject(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getOriginClassName());
+				ClassObject classOfMethodInvocation = systemObject.getClassObject(classNameOfMethodInvocation);
 				IFile fileWithCodeSmell = classWithCodeSmell.getIFile();
 				IFile fileOfMethodInvocation = classOfMethodInvocation.getIFile();
+				
+				System.out.println("Class name for refactoring method :"+originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getOriginClassName());
 				
 				ICompilationUnit compUnitWithCodeSmell = (ICompilationUnit) JavaCore.create(fileWithCodeSmell);
 				ICompilationUnit compUnitOfMethodInvocation = (ICompilationUnit) JavaCore.create(fileOfMethodInvocation);
@@ -641,6 +512,8 @@ public class MessageChain extends ViewPart {
 					workingCopyWithCodeSmell.reconcile(ICompilationUnit.NO_AST,false,null,null);
 					workingCopyWithCodeSmell.commitWorkingCopy(false, null);
 					workingCopyWithCodeSmell.discardWorkingCopy();
+					
+					newRefactoringMethod.add(classNameOfMethodInvocation+"/"+newMethodName);//add new method name to notify that this code should not be detected.
 					
 				    System.out.println("I am done!!!!!!");
 					
@@ -708,27 +581,6 @@ public class MessageChain extends ViewPart {
 			public void run() {
 				activeProject = selectedProject;
 				findCodeSmell();
-				/*activeProject = selectedProject;
-				CompilationUnitCache.getInstance().clearCache();
-				// sliceGroupTable = getTable();
-				
-				targets = getTable();
-				treeViewer.setContentProvider(new ViewContentProvider());
-				applyRefactoringAction.setEnabled(true);
-				saveResultsAction.setEnabled(true);
-				// evolutionAnalysisAction.setEnabled(true);
-				
-				refactorButtonMaker.disposeButtons();
-				
-				Tree tree = treeViewer.getTree();
-				refactorButtonMaker.setTree(tree);
-				refactorButtonMaker.makeRefactoringButtons(3);
-
-				tree.addListener(SWT.Expand, new Listener() {
-					public void handleEvent(Event e) {
-						refactorButtonMaker.makeChildrenRefactoringButtons(3);
-					}
-				});*/
 			}
 		};
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
@@ -736,119 +588,6 @@ public class MessageChain extends ViewPart {
 				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		identifyBadSmellsAction.setEnabled(false);
 
-		/*saveResultsAction = new Action() {
-			public void run() {
-				saveResults();
-			}
-		};
-		saveResultsAction.setToolTipText("Save Results");
-		saveResultsAction.setImageDescriptor(
-				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_SAVE_EDIT));
-		saveResultsAction.setEnabled(false);*/
-
-
-		/*applyRefactoringAction = new Action() {
-			public void run() {
-				IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
-				if (selection != null && selection.getFirstElement() instanceof ASTSlice) {
-					ASTSlice slice = (ASTSlice) selection.getFirstElement();
-					TypeDeclaration sourceTypeDeclaration = slice.getSourceTypeDeclaration();
-					CompilationUnit sourceCompilationUnit = (CompilationUnit) sourceTypeDeclaration.getRoot();
-					IFile sourceFile = slice.getIFile();
-					IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-					boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
-					if (allowUsageReporting) {
-						Tree tree = treeViewer.getTree();
-						int groupPosition = -1;
-						int totalGroups = tree.getItemCount();
-						for (int i = 0; i < tree.getItemCount(); i++) {
-							TreeItem treeItem = tree.getItem(i);
-							ASTSliceGroup group = (ASTSliceGroup) treeItem.getData();
-							if (group.getCandidates().contains(slice)) {
-								groupPosition = i;
-								break;
-							}
-						}
-						try {
-							boolean allowSourceCodeReporting = store
-									.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
-							String declaringClass = slice.getSourceTypeDeclaration().resolveBinding()
-									.getQualifiedName();
-							String methodName = slice.getSourceMethodDeclaration().resolveBinding().toString();
-							String sourceMethodName = declaringClass + "::" + methodName;
-							String content = URLEncoder.encode("project_name", "UTF-8") + "="
-									+ URLEncoder.encode(activeProject.getElementName(), "UTF-8");
-							content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "="
-									+ URLEncoder.encode(sourceMethodName, "UTF-8");
-							content += "&" + URLEncoder.encode("variable_name", "UTF-8") + "=" + URLEncoder
-									.encode(slice.getLocalVariableCriterion().resolveBinding().toString(), "UTF-8");
-							content += "&" + URLEncoder.encode("block", "UTF-8") + "="
-									+ URLEncoder.encode("B" + slice.getBoundaryBlock().getId(), "UTF-8");
-							content += "&" + URLEncoder.encode("object_slice", "UTF-8") + "="
-									+ URLEncoder.encode(slice.isObjectSlice() ? "1" : "0", "UTF-8");
-							int numberOfSliceStatements = slice.getNumberOfSliceStatements();
-							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
-							content += "&" + URLEncoder.encode("duplicated_statements", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(numberOfDuplicatedStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("extracted_statements", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(numberOfSliceStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
-							content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
-							if (allowSourceCodeReporting) {
-								content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "="
-										+ URLEncoder.encode(slice.getSourceMethodDeclaration().toString(), "UTF-8");
-								content += "&" + URLEncoder.encode("slice_statements", "UTF-8") + "="
-										+ URLEncoder.encode(slice.sliceToString(), "UTF-8");
-							}
-							content += "&" + URLEncoder.encode("application", "UTF-8") + "="
-									+ URLEncoder.encode(String.valueOf("1"), "UTF-8");
-							content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "="
-									+ URLEncoder.encode(slice.getExtractedMethodName(), "UTF-8");
-							content += "&" + URLEncoder.encode("username", "UTF-8") + "="
-									+ URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
-							content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("2", "UTF-8");
-							URL url = new URL(Activator.RANK_URL);
-							URLConnection urlConn = url.openConnection();
-							urlConn.setDoInput(true);
-							urlConn.setDoOutput(true);
-							urlConn.setUseCaches(false);
-							urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-							DataOutputStream printout = new DataOutputStream(urlConn.getOutputStream());
-							printout.writeBytes(content);
-							printout.flush();
-							printout.close();
-							DataInputStream input = new DataInputStream(urlConn.getInputStream());
-							input.close();
-						} catch (IOException ioe) {
-							ioe.printStackTrace();
-						}
-					}
-					Refactoring refactoring = new ExtractMethodRefactoring(sourceCompilationUnit, slice);
-					try {
-						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
-						JavaUI.openInEditor(sourceJavaElement);
-					} catch (PartInitException e) {
-						e.printStackTrace();
-					} catch (JavaModelException e) {
-						e.printStackTrace();
-					}
-					MyRefactoringWizard wizard = new MyRefactoringWizard(refactoring, applyRefactoringAction);
-					RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard);
-					try {
-						String titleForFailedChecks = ""; //$NON-NLS-1$
-						op.run(getSite().getShell(), titleForFailedChecks);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		};
-		applyRefactoringAction.setToolTipText("Apply Refactoring");
-		applyRefactoringAction.setImageDescriptor(
-				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_DEF_VIEW));
-		applyRefactoringAction.setEnabled(false);*/
 
 		doubleClickAction = new Action() {
 			public void run() {
@@ -885,49 +624,6 @@ public class MessageChain extends ViewPart {
 					}
 				}				
 				
-				/*
-				if (selection.getFirstElement() instanceof ASTSlice) {
-					ASTSlice slice = (ASTSlice) selection.getFirstElement();
-					IFile sourceFile = slice.getIFile();
-					try {
-						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
-						ITextEditor sourceEditor = (ITextEditor) JavaUI.openInEditor(sourceJavaElement);
-						Object[] highlightPositionMaps = slice.getHighlightPositions();
-						Map<Position, String> annotationMap = (Map<Position, String>) highlightPositionMaps[0];
-						Map<Position, Boolean> duplicationMap = (Map<Position, Boolean>) highlightPositionMaps[1];
-						AnnotationModel annotationModel = (AnnotationModel) sourceEditor.getDocumentProvider()
-								.getAnnotationModel(sourceEditor.getEditorInput());
-						Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
-						while (annotationIterator.hasNext()) {
-							Annotation currentAnnotation = annotationIterator.next();
-							if (currentAnnotation.getType().equals(SliceAnnotation.EXTRACTION)
-									|| currentAnnotation.getType().equals(SliceAnnotation.DUPLICATION)) {
-								annotationModel.removeAnnotation(currentAnnotation);
-							}
-						}
-						for (Position position : annotationMap.keySet()) {
-							SliceAnnotation annotation = null;
-							String annotationText = annotationMap.get(position);
-							boolean duplicated = duplicationMap.get(position);
-							if (duplicated)
-								annotation = new SliceAnnotation(SliceAnnotation.DUPLICATION, annotationText);
-							else
-								annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, annotationText);
-							annotationModel.addAnnotation(annotation, position);
-						}
-						List<Position> positions = new ArrayList<Position>(annotationMap.keySet());
-						Position firstPosition = positions.get(0);
-						Position lastPosition = positions.get(positions.size() - 1);
-						int offset = firstPosition.getOffset();
-						int length = lastPosition.getOffset() + lastPosition.getLength() - firstPosition.getOffset();
-						sourceEditor.setHighlightRange(offset, length, true);
-					} catch (PartInitException e) {
-						e.printStackTrace();
-					} catch (JavaModelException e) {
-						e.printStackTrace();
-					}
-				}
-				*/
 			}
 		};
 	}
@@ -1032,14 +728,24 @@ public class MessageChain extends ViewPart {
 		return arrayTargets;
 	}
 	
-	
+	/**
+	 * new function for checking whether this method is made by refactoring or not.
+	 * **/
+	private boolean checkMethodIfFromRefactoring(String className, String methodName) {
+		String target = "";
+		target += className;
+		target += "/";
+		target += methodName;
+		
+		return newRefactoringMethod.contains(target);//true : refactoring's result, false : code smell
+	}
 
 	private Map<String, Map<Integer, List<MethodInvocationObject>>> processMethod(Set<AbstractMethodDeclaration> methodObjects) {
 		Map<String, Map<Integer, List<MethodInvocationObject>>> store = new HashMap<String, Map<Integer, List<MethodInvocationObject>>>();
 		MethodObject[] dummy = new MethodObject[3];
 		//System.out.println("Test at process Method at given objects of " + methodObjects.size());
 		for (AbstractMethodDeclaration methodObject : methodObjects) {
-			if (methodObject.getMethodBody() != null) {
+			if (methodObject.getMethodBody() != null && checkMethodIfFromRefactoring(methodObject.getClassName(),methodObject.getName()) == false) {//check method is from refactoring
 				List<MethodInvocationObject> test = methodObject.getMethodInvocations();
 				
 				for(MethodInvocationObject methodInvo : test) {
@@ -1118,31 +824,7 @@ public class MessageChain extends ViewPart {
 		return store;
 	}
 
-	/*private void saveResults() {
-		FileDialog fd = new FileDialog(getSite().getWorkbenchWindow().getShell(), SWT.SAVE);
-		fd.setText("Save Results");
-		String[] filterExt = { "*.txt" };
-		fd.setFilterExtensions(filterExt);
-		String selected = fd.open();
-		if (selected != null) {
-			try {
-				BufferedWriter out = new BufferedWriter(new FileWriter(selected));
-				Tree tree = treeViewer.getTree();
 
-				for (int i = 0; i < tree.getItemCount(); i++) {
-					TreeItem treeItem = tree.getItem(i);
-					ASTSliceGroup group = (ASTSliceGroup) treeItem.getData();
-					for (ASTSlice candidate : group.getCandidates()) {
-						out.write(candidate.toString());
-						out.newLine();
-					}
-				}
-				out.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}*/
 	private List<MessageChainStructure> convertMap2MCS(Map<String, Map<Integer, List<MethodInvocationObject>>> arg){
 		List<MessageChainStructure> ret = new ArrayList<MessageChainStructure>();
 		if(arg == null) return ret;
