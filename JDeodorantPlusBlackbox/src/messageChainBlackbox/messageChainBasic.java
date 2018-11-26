@@ -44,78 +44,103 @@ import org.eclipse.core.runtime.CoreException;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class messageChainBasic {
-	private static SWTWorkbenchBot bot;
+   private static SWTWorkbenchBot bot;
 
-	private static void openPackageExplorer() {
-		bot.menu("Window").menu("Show View").menu("Other...").click();
-		SWTBotShell dialog = bot.shell("Show View");
-		dialog.activate();
-		bot.tree().getTreeItem("Java").expand().getNode("Package Explorer").doubleClick();
-	}
-	
-	@BeforeClass
-	public static void initBot() throws CoreException {
-		bot = new SWTWorkbenchBot();
-		bot.viewByTitle("Welcome").close();
-		
-		testProject.buildProject();
-		openPackageExplorer();
-	}
+   private static void openPackageExplorer() {
+      bot.menu("Window").menu("Show View").menu("Other...").click();
+      SWTBotShell dialog = bot.shell("Show View");
+      dialog.activate();
+      bot.tree().getTreeItem("Java").expand().getNode("Package Explorer").doubleClick();
+   }
+   
+   @BeforeClass
+   public static void initBot() throws CoreException {
+      bot = new SWTWorkbenchBot();
+      bot.viewByTitle("Welcome").close();
+      
+      testProject.buildProject();
+      openPackageExplorer();
+   }
 
-	@AfterClass
-	public static void afterClass() throws CoreException {
-		testProject.deleteProject();
-		bot.resetWorkbench();
-	}
-	
-	@Test
-	public void testOpenMessageChainTab() {
-		bot.menu("Bad Smells").menu("Message Chain").click();
-		bot.viewByTitle("Message Chain");
-		assertTrue(bot.viewByTitle("Message Chain").isActive());
-	}
-	
-	@Test
-	public void testApplyingMCDetection() {
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-		
-		SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-		assertTrue(detectionApplier.bot().tree().getTreeItem("").isEnabled());
-	}
-	
-	@Test
-	public void testExpand() {
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-		
-		SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-		detectionApplier.bot().tree().getTreeItem("").select();
-    	detectionApplier.bot().tree().getTreeItem("").expand();
-    	assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode("536").isEnabled());
-	}
-	
-	// Add in Iteration 3
-	@Test
-	public void testDoubleClick() {
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-		
-		SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-		detectionApplier.bot().tree().getTreeItem("").select();
-    	detectionApplier.bot().tree().getTreeItem("").expand();
-    	detectionApplier.bot().tree().getTreeItem("").getNode(0).select();
-    	detectionApplier.bot().tree().getTreeItem("").getNode(0).doubleClick();
+   @AfterClass
+   public static void afterClass() throws CoreException {
+      testProject.deleteProject();
+      bot.resetWorkbench();
+   }
+   
+   @Test
+   public void testOpenMessageChainTab() {
+      bot.menu("Bad Smells").menu("Message Chain").click();
+      bot.viewByTitle("Message Chain");
+      assertTrue(bot.viewByTitle("Message Chain").isActive());
+   }
+   
+   @Test
+   public void testApplyingMCDetection() {
+      bot.menu("Bad Smells").menu("Message Chain").click();
+      bot.viewByTitle("Message Chain");
+      SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
+      packageExplorer.show();
+      packageExplorer.bot().tree().getTreeItem("testProject").click();
+      
+      SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
+      detectionApplier.show();
+      detectionApplier.getToolbarButtons().get(0).click();
+      assertTrue(detectionApplier.bot().tree().getTreeItem("").isEnabled());
+   }
+   
+   @Test
+   public void testExpand() {
+      bot.menu("Bad Smells").menu("Message Chain").click();
+      bot.viewByTitle("Message Chain");
+      SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
+      packageExplorer.show();
+      packageExplorer.bot().tree().getTreeItem("testProject").click();
+      
+      SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
+      detectionApplier.show();
+      detectionApplier.getToolbarButtons().get(0).click();
+      detectionApplier.bot().tree().getTreeItem("").select();
+       detectionApplier.bot().tree().getTreeItem("").expand();
+       assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode("536").isEnabled());
+   }
+   
+   // Add in Iteration 3
+   @Test
+   public void testDoubleClick() {
+      bot.menu("Bad Smells").menu("Message Chain").click();
+      bot.viewByTitle("Message Chain");
+      SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
+      packageExplorer.show();
+      packageExplorer.bot().tree().getTreeItem("testProject").click();
+      
+      SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
+      detectionApplier.show();
+      detectionApplier.getToolbarButtons().get(0).click();
+      detectionApplier.bot().tree().getTreeItem("").select();
+       detectionApplier.bot().tree().getTreeItem("").expand();
+       detectionApplier.bot().tree().getTreeItem("").getNode(0).select();
+       detectionApplier.bot().tree().getTreeItem("").getNode(0).doubleClick();
 
-    	//assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode("536").isEnabled());
-	}
+       //assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode("536").isEnabled());
+   }
+   
+   @Test
+   public void testClickRefactoringButton() {
+      bot.menu("Bad Smells").menu("Message Chain").click();
+      bot.viewByTitle("Message Chain");
+      SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
+      packageExplorer.show();
+      packageExplorer.bot().tree().getTreeItem("testProject").click();
+      
+      SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
+      detectionApplier.show();
+      detectionApplier.getToolbarButtons().get(0).click();
+      detectionApplier.bot().tree().getTreeItem("").select();
+       detectionApplier.bot().tree().getTreeItem("").expand();
+       detectionApplier.bot().tree().getTreeItem("").getNode(0).select();
+       //detectionApplier.bot().tree().getTreeItem("").getNode(0).
+       detectionApplier.bot().tree().getTreeItem("").getNode(0).click(3);
+       //assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode("536").isEnabled());
+   }
 }
