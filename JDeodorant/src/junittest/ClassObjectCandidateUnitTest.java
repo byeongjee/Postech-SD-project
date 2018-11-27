@@ -13,6 +13,7 @@ import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.ClassObjectCandidate;
 import gr.uom.java.ast.ConstructorObject;
 import gr.uom.java.ast.MethodObject;
+import gr.uom.java.ast.TypeObject;
 
 public class ClassObjectCandidateUnitTest {
 	public ViewContentProvider makeViewContentProvider() {
@@ -23,11 +24,8 @@ public class ClassObjectCandidateUnitTest {
 	private ClassObject rootClassObject; 
 	private ClassObjectCandidate mainClassObjectCandidate;
 	
-	private ClassObjectCandidate noAbsClassObjectCandidate;
-	private ClassObjectCandidate noIntClassObjectCandidate;
 	private ClassObjectCandidate oneAbsClassObjectCandidate;
 	private ClassObjectCandidate oneIntClassObjectCandidate;
-	private ClassObjectCandidate twoAbsClassObjectCandidate;
 	
 	private ClassObjectCandidate firstChildClassObjectCandidate;
 	private ClassObjectCandidate secondChildClassObjectCandidate;
@@ -67,7 +65,21 @@ public class ClassObjectCandidateUnitTest {
 	 */
 	@Test
 	public void testNumChild() {
+		// Set Hierarchy of Classes
+		TypeObject _type = new TypeObject("Parent");
 		
+		ClassObject _parent = new ClassObject();
+		ClassObject _child = new ClassObject();
+		
+		_child.setSuperclass(_type);
+		
+		ClassObjectCandidate __parent = new ClassObjectCandidate(_parent);
+		
+		assertEquals(1, __parent.getNumChild());
+		
+		// Set Actively
+		__parent.setNumChild(2);
+		assertEquals(2, __parent.getNumChild());
 	}
 	
 	@Test
@@ -106,7 +118,6 @@ public class ClassObjectCandidateUnitTest {
 		assertEquals(3, answer1);
 		
 		//List of unusedParameter
-		
 		List<String> answer2 = this.mainClassObjectCandidate.getUnusedParameterList().get(0);
 		assertEquals("int", answer2.get(0));
 		assertEquals("a", answer2.get(0));
@@ -123,12 +134,15 @@ public class ClassObjectCandidateUnitTest {
 	 * Test Information Related to Refactoring
 	 */
 	@Test
-	public void testGetContent() {
+	public void testContent() {
+		// Set Content
 		List<String> answer = new ArrayList<String>();
 		answer.add("");
 		
+		this.mainClassObjectCandidate.setContent(answer);
 		List<String> content = this.mainClassObjectCandidate.getContent();
 		
+		// Get Content
 		assertEquals(answer, content);
 	}
 	
@@ -157,11 +171,16 @@ public class ClassObjectCandidateUnitTest {
 	
 	@Test
 	public void testResolveUnnecessaryParameters() {
+		// set Content with Unnecessary Parameters
+		List<String> primer = new ArrayList<String>();
+		this.mainClassObjectCandidate.setContent(primer);
+				
+		// resolve the code smell
+		this.mainClassObjectCandidate.resolveUnnecessaryParameters(this.smellingMethods.get(0));
+		List<String> prediction = this.mainClassObjectCandidate.getContent();
+		
 		List<String> answer = new ArrayList<String>();
 		answer.add("");
-		
-		this.mainClassObjectCandidate.resolveUnnecessaryParameters(this.smellingMethods.get(0));
-		
-		assertEquals(answer, this.mainClassObjectCandidate.getContent());
+		assertEquals(answer, prediction);
 	}
 }

@@ -1,9 +1,9 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
+
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -11,63 +11,40 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
 import gr.uom.java.ast.ASTReader;
-import gr.uom.java.ast.AbstractMethodDeclaration;
 import gr.uom.java.ast.ClassObject;
-import gr.uom.java.ast.ClassObjectCandidate;
 import gr.uom.java.ast.CompilationErrorDetectedException;
 import gr.uom.java.ast.CompilationUnitCache;
-import gr.uom.java.ast.FieldObject;
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.SystemObject;
 import gr.uom.java.ast.TypeObject;
-import gr.uom.java.ast.decomposition.AbstractStatement;
-import gr.uom.java.ast.decomposition.CompositeStatementObject;
-import gr.uom.java.ast.decomposition.MethodBodyObject;
-import gr.uom.java.ast.decomposition.cfg.AbstractVariable;
-import gr.uom.java.ast.decomposition.cfg.CFG;
-import gr.uom.java.ast.decomposition.cfg.PDG;
-import gr.uom.java.ast.decomposition.cfg.PDGObjectSliceUnion;
-import gr.uom.java.ast.decomposition.cfg.PDGObjectSliceUnionCollection;
-import gr.uom.java.ast.decomposition.cfg.PDGSliceUnion;
-import gr.uom.java.ast.decomposition.cfg.PDGSliceUnionCollection;
-import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-import gr.uom.java.ast.util.StatementExtractor;
 import gr.uom.java.jdeodorant.preferences.PreferenceConstants;
 import gr.uom.java.jdeodorant.refactoring.Activator;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSlice;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSliceGroup;
-import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
 
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
@@ -92,8 +69,6 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
-import org.eclipse.ltk.core.refactoring.Refactoring;
-import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -115,6 +90,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.IProgressService;
 import org.eclipse.ui.texteditor.ITextEditor;
+import java.util.HashSet;
+import gr.uom.java.ast.ClassObjectCandidate;
+import gr.uom.java.ast.decomposition.CompositeStatementObject;
+import gr.uom.java.ast.decomposition.MethodBodyObject;
+import org.eclipse.jdt.core.dom.Statement;
 
 /**
  * Detect Code Smell of Speculative Generality
@@ -130,7 +110,6 @@ public class SpeculativeGenerality extends ViewPart {
 	private Action applyRefactoringAction;
 	private Action doubleClickAction;
 	private Action saveResultsAction;
-	//private Action evolutionAnalysisAction;
 	private IJavaProject selectedProject;
 	private IJavaProject activeProject;
 	private IPackageFragmentRoot selectedPackageFragmentRoot;
@@ -140,6 +119,7 @@ public class SpeculativeGenerality extends ViewPart {
 	private IMethod selectedMethod;
 	private ClassObjectCandidate[] classObjectTable; 
 	private Set<ClassObject> _classObjectToBeExamined=new HashSet<ClassObject>();
+	private SpeculativeGeneralityRefactoringButtonUI refactorButtonMaker;
 	
 	private class SpeculativeGeneralityRefactoringButtonUI extends RefactoringButtonUI {
 		/**
@@ -173,21 +153,21 @@ public class SpeculativeGenerality extends ViewPart {
 						}
 					}
 					
-					// Delete The Target
+					/* Delete The Target
 					try {
 						targetClass.getIFile().delete(true, false, null);
 					} catch (CoreException e) {
 						e.printStackTrace();
-					}
+					}*/
 				}
 			} else if (targetClass.getCodeSmellType().equals("Interface Class")) {
 				if(targetClass.getNumChild() == 0) {
+					/* Delete The Java File
 					try {
-						// WARN :: ¹ºÁö ¸ð¸¦ exceptionÀÌ ¶ä.
 						targetClass.getIFile().delete(true, false, null);
 					} catch (CoreException e) {
 						e.printStackTrace();
-					}
+					}*/
 				} else {					
 					// Integrate Child and Parent
 					ClassObjectCandidate childClass;
@@ -208,25 +188,76 @@ public class SpeculativeGenerality extends ViewPart {
 						}
 					}
 					
-					// Delete The Target
-					try {
-						targetClass.getIFile().delete(true, false, null);
-					} catch (CoreException e) {
-						e.printStackTrace();
+					List<String> resolvedClassContent = targetClass.getContent();
+					String newContent = "";
+					for( String c : resolvedClassContent) {
+						newContent += c + "\r\n";
 					}
+					
+					// Write "new content" On "target class" JavaFile
+					IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+					SystemObject systemObject = ASTReader.getSystemObject();
+					if (systemObject != null) {
+						IFile _file = targetClass.getIFile();
+						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+
+						try {
+							ICompilationUnit _CUorigin = _compilationUnit.getWorkingCopy(new WorkingCopyOwner() {}, null);
+							IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
+							
+							int length = _bufferOrigin.getLength();
+							_bufferOrigin.replace(0, length, newContent);
+		
+							_CUorigin.reconcile(ICompilationUnit.NO_AST, false, null, null);
+							_CUorigin.commitWorkingCopy(false, null);
+							_CUorigin.discardWorkingCopy();
+						} catch (JavaModelException e) {
+							e.printStackTrace();
+						}
+					}
+
 				}
 			} else if (targetClass.getCodeSmellType().equals("Unnecessary Parameters")) {
 				List<MethodObject> _smellingMethods = targetClass.getSmellingMethods();
 				
 				for(MethodObject target : _smellingMethods) {
+					// Get "new Content"
 					targetClass.resolveUnnecessaryParameters(target);
+					List<String> resolvedClassContent = targetClass.getContent();
+
+					// Re-write
+					String newContent = "";
+					for( String c : resolvedClassContent) {
+						newContent += c + "\r\n";
+					}
+					
+					// Write "new content" On "target class" JavaFile
+					IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+					SystemObject systemObject = ASTReader.getSystemObject();
+					if (systemObject != null) {
+						IFile _file = targetClass.getIFile();
+						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+
+						try {
+							ICompilationUnit _CUorigin = _compilationUnit.getWorkingCopy(new WorkingCopyOwner() {}, null);
+							IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
+							
+							int length = _bufferOrigin.getLength();
+		
+							_bufferOrigin.replace(0, length, newContent);
+		
+							_CUorigin.reconcile(ICompilationUnit.NO_AST, false, null, null);
+							_CUorigin.commitWorkingCopy(false, null);
+							_CUorigin.discardWorkingCopy();
+						} catch (JavaModelException e) {
+							e.printStackTrace();
+						}
+					}
 				}
 			}
 		}
 	}
-	
-	private SpeculativeGeneralityRefactoringButtonUI refactorButtonMaker;
-	
+
 	public class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}
@@ -337,31 +368,6 @@ public class SpeculativeGenerality extends ViewPart {
 			return null;
 		}
 	}
-
-	class NameSorter extends ViewerSorter {
-		public int compare(Viewer viewer, Object obj1, Object obj2) {
-//			if(obj1 instanceof ClassObjectCandidate && obj2 instanceof ClassObjectCandidate) {
-//				ClassObjectCandidate classObject1 = (ClassObjectCandidate)obj1;
-//				ClassObjectCandidate classObject2 = (ClassObjectCandidate)obj2;
-//				return classObject1.getName().compareTo(classObject2.getName());
-//			}
-//			else if(obj1 instanceof ClassObject && obj2 instanceof ClassObject) {
-//				ClassObject classObject1 = (ClassObject)obj1;
-//				ClassObject classObject2 = (ClassObject)obj2;
-//				return classObject1.getName().compareTo(classObject2.getName());
-//			}
-//			else if(obj1 instanceof MethodObject && obj2 instanceof MethodObject) {
-//				MethodObject classObject1 = (MethodObject)obj1;
-//				MethodObject classObject2 = (MethodObject)obj2;
-//				return classObject1.getName().compareTo(classObject2.getName());
-//			}
-//			else
-//			{
-//				return 1;
-//			}
-			return 1;
-		}
-	}
 	
 	private ISelectionListener selectionListener = new ISelectionListener() {
 		public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
@@ -438,7 +444,6 @@ public class SpeculativeGenerality extends ViewPart {
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
-		treeViewer.setSorter(new NameSorter());
 		treeViewer.setInput(getViewSite());
 		TableLayout layout = new TableLayout();
 		layout.addColumnData(new ColumnWeightData(60, true));
@@ -644,89 +649,12 @@ public class SpeculativeGenerality extends ViewPart {
 
 		applyRefactoringAction = new Action() {
 			public void run() {
-				System.out.println("In ApplyRefactoringAction run");
-				
 				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
 				if(selection != null && selection.getFirstElement() instanceof ClassObjectCandidate) {
 					IFile sourceFile = ((ClassObjectCandidate) selection.getFirstElement()).getIFile();
 					System.out.println(sourceFile.getFullPath().toString());
-					// ToDo : Apply Refactoring
-					/*IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-					boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
-					if(allowUsageReporting) {
-						Tree tree = treeViewer.getTree();
-						int groupPosition = -1;
-						int totalGroups = tree.getItemCount();
-						for(int i=0; i<tree.getItemCount(); i++) {
-							TreeItem treeItem = tree.getItem(i);
-							ASTSliceGroup group = (ASTSliceGroup)treeItem.getData();
-							if(group.getCandidates().contains(slice)) {
-								groupPosition = i;
-								break;
-							}
-						}
-						try {
-							boolean allowSourceCodeReporting = store.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
-							String declaringClass = slice.getSourceTypeDeclaration().resolveBinding().getQualifiedName();
-							String methodName = slice.getSourceMethodDeclaration().resolveBinding().toString();
-							String sourceMethodName = declaringClass + "::" + methodName;
-							String content = URLEncoder.encode("project_name", "UTF-8") + "=" + URLEncoder.encode(activeProject.getElementName(), "UTF-8");
-							content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "=" + URLEncoder.encode(sourceMethodName, "UTF-8");
-							content += "&" + URLEncoder.encode("variable_name", "UTF-8") + "=" + URLEncoder.encode(slice.getLocalVariableCriterion().resolveBinding().toString(), "UTF-8");
-							content += "&" + URLEncoder.encode("block", "UTF-8") + "=" + URLEncoder.encode("B" + slice.getBoundaryBlock().getId(), "UTF-8");
-							content += "&" + URLEncoder.encode("object_slice", "UTF-8") + "=" + URLEncoder.encode(slice.isObjectSlice() ? "1" : "0", "UTF-8");
-							int numberOfSliceStatements = slice.getNumberOfSliceStatements();
-							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
-							content += "&" + URLEncoder.encode("duplicated_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfDuplicatedStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("extracted_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfSliceStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
-							content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
-							if(allowSourceCodeReporting) {
-								content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "=" + URLEncoder.encode(slice.getSourceMethodDeclaration().toString(), "UTF-8");
-								content += "&" + URLEncoder.encode("slice_statements", "UTF-8") + "=" + URLEncoder.encode(slice.sliceToString(), "UTF-8");
-							}
-							content += "&" + URLEncoder.encode("application", "UTF-8") + "=" + URLEncoder.encode(String.valueOf("1"), "UTF-8");
-							content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "=" + URLEncoder.encode(slice.getExtractedMethodName(), "UTF-8");
-							content += "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
-							content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("2", "UTF-8");
-							URL url = new URL(Activator.RANK_URL);
-							URLConnection urlConn = url.openConnection();
-							urlConn.setDoInput(true);
-							urlConn.setDoOutput(true);
-							urlConn.setUseCaches(false);
-							urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-							DataOutputStream printout = new DataOutputStream(urlConn.getOutputStream());
-							printout.writeBytes(content);
-							printout.flush();
-							printout.close();
-							DataInputStream input = new DataInputStream(urlConn.getInputStream());
-							input.close();
-						} catch (IOException ioe) {
-							ioe.printStackTrace();
-						}
-					}
-					Refactoring refactoring = new ExtractMethodRefactoring(sourceCompilationUnit, slice);
-					try {
-						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
-						JavaUI.openInEditor(sourceJavaElement);
-					} catch (PartInitException e) {
-						e.printStackTrace();
-					} catch (JavaModelException e) {
-						e.printStackTrace();
-					}
-					MyRefactoringWizard wizard = new MyRefactoringWizard(refactoring, applyRefactoringAction);
-					RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
-					try { 
-						String titleForFailedChecks = ""; //$NON-NLS-1$ 
-						op.run(getSite().getShell(), titleForFailedChecks); 
-					} catch(InterruptedException e) {
-						e.printStackTrace();
-					}*/
 				} else if(selection != null && selection.getFirstElement() instanceof MethodObject) {
-					//IFile sourceFile = ((MethodObject) selection.getFirstElement()).getIFile();
-					//System.out.println(sourceFile.getFullPath().toString());
 				}
-				System.out.println("After ApplyRefactoringAction run : end after if");
 			}
 		};
 
@@ -799,6 +727,10 @@ public class SpeculativeGenerality extends ViewPart {
 		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(selectionListener);
 	}
 
+	/**
+	 * @author JaeYeop Lee, JuYong Lee
+	 * @return 
+	 */
 	private ClassObjectCandidate[] getTable() {
 		ClassObjectCandidate[] table = null;
 		try {
@@ -852,6 +784,7 @@ public class SpeculativeGenerality extends ViewPart {
 				
 				// Pass classes in selected target to examine, and get smelling Classes
 				_classObjectToBeExamined = distinctClassObjectsToBeExamined;
+				
 				table = processMethod(distinctClassObjectsToBeExamined);
 			}
 		} catch (InvocationTargetException e) {
@@ -961,7 +894,7 @@ public class SpeculativeGenerality extends ViewPart {
 							// Check the Usage
 							String pTarget = targetMethod.getParameter(p).getName();
 
-							if (!methodContains(methodBodyStatements, pTarget)) {
+							if (!target.checkContainance(methodBodyStatements, pTarget)) {
 								unusedPList.add(pTarget);
 								unusedPNum++;
 							}
@@ -987,23 +920,6 @@ public class SpeculativeGenerality extends ViewPart {
 		}
 		
 		return res;
-	}
-
-	private boolean methodContains(String method, String var) {
-		String[] operator = { " ", "(", ")", "[", "]", ".",	"+", "-", "*", "/", "%",
-				"!", "~", "++", "--", "<<", ">>", ">>>", ">", "<", ">= ", "<=", "==", "!=",
-				"&", "^", "|", "&&", "||", "?", "=", "+=", "/=", "&=", "*=", "-=", 
-				"<<=", ">>=", ">>>=", "^=", "|=", "%=", ";"}; 
-		
-		for(int i = 0; i < operator.length; i++) {
-			for(int j = 0; j < operator.length; j++) {
-				if(method.contains(operator[i] + var + operator[j])) {
-					return true;
-				}
-			}
-		}
-		 
-		return false;
 	}
 
 	private void saveResults() {

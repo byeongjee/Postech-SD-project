@@ -1,32 +1,23 @@
 package gr.uom.java.ast;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Stack;
-import gr.uom.java.ast.decomposition.MethodBodyObject;
-import gr.uom.java.jdeodorant.refactoring.manipulators.TypeCheckElimination;
+
+import org.eclipse.core.runtime.IPath;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.ListIterator;
-import java.util.Map;
-
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.ITypeRoot;
-import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
-import org.eclipse.jdt.core.dom.EnumDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 /**
  * Extension of ClassObject for Speculative Generality Code Smell
  * @author 이주용, 이재엽, 손태영
  */
 public class ClassObjectCandidate extends ClassObject {
+	private List<String> content;
+	
     private String codeSmellType;
     private String refactorType;
     private List<MethodObject> smellingMethods;
@@ -51,7 +42,7 @@ public class ClassObjectCandidate extends ClassObject {
         this.typeDeclaration = null;
     	this.iFile = null;
 
-        // Ext : JuYongLee & JaeYeop Lee
+    	this.content = this.setContent();
         this.codeSmellType = "Speculative Generality";
         this.refactorType = "_";
         this.smellingMethods = new ArrayList<MethodObject>();
@@ -79,7 +70,7 @@ public class ClassObjectCandidate extends ClassObject {
 
     	this.superclass = co.superclass;
 
-        // Ext : JuYongLee & JaeYeop Lee
+    	this.content = this.setContent();
         this.codeSmellType = "Speculative Generality";
         this.refactorType = "_";
         this.smellingMethods = new ArrayList<MethodObject>();
@@ -184,22 +175,9 @@ public class ClassObjectCandidate extends ClassObject {
 				idx = i;
 			}
 		}
-		System.out.println("Index : " + idx);
-		System.out.println("Unused Parameter Number : " + this.numUnusedParameter.get(idx));
 		
 		// make Result
 		List<String> pList = this.getMethodList().get(idx).getParameterList();
-
-		System.out.println("All Parameters : ");
-		for(int i = 0; i < pList.size(); i++) {
-			System.out.println(target.getParameter(i));
-		}
-
-		System.out.println("Unused Parameters : ");
-		for(String s : unusedParameter.get(idx)) {
-			System.out.println(s);
-		}
-		
 		List<List<String>> result = new ArrayList<List<String>>();
 		for(int i = 0; i < pList.size(); i++) {
 			List<String> pair = new ArrayList<String>();
@@ -214,10 +192,6 @@ public class ClassObjectCandidate extends ClassObject {
 			if(!flagUnused) {
 				pair.add(this.getMethodList().get(idx).getParameterTypeList().get(i).toString());
 				pair.add( target.getParameter(i).getName() );
-				
-				for(String s : pair) {
-					System.out.println(s);
-				}
 				
 				result.add(pair);
 			}
@@ -252,58 +226,71 @@ public class ClassObjectCandidate extends ClassObject {
 	 * @author JaeYeop Lee, JuYong Lee
 	 * @return every statement of class
 	 */
-	public List<String> getContent()
-	{
-		String filepath = iFile.getLocation().toString();
-		List<String> result = new ArrayList<String>();
-		
-		Stack<Character> parenthesisChecker = new Stack<Character>();
-		boolean readFlag = false;
+	public List<String> setContent()
+	{	
+		if(this.iFile != null) {
+			IPath _path = iFile.getLocation();
+			String filepath = _path.toString();
+			List<String> result = new ArrayList<String>();
 
-		try {
-			BufferedReader buffer = new BufferedReader(new FileReader(filepath));
-			result.add(buffer.readLine());
-			
-	        while(true) {
-	            String line = buffer.readLine();
-	            if (line==null) { 
-	            	break;
-	            }
-	            if(line.contains(this.getClassFullName())) {
-	            	readFlag=true;
-	            }
+			Stack<Character> parenthesisChecker = new Stack<Character>();
+			boolean readFlag = false;
 
-	            if(readFlag) {
-	            	for(int i=0;i<line.length();i++) {
-	            		if(line.charAt(i)=='{') {
-	            			parenthesisChecker.push('{');
-	            		} else if(line.charAt(i)=='}') {
-	            			if(parenthesisChecker.isEmpty()) {
-	            				return result;
-	            			} else if(parenthesisChecker.peek()=='{') {
-	            				parenthesisChecker.pop();
-	            			} else {
-	            				parenthesisChecker.push('}');
-	            			}
-	            		}
-	            	}
-	            }
-	            
-	            if(parenthesisChecker.isEmpty()) {
-	            	readFlag=false;
-	            }
-	            
-	            // Adding Each Lines to Result
-	            if(readFlag) {
-	            	result.add(line);
-	            }
-	        }
-	        buffer.close();
-		}catch(IOException e){
-			e.printStackTrace();
+			try {
+				BufferedReader buffer = new BufferedReader(new FileReader(filepath));
+				result.add(buffer.readLine());
+
+				while (true) {
+					String line = buffer.readLine();
+					if (line == null) {
+						break;
+					}
+					if (line.contains(this.getClassFullName())) {
+						readFlag = true;
+					}
+
+					if (readFlag) {
+						for (int i = 0; i < line.length(); i++) {
+							if (line.charAt(i) == '{') {
+								parenthesisChecker.push('{');
+							} else if (line.charAt(i) == '}') {
+								if (parenthesisChecker.isEmpty()) {
+									return result;
+								} else if (parenthesisChecker.peek() == '{') {
+									parenthesisChecker.pop();
+								} else {
+									parenthesisChecker.push('}');
+								}
+							}
+						}
+					}
+
+					if (parenthesisChecker.isEmpty()) {
+						readFlag = false;
+					}
+
+					// Adding Each Lines to Result
+					if (readFlag) {
+						result.add(line);
+					}
+				}
+				buffer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			return result;
 		}
 
-		return result;
+		return new ArrayList<String>();
+	}
+	
+	public void setContent(List<String> arg) {
+		this.content = arg;
+	}
+	
+	public List<String> getContent() {
+		return this.content;
 	}
 
     /**
@@ -394,6 +381,31 @@ public class ClassObjectCandidate extends ClassObject {
 		return ret;
 	}
 	
+	/**
+	 * Check "content" contains "target"
+	 * 
+	 * @author JuYong Lee
+	 * @param method
+	 * @param var
+	 * @return
+	 */
+	public boolean checkContainance(String content, String target) {
+		String[] operator = { " ", "(", ")", "[", "]", ".",	"+", "-", "*", "/", "%",
+				"!", "~", "++", "--", "<<", ">>", ">>>", ">", "<", ">= ", "<=", "==", "!=",
+				"&", "^", "|", "&&", "||", "?", "=", "+=", "/=", "&=", "*=", "-=", 
+				"<<=", ">>=", ">>>=", "^=", "|=", "%=", ";"}; 
+		
+		for(int i = 0; i < operator.length; i++) {
+			for(int j = 0; j < operator.length; j++) {
+				if(content.contains(operator[i] + target + operator[j])) {
+					return true;
+				}
+			}
+		}
+		 
+		return false;
+	}
+	
     /**
      * @author Taeyoung Son, JuYong Lee
      * @param child the ClassObjectCandidate to merge with this ClassObjectCandidate
@@ -404,7 +416,7 @@ public class ClassObjectCandidate extends ClassObject {
 		
 		// Abstract Class with One Child
 		if(this._abstract) {
-			List<String> myContent = this.getContent();
+			List<String> myContent = this.content;
 			List<String> childContent = child.getContent();
 			
 			List<String> newFieldList = new ArrayList<String>();
@@ -511,43 +523,43 @@ public class ClassObjectCandidate extends ClassObject {
 			}
 		}
 		
-		// make New File
-		try {
-			File makeFile = new File(child.getIFile().getLocation().toString());
-			FileWriter fileWriter = new FileWriter(makeFile);
-			for (String content : newContent) {
-				fileWriter.write(content + "\n");
-				fileWriter.flush();
-			}
-			fileWriter.close();
-			//this.getIFile().delete(true, false, null);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		// set Contents
+		this.content.add(0, "/*");
+		this.content.add("*/");
+		this.setContent(this.content);
+		
+		child.setContent(newContent);
+		return;
 	}
 	
 	/**
 	 *  Delete the Unnecessary Parameter Declaration Code in Method Defining Code
 	 *  @author JuYong Lee
+	 *  @return Codes with out Unnecessary Parameter 
 	 */
 	public void resolveUnnecessaryParameters(MethodObject target) {
 		assert this.codeSmellType == "Unnecessary Parameters";
-		List<String> originalContent = this.getContent();
+		List<String> originalContent = this.content;
 		List<String> newContent = new ArrayList<String>();
 		
 		// Find the target Method
-		int declarationIdx = 0;
+		int declarationIdx = -1;
 		target.getName(); 
 		for(int i = 0; i < originalContent.size(); i++) {
 			
-			if(originalContent.get(i).contains(" " + target.getName()) &&
-					(originalContent.get(i).contains(target.getName() + "(") || 
-							(originalContent.get(i).contains(target.getName() + " (")))) {
-				// WARN :: ( might come long after blanks or \n's \t's...
-				
+			if(checkContainance(originalContent.get(i), target.getName())
+					&& checkContainance(originalContent.get(i), target.getAccess().toString())
+					&& checkContainance(originalContent.get(i), target.getReturnType().toString())) {
 				declarationIdx = i;
 				break;
 			}
+		}
+		
+		if(declarationIdx == -1) {
+			originalContent.add("}");
+			
+			this.setContent(originalContent);
+			return;
 		}
 		
 		// Write New Content
@@ -585,32 +597,7 @@ public class ClassObjectCandidate extends ClassObject {
 		}
 		newContent.add("}");
 		
-		// DBG
-		for(String c : newContent) {
-			System.out.println(c);
-		}
-		
-		// Make New File
-		try {
-			File makeFile = new File(this.getIFile().getLocation().toString());
-			
-			// Firstly, Delete Original Version
-			try {
-				this.getIFile().delete(true, false, null);
-			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			// Secondly, Create New Version
-			FileWriter fileWriter = new FileWriter(makeFile);
-			for (String content : newContent) {
-				fileWriter.write(content + "\n");
-				fileWriter.flush();
-			}
-			fileWriter.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		this.setContent(newContent);
+		return;
 	}
 }
