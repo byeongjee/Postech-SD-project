@@ -200,6 +200,32 @@ public class ClassObjectCandidate extends ClassObject {
 		return result;
 	}
 	
+	
+	/**
+	 * Check "content" contains "target"
+	 * 
+	 * @author JuYong Lee
+	 * @param method
+	 * @param var
+	 * @return
+	 */
+	public boolean checkContainance(String content, String target) {
+		String[] operator = { " ", "(", ")", "[", "]", ".",	"+", "-", "*", "/", "%",
+				"!", "~", "++", "--", "<<", ">>", ">>>", ">", "<", ">= ", "<=", "==", "!=",
+				"&", "^", "|", "&&", "||", "?", "=", "+=", "/=", "&=", "*=", "-=", 
+				"<<=", ">>=", ">>>=", "^=", "|=", "%=", ";"}; 
+		
+		for(int i = 0; i < operator.length; i++) {
+			for(int j = 0; j < operator.length; j++) {
+				if(content.contains(operator[i] + target + operator[j])) {
+					return true;
+				}
+			}
+		}
+		 
+		return false;
+	}
+	
     /**
      * Methods getting Full Name of Class
      * including _static, _interface, and so forth
@@ -348,12 +374,23 @@ public class ClassObjectCandidate extends ClassObject {
 		for(MethodObject mo : this.methodList) {
 			ret.add(mo.toString());
 		}
-		for(ConstructorObject co : this.constructorList) {
-			ret.add(co.toString());
-		}
+		
 		return ret;
 	}
 
+	/**
+     * @author Taeyoung Son
+     * @return List<String> form of ConstructorList
+     */
+	private List<String> stringConstructorList(){
+		List<String> ret = new ArrayList<String>();
+		for(ConstructorObject co : this.constructorList) {
+			ret.add(co.toString());
+		}
+		
+		return ret;
+	}
+	
     /**
      * @author Taeyoung Son
      * @param fullContent the content collected by getContent()
@@ -366,8 +403,12 @@ public class ClassObjectCandidate extends ClassObject {
 		boolean flag = false;
 		for(String s : fullContent) {
 			if(flag && _brackets > 0) {
-				if(s.contains("{")) _brackets++;
-				else if(s.contains("}")) _brackets--;
+				if(s.contains("{")) {
+					_brackets++;
+				}
+				else if(s.contains("}")) {
+					_brackets--;
+				}
 				ret.add(s);
 			}
 			// WARN :: What if "methodName" used in other context?
@@ -380,30 +421,17 @@ public class ClassObjectCandidate extends ClassObject {
 		}
 		return ret;
 	}
-	
-	/**
-	 * Check "content" contains "target"
-	 * 
-	 * @author JuYong Lee
-	 * @param method
-	 * @param var
-	 * @return
-	 */
-	public boolean checkContainance(String content, String target) {
-		String[] operator = { " ", "(", ")", "[", "]", ".",	"+", "-", "*", "/", "%",
-				"!", "~", "++", "--", "<<", ">>", ">>>", ">", "<", ">= ", "<=", "==", "!=",
-				"&", "^", "|", "&&", "||", "?", "=", "+=", "/=", "&=", "*=", "-=", 
-				"<<=", ">>=", ">>>=", "^=", "|=", "%=", ";"}; 
+
+    /**
+     * @author Taeyoung Son
+     * @param fullContent the content collected by getContent()
+     * @param methodName the name of method you want from content
+     * @return content of specific method of given name
+     */
+	private List<String> constructorContentCreator(List<String> fullContent) {
+		List<String> ret = new ArrayList<String>();
 		
-		for(int i = 0; i < operator.length; i++) {
-			for(int j = 0; j < operator.length; j++) {
-				if(content.contains(operator[i] + target + operator[j])) {
-					return true;
-				}
-			}
-		}
-		 
-		return false;
+		return ret;
 	}
 	
     /**
@@ -420,12 +448,27 @@ public class ClassObjectCandidate extends ClassObject {
 			List<String> childContent = child.getContent();
 			
 			List<String> newFieldList = new ArrayList<String>();
-			newFieldList.addAll(this.stringFieldList());
+			for(String s : this.stringFieldList()) {
+				if(!child.stringFieldList().contains(s)) {
+					newFieldList.add(s);
+				}
+			}
 			newFieldList.addAll(child.stringFieldList());
 			
+			// Consider Constructors
+			List<String> newConstructorList = new ArrayList<String>();
+			List<String> myConstructorObjectList = this.stringConstructorList();
+			List<String> childConstructorObjectList = child.stringConstructorList();
+			for(ConstructorObject _constructor  : child.constructorList) {
+				// Consider super()
+				String content = _constructor.toString();
+
+			}
+			
+			// Consider Methods
 			List<String> newMethodList = new ArrayList<String>();
 			List<String> myMethodObjectList = this.stringMethodList();
-			List<String> childMethodObjectList = child.stringMethodList();
+			List<String> childMethodObjectList = child.stringMethodList();			
 			for (String s : myMethodObjectList) {
 				if (childMethodObjectList.contains(s) || s.contains("abstract") || s.contains(dotParser(this.name))) {
 					// overriden method
@@ -445,15 +488,16 @@ public class ClassObjectCandidate extends ClassObject {
 						}
 						s = s.substring(1);
 					} else if (s.contains(dotParser(this.name))) {
-						String[] tokens = s.split("\\s");
-						s = "";
-						for (int i = 0; i < tokens.length; i++) {
-							if (tokens[i].contains(dotParser(this.name))) {
-								tokens[i] = dotParser(child.getName());
+						int sidx=0;
+						int fidx=0;
+						for(int i=0; i<s.length(); i++) {
+							if(s.charAt(i) == dotParser(this.name).charAt(0)) {
+								sidx = i;
+								fidx = i + dotParser(this.name).length();
+								break;
 							}
-							s = s + " " + tokens[i];
 						}
-						s = s.substring(1);
+						s = s.substring(0,sidx) + dotParser(child.getName()) + s.substring(fidx, s.length());
 
 					}
 					System.out.println("overriden method... grabbing " + s);
@@ -471,7 +515,6 @@ public class ClassObjectCandidate extends ClassObject {
 					}
 				}
 			}
-
 			for (String s : childMethodObjectList) {
 				if (s.contains(dotParser(child.getName()))) {
 					continue;
@@ -508,7 +551,6 @@ public class ClassObjectCandidate extends ClassObject {
 				}
 			}
 			
-			// Write New Content + TODO :: Check the Grammar
 			for(int i = 0; i < childContent.size(); i++) {
 				if(i == initialIdx) {
 					// WARN :: What if the child implements other interface?
