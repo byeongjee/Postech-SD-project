@@ -35,6 +35,7 @@ import gr.uom.java.ast.ConstructorObject;
 import gr.uom.java.ast.LPLMethodObject;
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.TypeObject;
+import gr.uom.java.jdeodorant.refactoring.views.LPLRefactorWizard;
 import gr.uom.java.jdeodorant.refactoring.views.LongParameterList;
 
 public class LongParameterListTest {
@@ -108,39 +109,8 @@ public class LongParameterListTest {
 		return LPLMethodObject.createLPLMethodObjectFrom(mockMethodObject);
 	}
 
-	static LPLMethodObject mockLPLMethodObject1;
-	static LPLMethodObject mockLPLMethodObject2;
-
-	@BeforeAll
-	public static void setUpBeforeClass() {
-		mockLPLMethodObject1 = createMockLPLMethodObject1();
-		mockLPLMethodObject2 = createMockLPLMethodObject2();
-	}
-	
-	@Test
-	public void testGetColumnText() {
-		assertEquals(mockLPLMethodObject1.getColumnText(0), "Long Parameter List");
-		assertEquals(mockLPLMethodObject1.getColumnText(1), "testMethod1");
-		assertEquals(mockLPLMethodObject1.getColumnText(2), "testClass");
-		assertEquals(mockLPLMethodObject1.getColumnText(3), "[int a, char b]");
-		assertEquals(mockLPLMethodObject1.getColumnText(4), "2");
-
-	}
-
-	@Test
-	public void testCompareTo() {
-		assertTrue(mockLPLMethodObject1.compareTo(mockLPLMethodObject2) < 0);
-	}
-
-	@Test
-	public void testIsLongParameterListMethod() {
-		assertFalse(mockLPLMethodObject1.isLongParamterListMethod());
-		assertTrue(mockLPLMethodObject2.isLongParamterListMethod());
-	}
-	
-	@Test
-	public void testEditParameterFromBuffer() {
-		IBuffer buffer = new IBuffer() {
+	private static IBuffer createMockIBuffer() {
+		return new IBuffer() {
 			private String content = "class HighInterest{\n" + 
 					"public int getAccountNumber(int a, int b, int c, int d, int e) {\n" + 
 					"return accountNumber;\n" + 
@@ -231,8 +201,10 @@ public class LongParameterListTest {
 				// TODO Auto-generated method stub				
 			}
 		};
-		
-		IMethod method = new IMethod() {
+	}
+	
+	private static IMethod createMockIMethod() {
+		return new IMethod() {
 
 			public String[] getCategories() throws JavaModelException {
 				// TODO Auto-generated method stub
@@ -539,6 +511,44 @@ public class LongParameterListTest {
 			}
 			
 		};
+	}
+	static LPLMethodObject mockLPLMethodObject1;
+	static LPLMethodObject mockLPLMethodObject2;
+
+	@BeforeAll
+	public static void setUpBeforeClass() {
+		mockLPLMethodObject1 = createMockLPLMethodObject1();
+		mockLPLMethodObject2 = createMockLPLMethodObject2();
+	}
+	
+	@Test
+	public void testGetColumnText() {
+		assertEquals(mockLPLMethodObject1.getColumnText(0), "Long Parameter List");
+		assertEquals(mockLPLMethodObject1.getColumnText(1), "testMethod1");
+		assertEquals(mockLPLMethodObject1.getColumnText(2), "testClass");
+		assertEquals(mockLPLMethodObject1.getColumnText(3), "[int a, char b]");
+		assertEquals(mockLPLMethodObject1.getColumnText(4), "2");
+
+	}
+
+	@Test
+	public void testCompareTo() {
+		assertTrue(mockLPLMethodObject1.compareTo(mockLPLMethodObject2) < 0);
+	}
+
+	@Test
+	public void testIsLongParameterListMethod() {
+		assertFalse(mockLPLMethodObject1.isLongParamterListMethod());
+		assertTrue(mockLPLMethodObject2.isLongParamterListMethod());
+	}
+	
+	@Test
+	public void testLongParameterListEditParameterFromBuffer() 
+
+	{
+		IBuffer buffer = createMockIBuffer();
+		
+		IMethod method = createMockIMethod();
 		
 		String parameterString = "int x, int y";
 		
@@ -546,6 +556,21 @@ public class LongParameterListTest {
 		
 		lpl.editParameterFromBuffer(buffer, method, parameterString);
 		
+		assertEquals(buffer.getContents(), "class HighInterest{\n" + 
+				"public int getAccountNumber(int x, int y) {\n" + 
+				"return accountNumber;\n" + 
+				"}\n" + 
+				"}\n" + 
+				"");
+	}
+	
+	@Test
+	public void testLPLRefactoringWizardEditParameterFromBuffer() {
+		IBuffer buffer = createMockIBuffer();
+		IMethod method = createMockIMethod();
+		String parameterString = "int x, int y";
+		LPLRefactorWizard lrw = new LPLRefactorWizard(null, null);
+		lrw.editParameterFromBuffer(buffer, method, parameterString);
 		assertEquals(buffer.getContents(), "class HighInterest{\n" + 
 				"public int getAccountNumber(int x, int y) {\n" + 
 				"return accountNumber;\n" + 
