@@ -66,6 +66,75 @@ public class LongParameterListTest {
 		};
 		return new MethodObject(co);
 	}
+	static LPLMethodObject mockLPLMethodObject1;
+	static LPLMethodObject mockLPLMethodObject2;
+	
+	@BeforeAll
+	public static void setUpBeforeClass() {
+		mockLPLMethodObject1 = createMockLPLMethodObject1();
+		mockLPLMethodObject2 = createMockLPLMethodObject2();
+	}
+	
+	@Test
+	public void testGetColumnText() {
+		assertEquals(mockLPLMethodObject1.getColumnText(0), "Long Parameter List");
+		assertEquals(mockLPLMethodObject1.getColumnText(1), "testMethod1");
+		assertEquals(mockLPLMethodObject1.getColumnText(2), "testClass");
+		assertEquals(mockLPLMethodObject1.getColumnText(3), "[int a, char b]");
+		assertEquals(mockLPLMethodObject1.getColumnText(4), "2");
+
+	}
+
+	@Test
+	public void testCompareTo() {
+		assertTrue(mockLPLMethodObject1.compareTo(mockLPLMethodObject2) < 0);
+	}
+
+	@Test
+	public void testIsLongParameterListMethod() {
+		assertFalse(mockLPLMethodObject1.isLongParamterListMethod());
+		assertTrue(mockLPLMethodObject2.isLongParamterListMethod());
+	}
+	
+	@Test
+	public void testLongParameterListEditParameterFromBuffer() 
+
+	{
+		IBuffer buffer = createMockIBuffer();
+		
+		IMethod method = createMockIMethod();
+		
+		String parameterString = "int x, int y";
+		
+		LongParameterList lpl = new LongParameterList();
+		
+		lpl.editParameterFromBuffer(buffer, method, parameterString);
+		
+		assertEquals(buffer.getContents(), "class HighInterest{\n" + 
+				"public int getAccountNumber(int x, int y) {\n" + 
+				"return accountNumber;\n" + 
+				"}\n" + 
+				"}\n" + 
+				"");
+	}
+	
+	@Test
+	public void testLPLRefactoringWizardEditParameterFromBuffer() {
+		IBuffer buffer = createMockIBuffer();
+		IMethod method = createMockIMethod();
+		String parameterString = "int x, int y";
+		//LPLRefactorWizard lrw = new LPLRefactorWizard(null, null);
+		ArrayList<Integer> parameterIndexList = new ArrayList<Integer>();
+		parameterIndexList.add(1);
+		parameterIndexList.add(2);
+		LPLRefactorWizard.editParameterFromBuffer(buffer, method, parameterString, parameterIndexList);
+		assertEquals(buffer.getContents(), "class HighInterest{\n" + 
+				"public int getAccountNumber(int a, int d, int e) {\n" + 
+				"return accountNumber;\n" + 
+				"}\n" + 
+				"}\n" + 
+				"");
+	}
 
 	private static LPLMethodObject createMockLPLMethodObject1() {
 		MethodObject mockMethodObject = createMockMethodObject1();
@@ -511,71 +580,5 @@ public class LongParameterListTest {
 			}
 			
 		};
-	}
-	static LPLMethodObject mockLPLMethodObject1;
-	static LPLMethodObject mockLPLMethodObject2;
-
-	@BeforeAll
-	public static void setUpBeforeClass() {
-		mockLPLMethodObject1 = createMockLPLMethodObject1();
-		mockLPLMethodObject2 = createMockLPLMethodObject2();
-	}
-	
-	@Test
-	public void testGetColumnText() {
-		assertEquals(mockLPLMethodObject1.getColumnText(0), "Long Parameter List");
-		assertEquals(mockLPLMethodObject1.getColumnText(1), "testMethod1");
-		assertEquals(mockLPLMethodObject1.getColumnText(2), "testClass");
-		assertEquals(mockLPLMethodObject1.getColumnText(3), "[int a, char b]");
-		assertEquals(mockLPLMethodObject1.getColumnText(4), "2");
-
-	}
-
-	@Test
-	public void testCompareTo() {
-		assertTrue(mockLPLMethodObject1.compareTo(mockLPLMethodObject2) < 0);
-	}
-
-	@Test
-	public void testIsLongParameterListMethod() {
-		assertFalse(mockLPLMethodObject1.isLongParamterListMethod());
-		assertTrue(mockLPLMethodObject2.isLongParamterListMethod());
-	}
-	
-	@Test
-	public void testLongParameterListEditParameterFromBuffer() 
-
-	{
-		IBuffer buffer = createMockIBuffer();
-		
-		IMethod method = createMockIMethod();
-		
-		String parameterString = "int x, int y";
-		
-		LongParameterList lpl = new LongParameterList();
-		
-		lpl.editParameterFromBuffer(buffer, method, parameterString);
-		
-		assertEquals(buffer.getContents(), "class HighInterest{\n" + 
-				"public int getAccountNumber(int x, int y) {\n" + 
-				"return accountNumber;\n" + 
-				"}\n" + 
-				"}\n" + 
-				"");
-	}
-	
-	@Test
-	public void testLPLRefactoringWizardEditParameterFromBuffer() {
-		IBuffer buffer = createMockIBuffer();
-		IMethod method = createMockIMethod();
-		String parameterString = "int x, int y";
-		LPLRefactorWizard lrw = new LPLRefactorWizard(null, null);
-		lrw.editParameterFromBuffer(buffer, method, parameterString);
-		assertEquals(buffer.getContents(), "class HighInterest{\n" + 
-				"public int getAccountNumber(int x, int y) {\n" + 
-				"return accountNumber;\n" + 
-				"}\n" + 
-				"}\n" + 
-				"");
 	}
 }
