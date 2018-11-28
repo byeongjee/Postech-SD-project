@@ -118,52 +118,68 @@ public class LongParameterListTest {
 
 	@Test
 	public void testOpenLPLTab() {
+		try {
 		openLPLTab();
 		assertTrue(bot.viewByTitle("Long Parameter List").isActive());
+		} finally {
 		closeLPLTab();
+		}
 	}
 
 	@Test
 	public void testApplyingLPLDetection() {
+		try {
 		openLPLTab();
 		selectTargetPackage();
 		applyDetection();
+		} finally {
 		closeLPLTab();
+		}
 	}
 
 	@Test
 	public void testLPLRefactoringItemShownScenario() {
+		try {
 		openLPLTab();
 		selectTargetPackage();
 		applyDetection();
 		bot.viewByTitle("Long Parameter List").bot().tree().getTreeItem("Long Parameter List").getItems();
+		} finally {
 		closeLPLTab();
+		}
 	}
 
 	@Test
 	public void testOpenRefactoringPopUp() {
+		try {
 		detectCodeSmellAndOpenRefactoringPopUp();
 		SWTBotShell refactoringWizard = bot.shell("Refactoring");
 		assertTrue(refactoringWizard.isVisible());
+		} finally {
 		closeRefactoringPopUp();
 		closeLPLTab();
+		}
 	}
 
 	@Test // assert that user cannot continue to the class name page without checking
 			// arguments
 	// to extract.
 	public void testRefactoringPopUpInitialPageExceptionScenario() {
+		try {
 		detectCodeSmellAndOpenRefactoringPopUp();
 		SWTBotShell refactoringWizard = bot.shell("Refactoring");
 		assertFalse(refactoringWizard.bot().button("Next >").isEnabled());
+		} finally {
 		closeRefactoringPopUp();
 		closeLPLTab();
+		}
 	}
 
 	@Test // assert that user cannot continue to the package selection page without giving
 			// the
 	// new class name
 	public void testRefactoringPopUpUIClassNamePageExceptionScenario() {
+		try {
 		detectCodeSmellAndOpenRefactoringPopUp();
 		SWTBotShell refactoringWizard = bot.shell("Refactoring");
 		refactoringWizard.bot().table().getTableItem(0).check();
@@ -171,12 +187,15 @@ public class LongParameterListTest {
 		// now in class name page
 		refactoringWizard.bot().button("Next >").click();
 		assertFalse(refactoringWizard.bot().button("Next >").isEnabled());
+		} finally {
 		closeRefactoringPopUp();
 		closeLPLTab();
+		}
 	}
 
 	@Test
 	public void testRefactoringPopUpPackageSelectionPageExceptionScenario() {
+		try {
 		detectCodeSmellAndOpenRefactoringPopUp();
 		SWTBotShell refactoringWizard = bot.shell("Refactoring");
 		refactoringWizard.bot().table().getTableItem(0).check();
@@ -187,8 +206,10 @@ public class LongParameterListTest {
 		refactoringWizard.bot().button("Next >").click();
 		// now in package selection page
 		assertFalse(refactoringWizard.bot().button("Finish").isEnabled());
+		} finally {
 		closeRefactoringPopUp();
 		closeLPLTab();
+		}
 	}
 
 	@Test
