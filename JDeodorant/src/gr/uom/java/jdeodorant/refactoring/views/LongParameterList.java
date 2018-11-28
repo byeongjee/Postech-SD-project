@@ -146,10 +146,12 @@ public class LongParameterList extends ViewPart {
 		// To be implemented
 		public void pressRefactorButton(int index) {
 			System.out.println("Success");
-
+			ArrayList<Integer> paramIndexList = null;
 			LPLMethodObject methodToRefactor = methodObjectTable[methodObjectTable.length - index - 1];
+			LPLRefactorWizard wizard = new LPLRefactorWizard(selectedProject, methodToRefactor);
+			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); dialog.open();
 			try {
-				IMethod convertedIMethod = methodToRefactor.toIMethod(selectedProject);
+				/*IMethod convertedIMethod = methodToRefactor.toIMethod(selectedProject);
 				ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit()
 						.getWorkingCopy(new WorkingCopyOwner() {
 						}, null);
@@ -158,48 +160,10 @@ public class LongParameterList extends ViewPart {
 				workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
 				workingCopy.commitWorkingCopy(false, null);
 				workingCopy.discardWorkingCopy();
-				/*String replaceSignature = "(";
-				replaceSignature += ")";
-				int startPosition = convertedIMethod.getSourceRange().getOffset();
-				while (true) {
-					if (buffer.getChar(startPosition) != '(') {
-						startPosition += 1;
-						continue;
-					}
-					break;
-				}
-				int numOfLeftPar = 0;
-				int endPosition = startPosition;
-				while (true) {
-					if (buffer.getChar(endPosition) == '(') {
-						numOfLeftPar += 1;
-					} 
-					else if (buffer.getChar(endPosition) == ')') {
-						if (numOfLeftPar == 1)
-							break;
-						else
-							numOfLeftPar -= 1;
-					}
-					endPosition += 1;
-				}
-				buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
-				workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
-
-				workingCopy.commitWorkingCopy(false, null);*/
-				workingCopy.discardWorkingCopy();
-
-			} catch (JavaModelException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				workingCopy.discardWorkingCopy();*/
 			} catch (Exception e) {
 				e.printStackTrace();
-			}
-			/*
-			 * LPLRefactorWizard wizard = new LPLRefactorWizard(null, methodToRefactor);
-			 * WizardDialog dialog = new
-			 * WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-			 * wizard); dialog.open();
-			 */
+			}		
 		}
 	}
 

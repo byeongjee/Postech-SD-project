@@ -1,5 +1,8 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
@@ -21,7 +24,7 @@ import org.eclipse.swt.widgets.Text;
 import gr.uom.java.ast.LPLMethodObject;
 
 public class LPLRefactorInitialPage extends WizardPage {
-	private Text text1;
+	private ArrayList<Integer> parameterIndexList;
     private Composite container;
     private LPLMethodObject methodToRefactor;
     private TableViewer tableViewer;
@@ -31,6 +34,7 @@ public class LPLRefactorInitialPage extends WizardPage {
         this.methodToRefactor = methodToRefactor;
         setTitle(methodToRefactor.getName());
         setDescription("Select parameters to extract");
+        parameterIndexList = new ArrayList<Integer>();
     }
 
     //@Override
@@ -58,12 +62,23 @@ public class LPLRefactorInitialPage extends WizardPage {
 			tableItem.setText(2, methodToRefactor.getParameterNameList().get(i));
 		}
 		
-		table.addListener(SWT.Selection, new Listener() {
+		table.addListener(SWT.Selection,  new Listener() {
 			public void handleEvent(Event event) {
+				boolean isChecked = false;
 				if(event.detail == SWT.CHECK) {
-					for(TableItem item : ((Table)event.widget).getItems()) {
+					parameterIndexList.clear();
+					for(int i = 0; i < ((Table)event.widget).getItems().length; i++) {
+						TableItem item = ((Table)event.widget).getItem(i);
 						if(item.getChecked()) {
+							parameterIndexList.add(i);
+							isChecked = true;
 						}
+					}
+					if(isChecked) {
+						setPageComplete(true);
+					}
+					else {
+					setPageComplete(false);
 					}
 				}
 			}
@@ -71,9 +86,13 @@ public class LPLRefactorInitialPage extends WizardPage {
 		setControl(container);
         setPageComplete(false);
     }
+    
+    public void handleEvent(Event event) {
+    	System.out.println("checkbox!");
+    }
 
-    public String getText1() {
-        return text1.getText();
+    public ArrayList getParameterIndexList() {
+        return parameterIndexList;
     }
 
 }
