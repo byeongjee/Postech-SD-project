@@ -382,6 +382,16 @@ public class MessageChain extends ViewPart {
 		manager.add(identifyBadSmellsAction);
 	}
  	
+	/**
+	 * New function for making codes about new method after user decides to Refactoring
+	 * 
+	 * <Arguments>
+	 * String newMethodName: Name of new Method
+	 * String returnType: Return type of new Method
+	 * List<String> stringOfArgumentType: String List that contains whole of argument types in original methods
+	 * List<Integer> numOfArgumentOfEachMethod: Integer List that contains number of arguments for each methods
+	 * List<String> stringOfMethodInvocation: String List that contain whole of method invocations
+	 * **/
 	public String makeNewMethodCode (String newMethodName, String returnType, List<String> stringOfArgumentType, List<Integer> numOfArgumentOfEachMethod, List<String> stringOfMethodInvocation) {
 		String strOfMethod = "";
 		strOfMethod += "public ";
@@ -425,6 +435,13 @@ public class MessageChain extends ViewPart {
 		return strOfMethod;
 	}
 	
+	/**
+	 * New function for modify code that contains new method after user decides to Refactoring
+	 * 
+	 * <Arguments>
+	 * String newMethodName: Name of new method
+	 * List<String> stringOfArgument: String List that contains whole of arguments
+	 * **/
 	public String makeNewRefactorCode(String newMethodName, List<String> stringOfArgument) {
 		String strOfRefact = "";
 		strOfRefact += newMethodName;
@@ -441,6 +458,13 @@ public class MessageChain extends ViewPart {
 		return strOfRefact;
 	}
 	 
+	/**
+	 * New function for Message Chain Refactoring.
+	 * 
+	 * <Arguments>
+	 * int parentIndex: Index of information about parent of selected file
+	 * int childIndex: Index of information about children of selected file
+	 * **/
 	public void messageChainRefactoring(int parentIndex, int childIndex) {
 		System.out.println("Click refactoring button!");
 		//IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
@@ -526,6 +550,13 @@ public class MessageChain extends ViewPart {
 		}
 	}
 	
+	/**
+	 * New function for getting only class name if the string contains path of class
+	 * 
+	 * <Arguments>
+	 * int sizeOfMethodInvocation: Length of string that is path of class
+	 * String stringOfMethodInvocation: String that is path of class
+	 * **/
 	public String getClassName(int sizeOfMethodInvocation, String stringOfMethodInvocation)
 	   {
 	      int count = 0;
@@ -540,6 +571,12 @@ public class MessageChain extends ViewPart {
 	      return stringOfMethodInvocation.substring(count, stringOfMethodInvocation.length());
 	   }
 	   
+	/**
+	 * New function for modifying position to modify original code properly
+	 * 
+	 * <Arguments>
+	 * IBuffer bufferOfMethodInvocation: Buffer that contains whole codes about selected Java File
+	 * **/
 	 public int getModifyPosition(IBuffer bufferOfMethodInvocation)
 	   {   
 	       int length = bufferOfMethodInvocation.getLength();
@@ -729,7 +766,11 @@ public class MessageChain extends ViewPart {
 	}
 	
 	/**
-	 * new function for checking whether this method is made by refactoring or not.
+	 * New function for checking whether this method is made by refactoring or not.
+	 * 
+	 * <Arguments>
+	 * String className: Name of class
+	 * String methodName: Name of method
 	 * **/
 	public boolean checkMethodIfFromRefactoring(String className, String methodName) {
 		String target = "";
