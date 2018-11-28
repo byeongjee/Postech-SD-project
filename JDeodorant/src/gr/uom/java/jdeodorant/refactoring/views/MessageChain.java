@@ -147,7 +147,7 @@ public class MessageChain extends ViewPart {
 	/* Mine */
 	public MessageChainStructure[] targets;
 	private Map<String, Map<Integer, List<MethodInvocationObject>>> originCodeSmells; // for storing origin map
-	private List<String> newRefactoringMethod;//store method's name and class name of refactoring code. We will add new method name whenever we do refactoring
+	public List<String> newRefactoringMethod;//store method's name and class name of refactoring code. We will add new method name whenever we do refactoring
 	
 	//private IJavaProject 
 	private class MessageChainRefactoringButtonUI extends RefactoringButtonUI{
@@ -731,7 +731,7 @@ public class MessageChain extends ViewPart {
 	/**
 	 * new function for checking whether this method is made by refactoring or not.
 	 * **/
-	private boolean checkMethodIfFromRefactoring(String className, String methodName) {
+	public boolean checkMethodIfFromRefactoring(String className, String methodName) {
 		String target = "";
 		target += className;
 		target += "/";

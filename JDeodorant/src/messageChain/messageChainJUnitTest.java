@@ -37,7 +37,7 @@ public class messageChainJUnitTest {
        assertTrue(((MessageChainStructure) result[0]).getStart()==15);
        assertTrue(result2.length == 0);
        assertTrue(result3.length == 0);
-      
+       
    }
    
    @Test
@@ -250,6 +250,17 @@ public class messageChainJUnitTest {
 
          int pos = msgChain.getModifyPosition(buffer);
          assertTrue(pos==2);
+   }
+   
+   @Test
+   public void testcheckMethodIfFromRefactoring() {
+	   MessageChain msgChain = new MessageChain();
+	   msgChain.newRefactoringMethod = new ArrayList<String>();
+	   msgChain.newRefactoringMethod.add("simple/newMethod1");
+	   assertTrue(msgChain.checkMethodIfFromRefactoring("simple", "newMethod1"));
+	   assertFalse(msgChain.checkMethodIfFromRefactoring("simple", "newMethod2"));
+	   msgChain.newRefactoringMethod.add("simple/newMethod2");
+	   assertTrue(msgChain.checkMethodIfFromRefactoring("simple", "newMethod2"));
    }
 
 }
