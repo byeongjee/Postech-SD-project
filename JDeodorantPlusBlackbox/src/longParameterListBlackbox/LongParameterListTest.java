@@ -70,37 +70,50 @@ public class LongParameterListTest {
 		bot.resetWorkbench();
 	}
 
-	@Test
-	public void testOpenLPLTab() {
+	private void openLPLTab() {
 		bot.menu("Bad Smells").menu("Long Parameter List").click();
-		bot.viewByTitle("Long Parameter List");
-		assertTrue(bot.viewByTitle("Long Parameter List").isActive());
 	}
 
-	@Test
-	public void testApplyingLPLDetection() {
+	private void closeLPLTab() {
+		bot.viewByTitle("Long Parameter List").close();
+	}
+
+	private void selectTargetPackage() {
 		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
 		packageExplorer.show();
 		packageExplorer.bot().tree().getTreeItem("testLPLProject").doubleClick();
 		packageExplorer.bot().tree().getTreeItem("testLPLProject").getNode("src").doubleClick();
 		packageExplorer.bot().tree().getTreeItem("testLPLProject").getNode("src").getNode("LongParameterList").click();
+	}
 
+	private void applyDetection() {
 		SWTBotView detectionApplier = bot.viewByTitle("Long Parameter List");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
 	}
 
-	@Ignore
 	@Test
-	public void testLPLRefactoringUI() {
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testLPLProject").click();
-		bot.menu("Bad Smells").menu("Long Parameter List").click();
-		SWTBotView detectionApplier = bot.viewByTitle("Long Parameter List");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-		System.out.println(detectionApplier.bot().tree().getTreeItem("").getItems());
+	public void testOpenLPLTab() {
+		openLPLTab();
+		assertTrue(bot.viewByTitle("Long Parameter List").isActive());
+		closeLPLTab();
+	}
+
+	@Test
+	public void testApplyingLPLDetection() {
+		openLPLTab();
+		selectTargetPackage();
+		applyDetection();
+		closeLPLTab();
+	}
+
+	@Test
+	public void testLPLRefactoringItemShownScenario() {
+		openLPLTab();
+		selectTargetPackage();
+		applyDetection();
+		bot.viewByTitle("Long Parameter List").bot().tree().getTreeItem("Long Parameter List").getItems();
+		closeLPLTab();
 	}
 
 }
