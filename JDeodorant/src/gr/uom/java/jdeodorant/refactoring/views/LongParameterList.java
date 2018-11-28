@@ -45,20 +45,26 @@ import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.eclipse.jdt.internal.corext.refactoring.ParameterInfo;
+import org.eclipse.jdt.internal.corext.refactoring.structure.ChangeSignatureProcessor;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
@@ -85,6 +91,10 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ltk.core.refactoring.Refactoring;
+import org.eclipse.ltk.core.refactoring.RefactoringStatus;
+import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
+import org.eclipse.ltk.core.refactoring.participants.ResourceChangeChecker;
+import org.eclipse.ltk.core.refactoring.participants.ValidateEditChecker;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
@@ -131,30 +141,105 @@ public class LongParameterList extends ViewPart {
 	private IMethod selectedMethod;
 	private LPLMethodObject[] methodObjectTable;
 
-	// private MethodEvolution methodEvolution;
-	// private List<Button> buttonList = new ArrayList<Button>();
 	private class LongParameterListRefactoringButtonUI extends RefactoringButtonUI {
 
 		// To be implemented
 		public void pressRefactorButton(int index) {
 			System.out.println("Success");
 
-		LPLMethodObject methodToRefactor = methodObjectTable[methodObjectTable.length - index - 1];
-		try {
-			IMethod convertedIMethod = methodToRefactor.toIMethod(selectedProject);
-			System.out.println(convertedIMethod.getElementName());
-		} catch (JavaModelException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-			/*				LPLRefactorWizard wizard = new LPLRefactorWizard(null, methodToRefactor);
-			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-					wizard);
-			dialog.open();*/
+			LPLMethodObject methodToRefactor = methodObjectTable[methodObjectTable.length - index - 1];
+			try {
+				IMethod convertedIMethod = methodToRefactor.toIMethod(selectedProject);
+				ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit()
+						.getWorkingCopy(new WorkingCopyOwner() {
+						}, null);
+				IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
+				editParameterFromBuffer(buffer, convertedIMethod, "");
+				workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
+				workingCopy.commitWorkingCopy(false, null);
+				workingCopy.discardWorkingCopy();
+				/*String replaceSignature = "(";
+				replaceSignature += ")";
+				int startPosition = convertedIMethod.getSourceRange().getOffset();
+				while (true) {
+					if (buffer.getChar(startPosition) != '(') {
+						startPosition += 1;
+						continue;
+					}
+					break;
+				}
+				int numOfLeftPar = 0;
+				int endPosition = startPosition;
+				while (true) {
+					if (buffer.getChar(endPosition) == '(') {
+						numOfLeftPar += 1;
+					} 
+					else if (buffer.getChar(endPosition) == ')') {
+						if (numOfLeftPar == 1)
+							break;
+						else
+							numOfLeftPar -= 1;
+					}
+					endPosition += 1;
+				}
+				buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
+				workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
+
+				workingCopy.commitWorkingCopy(false, null);*/
+				workingCopy.discardWorkingCopy();
+
+			} catch (JavaModelException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			/*
+			 * LPLRefactorWizard wizard = new LPLRefactorWizard(null, methodToRefactor);
+			 * WizardDialog dialog = new
+			 * WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+			 * wizard); dialog.open();
+			 */
 		}
 	}
 
 	private LongParameterListRefactoringButtonUI refactorButtonMaker;
+	
+	public void editParameterFromBuffer(IBuffer buffer, IMethod method, String parameterString) {
+		try {
+			IMethod convertedIMethod = method;
+			ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit()
+					.getWorkingCopy(new WorkingCopyOwner() {
+					}, null);
+			String replaceSignature = "(";
+			replaceSignature += ")";
+			int startPosition = convertedIMethod.getSourceRange().getOffset();
+			while (true) {
+				if (buffer.getChar(startPosition) != '(') {
+					startPosition += 1;
+					continue;
+				}
+				break;
+			}
+			int numOfLeftPar = 0;
+			int endPosition = startPosition;
+			while (true) {
+				if (buffer.getChar(endPosition) == '(') {
+					numOfLeftPar += 1;
+				} 
+				else if (buffer.getChar(endPosition) == ')') {
+					if (numOfLeftPar == 1)
+						break;
+					else
+						numOfLeftPar -= 1;
+				}
+				endPosition += 1;
+			}
+			buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
+		} catch (Exception e) {
+				e.printStackTrace();
+		}
+	}
 
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
