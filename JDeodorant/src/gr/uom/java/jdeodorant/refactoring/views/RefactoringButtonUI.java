@@ -76,7 +76,8 @@ public class RefactoringButtonUI {
 		for(int i = 0; i < items.length; i++) {			
 			TreeItem item1 = items[i];
 			TreeEditor editor = new TreeEditor(item1.getParent());
-			Button button = new Button(item1.getParent(), SWT.PUSH);					
+			Button button = new Button(item1.getParent(), SWT.PUSH);
+
 			button.setText("TEST");
 			button.setSize(16, 16);
 			button.pack();
@@ -91,8 +92,15 @@ public class RefactoringButtonUI {
 				public void widgetSelected(SelectionEvent event) {
 					pressRefactorButton((Integer) event.widget.getData("index"));
 				}
-				
+
 				public void widgetDefaultSelected(SelectionEvent event) {
+				}
+			});
+			
+			button.addPaintListener(new PaintListener() {
+				public void paintControl( PaintEvent event ) {
+					  event.gc.setBackground( event.display.getSystemColor( SWT.COLOR_WHITE ) );
+					  event.gc.fillRectangle( event.x, event.y, event.width, event.height );
 				}
 			});
 			
@@ -120,7 +128,7 @@ public class RefactoringButtonUI {
 					  public void paintControl( PaintEvent event ) {
 						  event.gc.setBackground( event.display.getSystemColor( SWT.COLOR_WHITE ) );
 						  event.gc.fillRectangle( event.x, event.y, event.width, event.height );
-						  Image image = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/green_button.png").createImage();
+						  Image image = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/refactoring_button.png").createImage();
 						  event.gc.drawImage( image, event.width/2-8, event.height/2-8 );
 					  }
 				});

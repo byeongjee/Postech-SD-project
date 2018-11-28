@@ -339,7 +339,7 @@ public class FeatureEnvyVisualizationData implements VisualizationData {
 	}
 
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+/*		StringBuilder sb = new StringBuilder();
 		sb.append("--SOURCE FIELD READS--").append("\n");
 		Map<FieldInstructionObject, Integer> sourceFieldReadMap = getSourceFieldReadMap();
 		for(FieldInstructionObject fieldInstruction : sourceFieldReadMap.keySet()) {
@@ -372,6 +372,12 @@ public class FeatureEnvyVisualizationData implements VisualizationData {
 			sb.append(methodInvocation).append("\t").append(targetMethodInvocationMap.get(methodInvocation)).append("\n");
 		}
 		return sb.toString();
+*/	
+		String message = "This code smell is Feature Envy\n";
+		message += "The method to be moved : " + methodToBeMoved.getName() + "\n";
+		message += "The source class : " + sourceClass.getName() + "\n";
+		message += "The target class : " + targetClass.getName() + "\n";
+		return message;
 	}
 
 	public int getDistinctSourceDependencies() {
