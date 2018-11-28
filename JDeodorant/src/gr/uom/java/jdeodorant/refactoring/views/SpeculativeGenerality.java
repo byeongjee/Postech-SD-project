@@ -695,6 +695,41 @@ public class SpeculativeGenerality extends ViewPart {
 					}
 						
 				}
+				else if(selection.getFirstElement() instanceof MethodObject) {
+		               MethodObject slice = (MethodObject)selection.getFirstElement();
+		               IFile sourceFile = slice.getIFile();
+		               try {
+		                  IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
+		                  ITextEditor sourceEditor = (ITextEditor)JavaUI.openInEditor(sourceJavaElement);
+		                  Object[] highlightPositionMaps = slice.getHighlightPositions();
+		                  Map<Position, String> annotationMap = (Map<Position, String>)highlightPositionMaps[0];
+		                  AnnotationModel annotationModel = (AnnotationModel)sourceEditor.getDocumentProvider().getAnnotationModel(sourceEditor.getEditorInput());
+		                  Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
+		                  while(annotationIterator.hasNext()) {
+		                     Annotation currentAnnotation = annotationIterator.next();
+		                     if(currentAnnotation.getType().equals(SliceAnnotation.EXTRACTION) || currentAnnotation.getType().equals(SliceAnnotation.DUPLICATION)) {
+		                        annotationModel.removeAnnotation(currentAnnotation);
+		                     }
+		                  }
+		                  for(Position position : annotationMap.keySet()) {
+		                     SliceAnnotation annotation = null;
+		                     String annotationText = annotationMap.get(position);
+		                     annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, annotationText);
+		                     annotationModel.addAnnotation(annotation, position);
+		                  }
+		                  List<Position> positions = new ArrayList<Position>(annotationMap.keySet());
+		                  Position firstPosition = positions.get(0);
+		                  Position lastPosition = positions.get(positions.size()-1);
+		                  int offset = firstPosition.getOffset();
+		                  int length = lastPosition.getOffset() + lastPosition.getLength() - firstPosition.getOffset();
+		                  sourceEditor.setHighlightRange(offset, length, true);
+		               } catch (PartInitException e) {
+		                  e.printStackTrace();
+		               } catch (JavaModelException e) {
+		                  e.printStackTrace();
+		               }
+		                  
+		            }
 			}
 		};
 	}
@@ -850,7 +885,7 @@ public class SpeculativeGenerality extends ViewPart {
 				
 				for(int i = 0; i < _methodList.size(); i++) {
 					MethodObject target = _methodList.get(i);
-					
+					target.setparentClass(targetClass);
 					System.out.println("In ProcessMethod : Printing");
 					System.out.println(target.getClassName() + "::" + target.getName());
 					for (int p = 0; p < target.getParameterList().size(); p++) {

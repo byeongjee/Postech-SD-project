@@ -23,6 +23,9 @@ public class ClassObjectCandidate extends ClassObject {
     private String refactorType;
     private List<MethodObject> smellingMethods;
     
+    private int smell_start;
+    private int smell_length;
+    
     public ClassObjectCandidate() {
     	this.name = "";
     	this.methodList = null;
@@ -74,11 +77,28 @@ public class ClassObjectCandidate extends ClassObject {
     }*/
     public Object[] getHighlightPositions() {
     	Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
-    	Position position = new Position(10, 20);
-		annotationMap.put(position, "HELLO");
+    	Position position = new Position(this.smell_start, this.smell_length);
+    	String annotationMessage = "This smell has Speculative Generality in Class "+this.name;
+		annotationMap.put(position, annotationMessage);
 		return new Object[] {annotationMap};
-		
     }
+    
+    public void setstart(int s){
+        this.smell_start=s;
+     }
+     public int getStart() {
+        return smell_start;
+     }
+     
+     public void setlength(int l)
+     {
+        this.smell_length=l;
+     }
+     public int getLength()
+     {
+        return smell_length;
+     }
+     
 	public void setCodeSmellType(String arg) {
 		this.codeSmellType = arg;
 	}

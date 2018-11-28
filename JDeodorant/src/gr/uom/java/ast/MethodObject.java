@@ -9,12 +9,14 @@ import gr.uom.java.ast.decomposition.cfg.PlainVariable;
 import gr.uom.java.ast.util.MethodDeclarationUtility;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.BodyDeclaration;
@@ -36,6 +38,7 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.ThisExpression;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jface.text.Position;
 
 public class MethodObject implements AbstractMethodDeclaration {
 
@@ -47,7 +50,9 @@ public class MethodObject implements AbstractMethodDeclaration {
     private ConstructorObject constructorObject;
     private boolean testAnnotation;
     private volatile int hashCode = 0;
-
+    private int smell_start = 5;
+	private int smell_length= 10;
+	private ClassObjectCandidate parentClass;
     public MethodObject(ConstructorObject co) {
         this.constructorObject = co;
         this._abstract = false;
@@ -57,6 +62,34 @@ public class MethodObject implements AbstractMethodDeclaration {
         this.testAnnotation = false;
     }
 
+    
+    public int getstart() {
+		return smell_start;
+	}
+	public void setstart(int smell_start) {
+		this.smell_start = smell_start;
+	}
+	public int getlength() {
+		return smell_length;
+	}
+	public void setlength(int smell_length) {
+		this.smell_length = smell_length;
+	}
+    public void setparentClass(ClassObjectCandidate COC)
+    {
+       this.parentClass=COC;
+    }
+    public IFile getIFile()
+    {
+       return this.parentClass.getIFile();
+    }
+
+    public Object[] getHighlightPositions() {
+       Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
+       Position position = new Position(smell_start, smell_length);
+      annotationMap.put(position, "HELLO");
+      return new Object[] {annotationMap};
+    }
     public void setReturnType(TypeObject returnType) {
         this.returnType = returnType;
     }
