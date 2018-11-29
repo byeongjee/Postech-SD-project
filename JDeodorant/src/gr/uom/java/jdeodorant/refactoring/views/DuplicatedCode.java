@@ -139,6 +139,9 @@ public class DuplicatedCode extends ViewPart {
 	private static final Color TEXT_COLOR = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
 	private static final Color MODIFIED_BG_COLOR = new Color(Display.getCurrent(), 218, 255, 215);
 	
+	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
+	
+	
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}

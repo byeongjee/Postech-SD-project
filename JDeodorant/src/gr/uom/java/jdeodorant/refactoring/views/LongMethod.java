@@ -64,6 +64,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationModel;
@@ -109,6 +110,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.IProgressService;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -130,6 +132,9 @@ public class LongMethod extends ViewPart {
 	private ASTSliceGroup[] sliceGroupTable;
 	//private MethodEvolution methodEvolution;
 	//private List<Button> buttonList = new ArrayList<Button>();
+	
+	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
+	
 	private class LongMethodRefactoringButtonUI extends RefactoringButtonUI {
 		
 		public void pressRefactorButton(int index) {
@@ -622,10 +627,12 @@ public class LongMethod extends ViewPart {
 				});
 			}
 		};
+		ImageDescriptor refactoringButtonImage = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/search_button.png");
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
-		identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-			getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+		//identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+		identifyBadSmellsAction.setImageDescriptor(refactoringButtonImage);
 		identifyBadSmellsAction.setEnabled(false);
+
 		
 		saveResultsAction = new Action() {
 			public void run() {
