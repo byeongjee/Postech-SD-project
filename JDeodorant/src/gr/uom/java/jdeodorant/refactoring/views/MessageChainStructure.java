@@ -12,6 +12,13 @@ public class MessageChainStructure {
 	private String name;
 	private List<MessageChainStructure> childList;
 	private int length;
+	
+	/**
+	 * Constructor about MessageChainStructure class
+	 * 
+	 * <Arguments>
+	 * String _name: Name of Massage Chain
+	 * **/
 	public MessageChainStructure(String _name) {
 		parent = null;
 		startPos = -1;
@@ -19,14 +26,15 @@ public class MessageChainStructure {
 		name = _name;
 		childList = new ArrayList<MessageChainStructure>();
 	}
-
-    public Object[] getHighlightPositions() {
-    	Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
-    	Position position = new Position(startPos, length);
-		annotationMap.put(position, "HELLO");
-		return new Object[] {annotationMap};
-		
-    }
+	
+	/**
+	 * Constructor about MessageChainStructure class
+	 * 
+	 * <Arguments>
+	 * Integer _startPos: Start position about detected code
+	 * MessageChainStructure: Information of parent
+	 * String _name: Name of Massage Chain
+	 * **/
 	public MessageChainStructure(Integer _startPos, MessageChainStructure _parent, String _name) {
 		startPos = _startPos;
 		parent = _parent;
@@ -35,6 +43,15 @@ public class MessageChainStructure {
 		length = -1;
 	}
 	
+	/**
+	 * Constructor about MessageChainStructure class
+	 * 
+	 * <Arguments>
+	 * Integer _startPos: Start position about detected code
+	 * MessageChainStructure: Information of parent
+	 * String _name: Name of Massage Chain
+	 * int _lenght: Length about detected code
+	 * **/
 	public MessageChainStructure(Integer _startPos, MessageChainStructure _parent, String _name,int _length) {
 		startPos = _startPos;
 		parent = _parent;
@@ -43,27 +60,73 @@ public class MessageChainStructure {
 		childList = new ArrayList<MessageChainStructure>();
 	}
 	
+	
+    public Object[] getHighlightPositions() {
+        Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
+        Position position = new Position(startPos, length);
+       annotationMap.put(position, "HELLO");
+       return new Object[] {annotationMap};
+       
+     }
+	
+	/**
+	 * Function for getting start position of detected code
+	 * **/
 	public Integer getStart() {
 		return startPos;
 	}
+	
+	/**
+	 * Function for getting information of parent
+	 * **/
 	public MessageChainStructure getParent() {
 		return parent;
 	}
+	
+	/**
+	 * Function for getting name
+	 * **/
 	public String getName() {
 		return name;
 	}
+	
+	/**
+	 * Function for getting length of detected code
+	 * **/
 	public int getLength() {
 		return length;
 	}
+	
+	/**
+	 * Function for getting List of information of children
+	 * **/
 	public List<MessageChainStructure> getChildren(){
 		return childList;
 	}
+	
+	/**
+	 * Function for adding new child to List of children
+	 * 
+	 * <Arguments>
+	 * MessageChainStructure _msgstructure: information about new child
+	 * **/
 	public boolean addChild(MessageChainStructure _msgstructure) {
 		return childList.add(_msgstructure);
 	}
+	
+	/**
+	 * Function for removing new child in List of children
+	 * 
+	 * <Arguments>
+	 * MessageChainStructure _msgstructure: information about child which User wants to remove
+	 * **/
 	public boolean removeChild(MessageChainStructure _msgstructure) {			
 		return childList.remove(_msgstructure);
 	}
+	
+	/**
+	 * Function for getting number of children
+	 * **/
 	public int getSize() {
 		return childList.size();
 	}																						
