@@ -105,6 +105,7 @@ import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 public class FeatureEnvy extends ViewPart {
 	private static final String MESSAGE_DIALOG_TITLE = "Feature Envy";
 	private TableViewer tableViewer;
+	private TreeViewer treeViewer;
 	private Action identifyBadSmellsAction;
 	private Action applyRefactoringAction;
 	private Action doubleClickAction;
@@ -130,6 +131,24 @@ public class FeatureEnvy extends ViewPart {
 	 * (like Task List, for example).
 	 */
 	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
+	
+	private class FeatureEnvyRefactoringButtonUI extends RefactoringButtonUI {
+		
+		public void pressRefactorButton(int index) {
+			System.out.println("Pressed parent refactor button");
+			System.out.println("index: " + index);
+			refactorFeatureEnvySmell(index, -1);
+		}
+		
+		//To be implemented
+		public void pressChildRefactorButton(int parentIndex, int childIndex) {
+			System.out.println("Pressed child refactor button");
+			System.out.println("index: " + parentIndex + " " + childIndex);
+			refactorFeatureEnvySmell(parentIndex, childIndex);
+		}
+	}
+
+	
 	
 	class ViewContentProvider implements IStructuredContentProvider {
 
@@ -168,6 +187,8 @@ public class FeatureEnvy extends ViewPart {
 				}
 				else
 					return "";
+			case 5:
+				return "";
 			default:
 				return "";
 			}
@@ -299,7 +320,11 @@ public class FeatureEnvy extends ViewPart {
 		column4.setText("Rate it!");
 		column4.setResizable(true);
 		column4.pack();
-		
+
+		TableColumn column5 = new TableColumn(tableViewer.getTable(),SWT.LEFT);
+		column5.setText("Do Refactoring");
+		column5.setResizable(true);
+		column5.pack();
 		tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 				tableViewer.getTable().setMenu(null);
@@ -630,6 +655,7 @@ public class FeatureEnvy extends ViewPart {
 					}
 				}
 			}
+		
 		};
 		applyRefactoringAction.setToolTipText("Apply Refactoring");
 		applyRefactoringAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
@@ -695,6 +721,99 @@ public class FeatureEnvy extends ViewPart {
 		super.dispose();
 		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(selectionListener);
 	}
+	
+	private void refactorFeatureEnvySmell(int childIndex, int parentIndex) {
+		
+		if(childIndex == -1 && parentIndex == -1) {
+			//selectionTree.setSelection(selectionTree.getItem(parentIndex));
+			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex));
+		}
+		else {
+			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex).getItem(childIndex));
+		}
+		
+		
+		IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
+		CandidateRefactoring entry = (CandidateRefactoring)selection.getFirstElement();
+		if(entry != null && entry.getSourceClassTypeDeclaration() != null && entry.getTargetClassTypeDeclaration() != null) {
+			IFile sourceFile = entry.getSourceIFile();
+			IFile targetFile = entry.getTargetIFile();
+			CompilationUnit sourceCompilationUnit = (CompilationUnit)entry.getSourceClassTypeDeclaration().getRoot();
+			CompilationUnit targetCompilationUnit = (CompilationUnit)entry.getTargetClassTypeDeclaration().getRoot();
+			Refactoring refactoring = null;
+			if(entry instanceof MoveMethodCandidateRefactoring) {
+				MoveMethodCandidateRefactoring candidate = (MoveMethodCandidateRefactoring)entry;
+				IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+				boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
+				if(allowUsageReporting) {
+					Table table = tableViewer.getTable();
+					int rankingPosition = -1;
+					for(int i=0; i<table.getItemCount(); i++) {
+						TableItem tableItem = table.getItem(i);
+						if(tableItem.getData().equals(candidate)) {
+							rankingPosition = i;
+							break;
+						}
+					}
+					try {
+						boolean allowSourceCodeReporting = store.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
+						String declaringClass = candidate.getSourceClassTypeDeclaration().resolveBinding().getQualifiedName();
+						String methodName = candidate.getSourceMethodDeclaration().resolveBinding().toString();
+						String sourceMethodName = declaringClass + "::" + methodName;
+						String content = URLEncoder.encode("project_name", "UTF-8") + "=" + URLEncoder.encode(activeProject.getElementName(), "UTF-8");
+						content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "=" + URLEncoder.encode(sourceMethodName, "UTF-8");
+						content += "&" + URLEncoder.encode("target_class_name", "UTF-8") + "=" + URLEncoder.encode(candidate.getTarget(), "UTF-8");
+						content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(rankingPosition), "UTF-8");
+						content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(table.getItemCount()), "UTF-8");
+						content += "&" + URLEncoder.encode("EP", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(0.0), "UTF-8");
+						content += "&" + URLEncoder.encode("envied_elements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(candidate.getNumberOfDistinctEnviedElements()), "UTF-8");
+						if(allowSourceCodeReporting)
+							content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "=" + URLEncoder.encode(candidate.getSourceMethodDeclaration().toString(), "UTF-8");
+						content += "&" + URLEncoder.encode("application", "UTF-8") + "=" + URLEncoder.encode("1", "UTF-8");
+						content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "=" + URLEncoder.encode(candidate.getMovedMethodName(), "UTF-8");
+						content += "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
+						content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("0", "UTF-8");
+						URL url = new URL(Activator.RANK_URL);
+						URLConnection urlConn = url.openConnection();
+						urlConn.setDoInput(true);
+						urlConn.setDoOutput(true);
+						urlConn.setUseCaches(false);
+						urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+						DataOutputStream printout = new DataOutputStream(urlConn.getOutputStream());
+						printout.writeBytes(content);
+						printout.flush();
+						printout.close();
+						DataInputStream input = new DataInputStream(urlConn.getInputStream());
+						input.close();
+					} catch (IOException ioe) {
+						ioe.printStackTrace();
+					}
+				}
+				refactoring = new MoveMethodRefactoring(sourceCompilationUnit, targetCompilationUnit,
+						candidate.getSourceClassTypeDeclaration(), candidate.getTargetClassTypeDeclaration(), candidate.getSourceMethodDeclaration(),
+						candidate.getAdditionalMethodsToBeMoved(), candidate.leaveDelegate(), candidate.getMovedMethodName());
+			}
+			try {
+				IJavaElement targetJavaElement = JavaCore.create(targetFile);
+				JavaUI.openInEditor(targetJavaElement);
+				IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
+				JavaUI.openInEditor(sourceJavaElement);
+			} catch (PartInitException e) {
+				e.printStackTrace();
+			} catch (JavaModelException e) {
+				e.printStackTrace();
+			}
+			MyRefactoringWizard wizard = new MyRefactoringWizard(refactoring, applyRefactoringAction);
+			RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
+			try { 
+				String titleForFailedChecks = ""; //$NON-NLS-1$ 
+				op.run(getSite().getShell(), titleForFailedChecks); 
+			} catch(InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 
 	private List<CandidateRefactoring> getPrerequisiteRefactorings(CandidateRefactoring candidateRefactoring) {
 		List<CandidateRefactoring> moveMethodPrerequisiteRefactorings = new ArrayList<CandidateRefactoring>();
