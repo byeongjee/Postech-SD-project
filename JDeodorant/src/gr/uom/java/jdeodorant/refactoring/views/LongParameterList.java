@@ -168,39 +168,7 @@ public class LongParameterList extends ViewPart {
 	}
 
 	private LongParameterListRefactoringButtonUI refactorButtonMaker;
-	
-	public void editParameterFromBuffer(IBuffer buffer, IMethod method, String parameterString) {
-		try {
-			IMethod convertedIMethod = method;
-			String replaceSignature = "(";
-			replaceSignature += ")";
-			int startPosition = convertedIMethod.getSourceRange().getOffset();
-			while (true) {
-				if (buffer.getChar(startPosition) != '(') {
-					startPosition += 1;
-					continue;
-				}
-				break;
-			}
-			int numOfLeftPar = 0;
-			int endPosition = startPosition;
-			while (true) {
-				if (buffer.getChar(endPosition) == '(') {
-					numOfLeftPar += 1;
-				} 
-				else if (buffer.getChar(endPosition) == ')') {
-					if (numOfLeftPar == 1)
-						break;
-					else
-						numOfLeftPar -= 1;
-				}
-				endPosition += 1;
-			}
-			buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
-		} catch (Exception e) {
-				e.printStackTrace();
-		}
-	}
+
 
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
