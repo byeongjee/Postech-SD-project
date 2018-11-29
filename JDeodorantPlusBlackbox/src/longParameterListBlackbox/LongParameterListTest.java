@@ -11,8 +11,6 @@ import org.junit.*;
 import org.junit.runner.RunWith;
 import org.omg.CORBA.portable.Delegate;
 
-import JDe5dorant.blackboxTest.testProject;
-
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;

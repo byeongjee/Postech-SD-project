@@ -42,6 +42,8 @@ import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSlice;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSliceGroup;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
 
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.resources.IFile;
@@ -103,6 +105,8 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -142,9 +146,53 @@ public class LongParameterList extends ViewPart {
 	private IMethod selectedMethod;
 	private LPLMethodObject[] methodObjectTable;
 
+	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
+	
 	private class LongParameterListRefactoringButtonUI extends RefactoringButtonUI {
 
 		// To be implemented
+		
+		@Override
+		public void makeRefactoringButtons(int columnIndex) {
+			TreeItem[] items = tree.getItems();
+			for(int i = 0; i < items.length; i++) {			
+				TreeItem item1 = items[i];
+				TreeEditor editor = new TreeEditor(item1.getParent());
+				Button button = new Button(item1.getParent(), SWT.PUSH);
+
+				button.setText("TEST");
+				button.setSize(16, 16);
+				button.pack();
+				button.setData("index", i);
+				
+				editor.horizontalAlignment = SWT.RIGHT;
+				editor.grabHorizontal = true;
+				editor.minimumWidth = 50;
+				editor.setEditor(button, item1, columnIndex);
+				buttonList.add(button);
+				button.addSelectionListener(new SelectionListener() {
+					public void widgetSelected(SelectionEvent event) {
+						pressRefactorButton((Integer) event.widget.getData("index"));
+					}
+
+					public void widgetDefaultSelected(SelectionEvent event) {
+					}
+				});
+				
+				button.addPaintListener(new PaintListener() {
+					public void paintControl( PaintEvent event ) {
+						  event.gc.setBackground( event.display.getSystemColor( SWT.COLOR_WHITE ) );
+						  event.gc.fillRectangle( event.x, event.y, event.width, event.height );
+						  Image image = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/refactoring_button.png").createImage();
+						  event.gc.drawImage( image, event.width/2-8, event.height/2-8 );
+					}
+				});
+				
+			}
+		}
+		
+		
+		
 		public void pressRefactorButton(int index) {
 			System.out.println("Success");
 			LPLMethodObject methodToRefactor = methodObjectTable[methodObjectTable.length - index - 1];
@@ -385,10 +433,11 @@ public class LongParameterList extends ViewPart {
 				});
 			}
 		};
-		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
-		identifyBadSmellsAction.setImageDescriptor(
-				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-		identifyBadSmellsAction.setEnabled(false);
+		ImageDescriptor refactoringButtonImage = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/search_button.png");
+        identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
+        //identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+        identifyBadSmellsAction.setImageDescriptor(refactoringButtonImage);
+        identifyBadSmellsAction.setEnabled(false);
 
 		saveResultsAction = new Action() {
 			public void run() {

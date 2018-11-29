@@ -18,8 +18,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import gr.uom.java.jdeodorant.refactoring.Activator;
 
 public class RefactoringButtonUI {
-	private Tree tree;
-	private ArrayList<Button> buttonList;
+	protected Tree tree;
+	protected ArrayList<Button> buttonList;
 	private ArrayList<List <Button>> childButtonList;
 	
 	private String PLUGIN_ID = "gr.uom.java.jdeodorant";

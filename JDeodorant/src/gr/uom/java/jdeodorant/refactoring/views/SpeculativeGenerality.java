@@ -16,7 +16,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import gr.uom.java.ast.ASTReader;
 import gr.uom.java.ast.AbstractMethodDeclaration;
 import gr.uom.java.ast.ClassObject;
@@ -26,44 +27,32 @@ import gr.uom.java.ast.CompilationUnitCache;
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.SystemObject;
 import gr.uom.java.ast.TypeObject;
-import gr.uom.java.ast.decomposition.cfg.CFG;
-import gr.uom.java.ast.decomposition.cfg.PDG;
-import gr.uom.java.ast.decomposition.cfg.PDGObjectSliceUnion;
-import gr.uom.java.ast.decomposition.cfg.PDGObjectSliceUnionCollection;
-import gr.uom.java.ast.decomposition.cfg.PDGSliceUnion;
-import gr.uom.java.ast.decomposition.cfg.PDGSliceUnionCollection;
-import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-import gr.uom.java.ast.util.StatementExtractor;
 import gr.uom.java.jdeodorant.preferences.PreferenceConstants;
 import gr.uom.java.jdeodorant.refactoring.Activator;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSlice;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSliceGroup;
-import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationModel;
@@ -82,8 +71,6 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
-import org.eclipse.ltk.core.refactoring.Refactoring;
-import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -103,17 +90,20 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.IProgressService;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.osgi.framework.Bundle;
-
-
+import java.util.HashSet;
+import gr.uom.java.ast.ClassObjectCandidate;
+import gr.uom.java.ast.decomposition.CompositeStatementObject;
+import gr.uom.java.ast.decomposition.MethodBodyObject;
+import org.eclipse.jdt.core.dom.Statement;
 
 /**
  * Detect Code Smell of Speculative Generality
  * @author 이재엽, 이주용
- *
+ * 
+ * Refactor the Smelling Codes
+ * @author 이주용, 손태영
  */
 public class SpeculativeGenerality extends ViewPart {
 	private static final String MESSAGE_DIALOG_TITLE = "Speculative Generality";
@@ -122,7 +112,6 @@ public class SpeculativeGenerality extends ViewPart {
 	private Action applyRefactoringAction;
 	private Action doubleClickAction;
 	private Action saveResultsAction;
-	//private Action evolutionAnalysisAction;
 	private IJavaProject selectedProject;
 	private IJavaProject activeProject;
 	private IPackageFragmentRoot selectedPackageFragmentRoot;
@@ -133,66 +122,241 @@ public class SpeculativeGenerality extends ViewPart {
 	
 	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
 	
-	private class SpeculativeGeneralityRefactoringButtonUI extends RefactoringButtonUI {
-		
-		
-		//To be implemented
-		public void pressRefactorButton(int index) {
-			System.out.println("Index of button pressed is " + index);
-		}
-	}
-	private SpeculativeGeneralityRefactoringButtonUI refactorButtonMaker;
-	
 	// Exp : would-be extended to contain information of line, source-path, and so forth... (for UI)
 	private ClassObjectCandidate[] classObjectTable; 
 	
 	
-	class ViewContentProvider implements ITreeContentProvider {
+	private ClassObjectCandidate[] _smellingClassEntries;
+	private Set<ClassObject> _classObjectToBeExamined = new HashSet<ClassObject>();
+	
+	private SpeculativeGeneralityRefactoringButtonUI refactorButtonMaker;
+	
+	public class SpeculativeGeneralityRefactoringButtonUI extends RefactoringButtonUI {
+		/**
+		 * Action on Refactoring Button
+		 * 
+		 * @author 손태영, 이주용 
+		 */
+		public void pressRefactorButton(int index) {
+			ClassObjectCandidate targetClass = _smellingClassEntries[index];
+			
+			// Switch w.r.t smell type and Details
+			if(targetClass.getCodeSmellType().equals("Abstract Class")) {
+				if(targetClass.getNumChild() == 0) {
+					// Wrap as comments
+					List<String> resolvedClassContent = targetClass.getContent();
+					String newContent = "/*\r\n";
+					for( String c : resolvedClassContent) {
+						newContent += c + "\r\n";
+					}
+					newContent += "}\r\n\r\n*/";
+					
+					// Modify Target
+					SystemObject systemObject = ASTReader.getSystemObject();
+					if (systemObject != null) {
+						IFile _file = targetClass.getIFile();
+						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+						
+						this.processRefactor(newContent, _compilationUnit);
+					}
+				} else {
+					// Integrate Child and Parent
+					ClassObjectCandidate childClass;
+					for(ClassObject examiningClass : _classObjectToBeExamined) {
+						if(examiningClass.getName().equals(targetClass.getName())) continue;
+						
+						TypeObject superClass = examiningClass.getSuperclass();
+						if(superClass != null) {
+							if (superClass.getClassType().equals(targetClass.getName())) {
+								childClass = new ClassObjectCandidate(examiningClass);
+
+								// Merge TargetClass(Parent) and its Child
+								targetClass.mergeIntoChild(childClass);
+								
+								// Write "new content" On "target class" JavaFile
+								List<String> resolvedClassContent = targetClass.getContent();
+								String newContent = "";
+								for( String c : resolvedClassContent) {
+									newContent += c + "\r\n";
+								}
+								
+								// Modify Parent
+								SystemObject systemObject = ASTReader.getSystemObject();
+								if (systemObject != null) {
+									IFile _file = targetClass.getIFile();
+									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+									
+									this.processRefactor(newContent, _compilationUnit);
+								}
+								
+								// Modify Child								
+								resolvedClassContent = childClass.getContent();
+								newContent = "";
+								for( String c : resolvedClassContent) {
+									newContent += c + "\r\n";
+								}
+								if (systemObject != null) {
+									IFile _file = childClass.getIFile();
+									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+									
+									this.processRefactor(newContent, _compilationUnit);
+								}
+								
+								break;
+							}
+						}
+					}
+				}
+			} else if (targetClass.getCodeSmellType().equals("Interface Class")) {
+				if(targetClass.getNumChild() == 0) {
+					List<String> resolvedClassContent = targetClass.getContent();
+					String newContent = "/*\r\n";
+					for( String c : resolvedClassContent) {
+						newContent += c + "\r\n";
+					}
+					newContent += "}\r\n\r\n*/";
+					
+					// Modify Target
+					SystemObject systemObject = ASTReader.getSystemObject();
+					if (systemObject != null) {
+						IFile _file = targetClass.getIFile();
+						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+						this.processRefactor(newContent, _compilationUnit);
+					}
+				} else {					
+					// Integrate Child and Parent
+					ClassObjectCandidate childClass;
+					for(ClassObject examiningClass : _classObjectToBeExamined) {
+						if(examiningClass.getName().equals(targetClass.getName())) continue;
+						
+						ListIterator<TypeObject> parentClasses = examiningClass.getInterfaceIterator();
+						while(parentClasses.hasNext()) {
+							TypeObject parentClass = parentClasses.next();
+							if (parentClass.getClassType().equals(targetClass.getName())) {
+								childClass = new ClassObjectCandidate(examiningClass);
+
+								// Merge TargetClass(Parent) and its Child
+								targetClass.mergeIntoChild(childClass);
+
+								// Write "new content" On "target class" JavaFile
+								List<String> resolvedClassContent = targetClass.getContent();
+								String newContent = "";
+								for( String c : resolvedClassContent) {
+									newContent += c + "\r\n";
+								}
+								
+								// Modify Parent
+								IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+								SystemObject systemObject = ASTReader.getSystemObject();
+								if (systemObject != null) {
+									IFile _file = targetClass.getIFile();
+									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+
+									this.processRefactor(newContent, _compilationUnit);
+								}
+								
+								// Modify Child								
+								resolvedClassContent = childClass.getContent();
+								newContent = "";
+								for( String c : resolvedClassContent) {
+									newContent += c + "\r\n";
+								}
+								if (systemObject != null) {
+									IFile _file = childClass.getIFile();
+									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+									
+									this.processRefactor(newContent, _compilationUnit);
+								}
+								
+								break;
+							}
+						}
+					}
+
+				}
+			} else if (targetClass.getCodeSmellType().equals("Unnecessary Parameters")) {
+				List<MethodObject> _smellingMethods = targetClass.getSmellingMethods();
+				
+				for(MethodObject target : _smellingMethods) {
+					// Get "new Content"
+					targetClass.resolveUnnecessaryParameters(target);
+					List<String> resolvedClassContent = targetClass.getContent();
+
+					// Re-write
+					String newContent = "";
+					for( String c : resolvedClassContent) {
+						newContent += c + "\r\n";
+					}
+					
+					// Write "new content" On "target class" JavaFile
+					IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+					SystemObject systemObject = ASTReader.getSystemObject();
+					if (systemObject != null) {
+						IFile _file = targetClass.getIFile();
+						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+
+						this.processRefactor(newContent, _compilationUnit);
+					}
+				}
+			}
+		}
+
+		private void processRefactor(String newContent, ICompilationUnit _compilationUnit) {
+			try {
+				ICompilationUnit _CUorigin = _compilationUnit.getWorkingCopy(new WorkingCopyOwner() {}, null);
+				IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
+
+				_bufferOrigin.replace(0, _bufferOrigin.getLength(), newContent);
+
+				_CUorigin.reconcile(ICompilationUnit.NO_AST, false, null, null);
+				_CUorigin.commitWorkingCopy(false, null);
+				_CUorigin.discardWorkingCopy();
+			} catch (JavaModelException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}
 		public void dispose() {
 		}
-		public Object[] getElements(Object parent) {
-			if(classObjectTable!=null) {
-				return classObjectTable;
+		public Object[] getElements(Object arg) {
+			if(_smellingClassEntries!=null) {
+				return _smellingClassEntries;
 			}
 			else {
 				return new ClassObjectCandidate[] {};
 			}
 		}
-		// Warn : Quite Sure a/ JuYongLee, JaeYeopLee
-		public Object[] getChildren(Object arg) {
-			if(arg instanceof ClassObjectCandidate[]) {
-				return (ClassObjectCandidate[])arg; 
-			} else if(arg instanceof ClassObjectCandidate){
-				Object[] res = ((ClassObjectCandidate) arg).getSmellingMethods().toArray();
-				
-				System.out.println("In ViewContentProvider : getChildren : Printing Children Methods");
-				for(int i = 0; i < res.length;  i++) {
-					System.out.println(((MethodObject) res[i]).getName());
-				}
-				System.out.println("In ViewContentProvider : getChildren : Printed Children Methods");
-				
-				return ((ClassObjectCandidate) arg).getSmellingMethods().toArray(); 
-			} else {
-				ClassObjectCandidate[] res = { };
-				return res; 
-			}
-		}
-		// Warn : Quite Sure a/ JuYongLee, JaeYeopLee
+
+		
 		public Object getParent(Object arg0) {
-			if(arg0 instanceof ClassObjectCandidate[]) {
+			if(arg0 instanceof ClassObjectCandidate) {
 				ClassObjectCandidate target = (ClassObjectCandidate)arg0;
 				
-				for(int i=0; i<classObjectTable.length; i++) {
-					if(classObjectTable[i].getName().equals(target.getName())) {
-						return classObjectTable[i];
+				for(int i=0; i<_smellingClassEntries.length; i++) {
+					if(_smellingClassEntries[i].getName().equals(target.getName())) {
+						return _smellingClassEntries[i];
 					}
 				}
 			}
 				
 			return null;
 		}
+				
+		public Object[] getChildren(Object arg) {
+			/*if(arg instanceof ClassObjectCandidate[]) {
+				return (ClassObjectCandidate[])arg; 
+			} else*/ if(arg instanceof ClassObjectCandidate){
+				return ((ClassObjectCandidate) arg).getSmellingMethods().toArray(); 
+			} else {
+				ClassObjectCandidate[] res = { };
+				return res; 
+			}
+		}
+		
 		public boolean hasChildren(Object arg0) {
 			return getChildren(arg0).length > 0;
 		}
@@ -265,30 +429,6 @@ public class SpeculativeGenerality extends ViewPart {
 		}
 	}
 
-	class NameSorter extends ViewerSorter {
-		public int compare(Viewer viewer, Object obj1, Object obj2) {
-			if(obj1 instanceof ClassObjectCandidate && obj2 instanceof ClassObjectCandidate) {
-				ClassObjectCandidate classObject1 = (ClassObjectCandidate)obj1;
-				ClassObjectCandidate classObject2 = (ClassObjectCandidate)obj2;
-				return classObject1.getName().compareTo(classObject2.getName());
-			}
-			else if(obj1 instanceof ClassObject && obj2 instanceof ClassObject) {
-				ClassObject classObject1 = (ClassObject)obj1;
-				ClassObject classObject2 = (ClassObject)obj2;
-				return classObject1.getName().compareTo(classObject2.getName());
-			}
-			else if(obj1 instanceof MethodObject && obj2 instanceof MethodObject) {
-				MethodObject classObject1 = (MethodObject)obj1;
-				MethodObject classObject2 = (MethodObject)obj2;
-				return classObject1.getName().compareTo(classObject2.getName());
-			}
-			else
-			{
-				System.out.println("In NameSorter : else");
-				return 1;
-			}
-		}
-	}
 	
 	private ISelectionListener selectionListener = new ISelectionListener() {
 		public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
@@ -365,7 +505,7 @@ public class SpeculativeGenerality extends ViewPart {
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
-		treeViewer.setSorter(new NameSorter());
+
 		treeViewer.setInput(getViewSite());
 		TableLayout layout = new TableLayout();
 		layout.addColumnData(new ColumnWeightData(60, true));
@@ -416,7 +556,6 @@ public class SpeculativeGenerality extends ViewPart {
 		
 		treeViewer.setCellModifier(new ICellModifier() {
 			public boolean canModify(Object element, String property) {
-				System.out.println("In CanModify");
 				return property.equals("rate");
 			}
 
@@ -513,7 +652,6 @@ public class SpeculativeGenerality extends ViewPart {
 					if(activeProject != null && CompilationUnitCache.getInstance().getAffectedProjects().contains(activeProject)) {
 						applyRefactoringAction.setEnabled(false);
 						saveResultsAction.setEnabled(false);
-						//evolutionAnalysisAction.setEnabled(false);
 					}
 				}
 			}
@@ -537,8 +675,13 @@ public class SpeculativeGenerality extends ViewPart {
 			public void run() {
 				activeProject = selectedProject;
 				CompilationUnitCache.getInstance().clearCache();
-				classObjectTable = getTable();
+
+				
+				setClassObjectToBeExamined();
+				setSmellingClassEntries( _classObjectToBeExamined );
+				
 				treeViewer.setContentProvider(new ViewContentProvider());
+				
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
 				//evolutionAnalysisAction.setEnabled(true);
@@ -556,7 +699,6 @@ public class SpeculativeGenerality extends ViewPart {
 				});
 			}
 		};
-		
 		ImageDescriptor refactoringButtonImage = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/search_button.png");
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
 		//identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
@@ -575,89 +717,13 @@ public class SpeculativeGenerality extends ViewPart {
 
 		applyRefactoringAction = new Action() {
 			public void run() {
-				System.out.println("In ApplyRefactoringAction run");
-				
 				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
 				if(selection != null && selection.getFirstElement() instanceof ClassObjectCandidate) {
 					IFile sourceFile = ((ClassObjectCandidate) selection.getFirstElement()).getIFile();
 					System.out.println(sourceFile.getFullPath().toString());
-					// ToDo : Apply Refactoring
-					/*IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-					boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
-					if(allowUsageReporting) {
-						Tree tree = treeViewer.getTree();
-						int groupPosition = -1;
-						int totalGroups = tree.getItemCount();
-						for(int i=0; i<tree.getItemCount(); i++) {
-							TreeItem treeItem = tree.getItem(i);
-							ASTSliceGroup group = (ASTSliceGroup)treeItem.getData();
-							if(group.getCandidates().contains(slice)) {
-								groupPosition = i;
-								break;
-							}
-						}
-						try {
-							boolean allowSourceCodeReporting = store.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
-							String declaringClass = slice.getSourceTypeDeclaration().resolveBinding().getQualifiedName();
-							String methodName = slice.getSourceMethodDeclaration().resolveBinding().toString();
-							String sourceMethodName = declaringClass + "::" + methodName;
-							String content = URLEncoder.encode("project_name", "UTF-8") + "=" + URLEncoder.encode(activeProject.getElementName(), "UTF-8");
-							content += "&" + URLEncoder.encode("source_method_name", "UTF-8") + "=" + URLEncoder.encode(sourceMethodName, "UTF-8");
-							content += "&" + URLEncoder.encode("variable_name", "UTF-8") + "=" + URLEncoder.encode(slice.getLocalVariableCriterion().resolveBinding().toString(), "UTF-8");
-							content += "&" + URLEncoder.encode("block", "UTF-8") + "=" + URLEncoder.encode("B" + slice.getBoundaryBlock().getId(), "UTF-8");
-							content += "&" + URLEncoder.encode("object_slice", "UTF-8") + "=" + URLEncoder.encode(slice.isObjectSlice() ? "1" : "0", "UTF-8");
-							int numberOfSliceStatements = slice.getNumberOfSliceStatements();
-							int numberOfDuplicatedStatements = slice.getNumberOfDuplicatedStatements();
-							content += "&" + URLEncoder.encode("duplicated_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfDuplicatedStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("extracted_statements", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numberOfSliceStatements), "UTF-8");
-							content += "&" + URLEncoder.encode("ranking_position", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
-							content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
-							if(allowSourceCodeReporting) {
-								content += "&" + URLEncoder.encode("source_method_code", "UTF-8") + "=" + URLEncoder.encode(slice.getSourceMethodDeclaration().toString(), "UTF-8");
-								content += "&" + URLEncoder.encode("slice_statements", "UTF-8") + "=" + URLEncoder.encode(slice.sliceToString(), "UTF-8");
-							}
-							content += "&" + URLEncoder.encode("application", "UTF-8") + "=" + URLEncoder.encode(String.valueOf("1"), "UTF-8");
-							content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "=" + URLEncoder.encode(slice.getExtractedMethodName(), "UTF-8");
-							content += "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
-							content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("2", "UTF-8");
-							URL url = new URL(Activator.RANK_URL);
-							URLConnection urlConn = url.openConnection();
-							urlConn.setDoInput(true);
-							urlConn.setDoOutput(true);
-							urlConn.setUseCaches(false);
-							urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-							DataOutputStream printout = new DataOutputStream(urlConn.getOutputStream());
-							printout.writeBytes(content);
-							printout.flush();
-							printout.close();
-							DataInputStream input = new DataInputStream(urlConn.getInputStream());
-							input.close();
-						} catch (IOException ioe) {
-							ioe.printStackTrace();
-						}
-					}
-					Refactoring refactoring = new ExtractMethodRefactoring(sourceCompilationUnit, slice);
-					try {
-						IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
-						JavaUI.openInEditor(sourceJavaElement);
-					} catch (PartInitException e) {
-						e.printStackTrace();
-					} catch (JavaModelException e) {
-						e.printStackTrace();
-					}
-					MyRefactoringWizard wizard = new MyRefactoringWizard(refactoring, applyRefactoringAction);
-					RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
-					try { 
-						String titleForFailedChecks = ""; //$NON-NLS-1$ 
-						op.run(getSite().getShell(), titleForFailedChecks); 
-					} catch(InterruptedException e) {
-						e.printStackTrace();
-					}*/
+
 				} else if(selection != null && selection.getFirstElement() instanceof MethodObject) {
-					//IFile sourceFile = ((MethodObject) selection.getFirstElement()).getIFile();
-					//System.out.println(sourceFile.getFullPath().toString());
 				}
-				System.out.println("After ApplyRefactoringAction run : end after if");
 			}
 		};
 
@@ -761,169 +827,6 @@ public class SpeculativeGenerality extends ViewPart {
 		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(selectionListener);
 	}
 
-	private ClassObjectCandidate[] getTable() {
-		ClassObjectCandidate[] table = null;
-		System.out.println("In GetTable");
-		try {
-			System.out.println("In GetTable : Try");
-			IWorkbench wb = PlatformUI.getWorkbench();
-			IProgressService ps = wb.getProgressService();
-			if(ASTReader.getSystemObject() != null && activeProject.equals(ASTReader.getExaminedProject())) {
-				new ASTReader(activeProject, ASTReader.getSystemObject(), null);
-			}
-			else {
-				ps.busyCursorWhile(new IRunnableWithProgress() {
-					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-						try {
-							new ASTReader(activeProject, monitor);
-						} catch (CompilationErrorDetectedException e) {
-							Display.getDefault().asyncExec(new Runnable() {
-								public void run() {
-									MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), MESSAGE_DIALOG_TITLE,
-											"Compilation errors were detected in the project. Fix the errors before using JDeodorant.");
-								}
-							});
-						}
-					}
-				});
-			}
-			SystemObject systemObject = ASTReader.getSystemObject();
-			if(systemObject != null) {
-				System.out.println("In GetTable : Before Declaring classObjectsToBeExamined");
-				Set<ClassObject> classObjectsToBeExamined = new LinkedHashSet<ClassObject>();
-				if(selectedPackageFragmentRoot != null) {
-					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragmentRoot));
-				}
-				else if(selectedPackageFragment != null) {
-					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragment));
-				}
-				else if(selectedCompilationUnit != null) {
-				}
-				else if(selectedType != null) {
-				}
-				else {
-					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
-				}
-
-				final Set<String> classNamesToBeExamined = new LinkedHashSet<String>();
-				for(ClassObject classObject : classObjectsToBeExamined) {
-					if(!classObject.isEnum() && !classObject.isInterface() && !classObject.isGeneratedByParserGenenator())
-						classNamesToBeExamined.add(classObject.getName());
-				}
-				
-				System.out.println("In GetTable : Printing classObjectsToBeExamined");
-				for(ClassObject target : classObjectsToBeExamined) {
-					System.out.println(target.getName());
-				}
-				System.out.println("In GetTable : Printed classObjectsToBeExamined");
-				
-				table=processMethod(classObjectsToBeExamined);
-			}
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (CompilationErrorDetectedException e) {
-			MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), MESSAGE_DIALOG_TITLE,
-					"Compilation errors were detected in the project. Fix the errors before using JDeodorant.");
-		}
-		
-		return table;	
-	}
-
-	/**
-	 *  Examine the class objects
-	 * @param classObjectsToBeExamined
-	 * @return Array of ClassObject
-	 */
-	private ClassObjectCandidate[] processMethod(final Set<ClassObject> classObjectsToBeExamined){	
-//		final List<ClassObject> classObjectswithSG = new ArrayList<ClassObject>();
-		final List<ClassObjectCandidate> classObjectswithSG = new ArrayList<ClassObjectCandidate>();
-		
-		for(ClassObject _ClassObject : classObjectsToBeExamined) {
-			ClassObjectCandidate targetClass = new ClassObjectCandidate(_ClassObject);
-			System.out.println("In ProcessMethod : Type Conversion Test");
-			System.out.println(targetClass.getName());
-			
-			// Unnecessary Abstraction
-			if(targetClass.isAbstract()) {
-				int childOfTargetNum = 0;
-				
-				for(ClassObject childCandidate : classObjectsToBeExamined) {
-					TypeObject superClass = childCandidate.getSuperclass();
-					if(superClass == null) {
-						continue;
-					}
-				
-					if(superClass.getClassType().equals(targetClass.getName())){
-						childOfTargetNum++;
-					}
-					if(childOfTargetNum >= 2)
-						break;
-				}
-				if(childOfTargetNum < 2) {
-					targetClass.setCodeSmellType("Abstract Class");
-					classObjectswithSG.add(targetClass);
-				}
-			}
-			else if(targetClass.isInterface()) {
-				int childOfTargetNum = 0;
-				
-				for(ClassObject childCandidate : classObjectsToBeExamined) {
-					ListIterator<TypeObject> myIter=childCandidate.getInterfaceIterator();
-					while(myIter.hasNext()) {
-						//
-						if(myIter.next().getClassType().equals(targetClass.getName())) {
-							childOfTargetNum++;
-							break;
-						}
-					}
-					if(childOfTargetNum >= 2)
-						break;
-				}
-				if(childOfTargetNum < 2) {
-					targetClass.setCodeSmellType("Interface Class");
-					classObjectswithSG.add(targetClass);
-				}
-			}
-			
-			// Unnecsary Parameter
-			System.out.println("In ProcessMethod : for loop of methoditerator");
-			if(!targetClass.isEnum() && !targetClass.isInterface() && !targetClass.isGeneratedByParserGenenator()) {
-				List<MethodObject> _methodList = targetClass.getMethodList();
-				
-				for(int i = 0; i < _methodList.size(); i++) {
-					MethodObject target = _methodList.get(i);
-					target.setparentClass(targetClass);
-					System.out.println("In ProcessMethod : Printing");
-					System.out.println(target.getClassName() + "::" + target.getName());
-					for (int p = 0; p < target.getParameterList().size(); p++) {
-						System.out.println(target.getParameter(p).getName());
-						System.out.println(target.getClassName());
-					}
-					System.out.println("In ProcessMethod : for loop of methoditerator");
-
-					if (!targetClass.getSmellingMethods().isEmpty()) {
-						// ToDo : Add target for each smelling Method
-						targetClass.setCodeSmellType("Unnecessary Parameters");
-						targetClass.addSmellingMethod(target);
-						classObjectswithSG.add(targetClass);
-					} 
-				}
-			}
-		}
-		
-		System.out.println("In ProcessMethod : Printing results which are smelling classes");
-		ClassObjectCandidate[] res = new ClassObjectCandidate[classObjectswithSG.size()];
-		for(int i=0;i<classObjectswithSG.size();i++) {
-			res[i]= classObjectswithSG.get(i);
-			System.out.println(res[i].getName());
-		}
-		System.out.println("In ProcessMethod : Printed results which are smelling classes");
-		
-		return res;
-	}
-
 	private void saveResults() {
 		FileDialog fd = new FileDialog(getSite().getWorkbenchWindow().getShell(), SWT.SAVE);
 		fd.setText("Save Results");
@@ -956,4 +859,227 @@ public class SpeculativeGenerality extends ViewPart {
         	}
         }
 	}
+
+	/**
+	 * @author JaeYeop Lee, JuYong Lee
+	 * @return 
+	 */
+	public void setClassObjectToBeExamined() {
+		try {
+			IWorkbench wb = PlatformUI.getWorkbench();
+			IProgressService ps = wb.getProgressService();
+			
+			if(ASTReader.getSystemObject() != null && activeProject.equals(ASTReader.getExaminedProject())) {
+				new ASTReader(activeProject, ASTReader.getSystemObject(), null);
+			}
+			else {
+				ps.busyCursorWhile(new IRunnableWithProgress() {
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						try {
+							new ASTReader(activeProject, monitor);
+						} catch (CompilationErrorDetectedException e) {
+							Display.getDefault().asyncExec(new Runnable() {
+								public void run() {
+									MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), MESSAGE_DIALOG_TITLE,
+											"Compilation errors were detected in the project. Fix the errors before using JDeodorant.");
+								}
+							});
+						}
+					}
+				});
+			}
+
+			
+			SystemObject systemObject = ASTReader.getSystemObject();
+			if(systemObject != null) {
+				Set<ClassObject> classObjectsToBeExamined = new HashSet<ClassObject>();
+				// Package Selected
+				if(selectedPackageFragment != null) {
+					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragment));
+				}
+				else {
+					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
+				}
+				
+				// Duplicated Entry Deletion
+				this._classObjectToBeExamined = new HashSet<ClassObject>();
+				for (ClassObject co : classObjectsToBeExamined) {
+					boolean flagExistence = false;
+					for(ClassObject _co : this._classObjectToBeExamined) {
+						if( co.getName().equals(_co.getName()) ) {
+							flagExistence = true;
+							break;
+						}
+					}
+					
+					if(!flagExistence) {
+						this._classObjectToBeExamined.add(co);
+					}
+				}
+				
+				for(ClassObject _co : this._classObjectToBeExamined) {
+					System.out.println(_co.toString());
+				}
+				
+			}
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (CompilationErrorDetectedException e) {
+			MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), MESSAGE_DIALOG_TITLE,
+					"Compilation errors were detected in the project. Fix the errors before using JDeodorant.");
+		}
+		
+
+		return;	
+	}
+	
+	public void setClassObjectToBeExamined(Set<ClassObject> arg) {
+		this._classObjectToBeExamined = arg;
+	}
+	
+	/**
+	 *  Get the class objects to be examined
+	 *  @return classObjectToBeExamined
+	 */
+	public Set<ClassObject> getClassObjectToBeExamined() {
+		return this._classObjectToBeExamined;
+	}
+	
+	/**
+	 *  Examine the class objects
+	 *  @author JaeYeop Lee, JuYong Lee
+	 *  @param classObjectsToBeExamined
+	 *  @return Array of ClassObject
+	 */
+	public void setSmellingClassEntries(final Set<ClassObject> classObjectsToBeExamined){
+		final List<ClassObjectCandidate> smellingClassObjectCandidates = new ArrayList<ClassObjectCandidate>();
+		
+		for(ClassObject targetClass : classObjectsToBeExamined) {	
+			// Abstract Class
+			if(targetClass.isAbstract()) {
+				ClassObjectCandidate target = new ClassObjectCandidate(targetClass);
+				
+				int childOfTargetNum = 0;
+				
+				for(ClassObject childCandidate : classObjectsToBeExamined) {
+					TypeObject superClass = childCandidate.getSuperclass();
+					if(superClass == null) {
+						continue;
+					}
+				
+					if(superClass.getClassType().equals(targetClass.getName())){
+						childOfTargetNum++;
+					}
+
+					
+					if(childOfTargetNum >= 2)
+						break;
+				}
+				
+				if(childOfTargetNum < 2) {
+					target.setNumChild(childOfTargetNum);
+					target.setCodeSmellType("Abstract Class");
+					smellingClassObjectCandidates.add(target);
+				}
+			}
+			
+			// Interface Class
+			else if(targetClass.isInterface()) {
+				ClassObjectCandidate target = new ClassObjectCandidate(targetClass);
+				
+				int childOfTargetNum = 0;
+				
+				for(ClassObject childCandidate : classObjectsToBeExamined) {
+					ListIterator<TypeObject> myIter=childCandidate.getInterfaceIterator();
+					while(myIter.hasNext()) {
+
+						if(myIter.next().getClassType().equals(targetClass.getName())) {
+							childOfTargetNum++;
+							break;
+						}
+					}
+
+					if(childOfTargetNum >= 2)
+						break;
+				}
+				if(childOfTargetNum < 2) {
+
+					target.setNumChild(childOfTargetNum);
+					target.setCodeSmellType("Interface Class");	
+					smellingClassObjectCandidates.add(target);
+				}
+			}
+			
+			// Unnecsary Parameter
+			if(!targetClass.isEnum() && !targetClass.isInterface() && !targetClass.isGeneratedByParserGenenator()) {
+				ClassObjectCandidate target = new ClassObjectCandidate(targetClass);
+				target.setCodeSmellType("Unnecessary Parameters");
+				
+				List<MethodObject> _methodList = target.getMethodList();
+				for(int i = 0; i < _methodList.size(); i++) {
+					// WARN :: This can be overridden Method
+					MethodObject targetMethod = _methodList.get(i);
+
+					targetMethod.setparentClass(target);
+					List<String> unusedPList = new ArrayList<String>();
+					int unusedPNum = 0;
+					
+					// GetStatements
+					String methodBodyStatements = null;
+					MethodBodyObject _methodBody = targetMethod.getMethodBody();
+					if (_methodBody != null) {
+						CompositeStatementObject _compositeStatement = _methodBody.getCompositeStatement();
+						if (_compositeStatement != null) {
+							Statement _statement = _compositeStatement.getStatement();
+							if (_statement != null) {
+								methodBodyStatements = _statement.toString();
+							}
+						}
+					}
+
+					if (methodBodyStatements != null) {
+						// Get Parameters
+						int pNum = targetMethod.getParameterList().size();
+
+						for (int p = 0; p < pNum; p++) {
+							// Check the Usage
+							String pTarget = targetMethod.getParameter(p).getName();
+
+							if (!target.checkContainance(methodBodyStatements, pTarget)) {
+								unusedPList.add(pTarget);
+								unusedPNum++;
+							}
+						}
+					}
+					
+					if(unusedPNum > 0) {
+						target.addUnusedParameterList(unusedPList);
+						target.addNumUnusedParameter(unusedPNum);
+						target.addSmellingMethod(targetMethod);
+					}
+				}
+				
+				if(target.getSmellingMethods().size() > 0) {
+					smellingClassObjectCandidates.add(target);
+				}
+			}
+		}
+		
+		this._smellingClassEntries = new ClassObjectCandidate[smellingClassObjectCandidates.size()];
+		for(int i=0;i<smellingClassObjectCandidates.size();i++) {
+			this._smellingClassEntries[i]= smellingClassObjectCandidates.get(i);
+		}
+		
+		 return;
+	}
+	
+	/**
+	 *  Get the class objects
+	 *  @return smellingClassEntries
+	 */
+	public ClassObjectCandidate[] getSmellingClassEntries() {
+		return this._smellingClassEntries;
+	}	
 }
