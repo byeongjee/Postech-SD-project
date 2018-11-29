@@ -32,7 +32,6 @@ public class ClassObjectCandidateUnitTest {
 	
 	private List<MethodObject> smellingMethods;
 	private MethodObject unnParameterMethod;
-	private MethodObject allParameterMethod;
 	
 	public ClassObjectCandidateUnitTest() {
 		this.rootClassObject = new ClassObject();
@@ -43,7 +42,7 @@ public class ClassObjectCandidateUnitTest {
 		ConstructorObject _constructorObject = new ConstructorObject();
 		_constructorObject.setName("testConstructor");
 		this.unnParameterMethod = new MethodObject(_constructorObject);
-		this.allParameterMethod = new MethodObject(_constructorObject);
+		//this.allParameterMethod = new MethodObject(_constructorObject);
 	}
 	
 	@Test
@@ -75,7 +74,7 @@ public class ClassObjectCandidateUnitTest {
 		
 		ClassObjectCandidate __parent = new ClassObjectCandidate(_parent);
 		
-		assertEquals(1, __parent.getNumChild());
+		assertEquals(0, __parent.getNumChild());
 		
 		// Set Actively
 		__parent.setNumChild(2);

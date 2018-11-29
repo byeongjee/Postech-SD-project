@@ -1,4 +1,4 @@
-package JDe5dorant.blackboxTest;
+package speculativeGeneralityBlackbox;
 
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
@@ -13,12 +13,16 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
@@ -34,6 +38,7 @@ import org.junit.Test;
 import org.junit.runner.*;
 
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -61,6 +66,7 @@ public class SpeculativeGeneralityTest {
 
 	@AfterClass
 	public static void afterClass() throws CoreException {
+		bot.sleep(10000000);
 		testProject.deleteProject();
 		bot.resetWorkbench();
 	}
@@ -96,8 +102,8 @@ public class SpeculativeGeneralityTest {
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
 		
-    	detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").expand();
-    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").getNode("NoChildInterface_Method1").isEnabled());
+    	detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OC_Int").expand();
+    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OC_Int").getNode("OneChildInterface_Method").isEnabled());
 	}
 	
 	@Test
@@ -108,14 +114,27 @@ public class SpeculativeGeneralityTest {
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
 		
-    	detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").expand();
-    	detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").getNode("NoChildInterface_Method").click();
+    	detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").click(6);
     	
-    	detectionApplier.getToolbarButtons().get(1).click();
+    	// TODO :: Rebuild the Project
     	
-    	// Assertion Message Checking
-    	SWTBotView assuranceChecker = bot.viewByTitle("Refactoring Assertion");
-    	assertTrue(assuranceChecker.bot().button(1).isEnabled()); // Might be "cancel" button
+    	ICompilationUnit _CUorigin;
+		try {
+			_CUorigin = testProject.getUnnecessaryParameterClass().getWorkingCopy(new WorkingCopyOwner() {}, null);
+
+			IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
+	    	String str = "";
+	    	
+	    	System.out.println(_bufferOrigin.toString());
+	    	assertFalse(_bufferOrigin.toString().contains("int UncessaryParameter(int a, int b, int c)"));
+
+	    	// Assertion Message Checking
+	    	SWTBotView assuranceChecker = bot.viewByTitle("Refactoring Assertion");
+	    	assertTrue(assuranceChecker.bot().button(1).isEnabled()); // Might be "cancel" button
+		} catch (JavaModelException e) {
+			e.printStackTrace();
+		}
+    	
 	}
 	
 	@Test

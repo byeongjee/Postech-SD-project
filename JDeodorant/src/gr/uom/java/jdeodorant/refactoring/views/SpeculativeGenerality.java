@@ -110,6 +110,7 @@ public class SpeculativeGenerality extends ViewPart {
 	private Action applyRefactoringAction;
 	private Action doubleClickAction;
 	private Action saveResultsAction;
+	
 	private IJavaProject selectedProject;
 	private IJavaProject activeProject;
 	private IPackageFragmentRoot selectedPackageFragmentRoot;
@@ -117,28 +118,43 @@ public class SpeculativeGenerality extends ViewPart {
 	private ICompilationUnit selectedCompilationUnit;
 	private IType selectedType;
 	private IMethod selectedMethod;
-	private ClassObjectCandidate[] classObjectTable; 
-	private Set<ClassObject> _classObjectToBeExamined=new HashSet<ClassObject>();
+	
+	private ClassObjectCandidate[] _smellingClassEntries;
+	private Set<ClassObject> _classObjectToBeExamined = new HashSet<ClassObject>();
+	
 	private SpeculativeGeneralityRefactoringButtonUI refactorButtonMaker;
 	
-	private class SpeculativeGeneralityRefactoringButtonUI extends RefactoringButtonUI {
+	public class SpeculativeGeneralityRefactoringButtonUI extends RefactoringButtonUI {
 		/**
 		 * Action on Refactoring Button
 		 * 
 		 * @author 손태영, 이주용 
 		 */
 		public void pressRefactorButton(int index) {
-			ClassObjectCandidate targetClass = classObjectTable[index];
+			ClassObjectCandidate targetClass = _smellingClassEntries[index];
 			
 			// Switch w.r.t smell type and Details
 			if(targetClass.getCodeSmellType().equals("Abstract Class")) {
 				if(targetClass.getNumChild() == 0) {
-					// ToDo :: Check if there exists another class in JavaFile
+					// Wrap as comments
+					List<String> resolvedClassContent = targetClass.getContent();
+					String newContent = "/*\r\n";
+					for( String c : resolvedClassContent) {
+						newContent += c + "\r\n";
+					}
+					newContent += "}\r\n\r\n*/";
 					
+					// Modify Target
+					SystemObject systemObject = ASTReader.getSystemObject();
+					if (systemObject != null) {
+						IFile _file = targetClass.getIFile();
+						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+						
+						this.processRefactor(newContent, _compilationUnit);
+					}
 				} else {
 					// Integrate Child and Parent
 					ClassObjectCandidate childClass;
-
 					for(ClassObject examiningClass : _classObjectToBeExamined) {
 						if(examiningClass.getName().equals(targetClass.getName())) continue;
 						
@@ -149,29 +165,60 @@ public class SpeculativeGenerality extends ViewPart {
 
 								// Merge TargetClass(Parent) and its Child
 								targetClass.mergeIntoChild(childClass);
+								
+								// Write "new content" On "target class" JavaFile
+								List<String> resolvedClassContent = targetClass.getContent();
+								String newContent = "";
+								for( String c : resolvedClassContent) {
+									newContent += c + "\r\n";
+								}
+								
+								// Modify Parent
+								SystemObject systemObject = ASTReader.getSystemObject();
+								if (systemObject != null) {
+									IFile _file = targetClass.getIFile();
+									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+									
+									this.processRefactor(newContent, _compilationUnit);
+								}
+								
+								// Modify Child								
+								resolvedClassContent = childClass.getContent();
+								newContent = "";
+								for( String c : resolvedClassContent) {
+									newContent += c + "\r\n";
+								}
+								if (systemObject != null) {
+									IFile _file = childClass.getIFile();
+									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+									
+									this.processRefactor(newContent, _compilationUnit);
+								}
+								
+								break;
 							}
 						}
 					}
-					
-					/* Delete The Target
-					try {
-						targetClass.getIFile().delete(true, false, null);
-					} catch (CoreException e) {
-						e.printStackTrace();
-					}*/
 				}
 			} else if (targetClass.getCodeSmellType().equals("Interface Class")) {
 				if(targetClass.getNumChild() == 0) {
-					/* Delete The Java File
-					try {
-						targetClass.getIFile().delete(true, false, null);
-					} catch (CoreException e) {
-						e.printStackTrace();
-					}*/
+					List<String> resolvedClassContent = targetClass.getContent();
+					String newContent = "/*\r\n";
+					for( String c : resolvedClassContent) {
+						newContent += c + "\r\n";
+					}
+					newContent += "}\r\n\r\n*/";
+					
+					// Modify Target
+					SystemObject systemObject = ASTReader.getSystemObject();
+					if (systemObject != null) {
+						IFile _file = targetClass.getIFile();
+						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+						this.processRefactor(newContent, _compilationUnit);
+					}
 				} else {					
 					// Integrate Child and Parent
 					ClassObjectCandidate childClass;
-
 					for(ClassObject examiningClass : _classObjectToBeExamined) {
 						if(examiningClass.getName().equals(targetClass.getName())) continue;
 						
@@ -183,36 +230,39 @@ public class SpeculativeGenerality extends ViewPart {
 
 								// Merge TargetClass(Parent) and its Child
 								targetClass.mergeIntoChild(childClass);
+
+								// Write "new content" On "target class" JavaFile
+								List<String> resolvedClassContent = targetClass.getContent();
+								String newContent = "";
+								for( String c : resolvedClassContent) {
+									newContent += c + "\r\n";
+								}
+								
+								// Modify Parent
+								IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+								SystemObject systemObject = ASTReader.getSystemObject();
+								if (systemObject != null) {
+									IFile _file = targetClass.getIFile();
+									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+
+									this.processRefactor(newContent, _compilationUnit);
+								}
+								
+								// Modify Child								
+								resolvedClassContent = childClass.getContent();
+								newContent = "";
+								for( String c : resolvedClassContent) {
+									newContent += c + "\r\n";
+								}
+								if (systemObject != null) {
+									IFile _file = childClass.getIFile();
+									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+									
+									this.processRefactor(newContent, _compilationUnit);
+								}
+								
 								break;
 							}
-						}
-					}
-					
-					List<String> resolvedClassContent = targetClass.getContent();
-					String newContent = "";
-					for( String c : resolvedClassContent) {
-						newContent += c + "\r\n";
-					}
-					
-					// Write "new content" On "target class" JavaFile
-					IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
-					SystemObject systemObject = ASTReader.getSystemObject();
-					if (systemObject != null) {
-						IFile _file = targetClass.getIFile();
-						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-
-						try {
-							ICompilationUnit _CUorigin = _compilationUnit.getWorkingCopy(new WorkingCopyOwner() {}, null);
-							IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
-							
-							int length = _bufferOrigin.getLength();
-							_bufferOrigin.replace(0, length, newContent);
-		
-							_CUorigin.reconcile(ICompilationUnit.NO_AST, false, null, null);
-							_CUorigin.commitWorkingCopy(false, null);
-							_CUorigin.discardWorkingCopy();
-						} catch (JavaModelException e) {
-							e.printStackTrace();
 						}
 					}
 
@@ -238,22 +288,24 @@ public class SpeculativeGenerality extends ViewPart {
 						IFile _file = targetClass.getIFile();
 						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
 
-						try {
-							ICompilationUnit _CUorigin = _compilationUnit.getWorkingCopy(new WorkingCopyOwner() {}, null);
-							IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
-							
-							int length = _bufferOrigin.getLength();
-		
-							_bufferOrigin.replace(0, length, newContent);
-		
-							_CUorigin.reconcile(ICompilationUnit.NO_AST, false, null, null);
-							_CUorigin.commitWorkingCopy(false, null);
-							_CUorigin.discardWorkingCopy();
-						} catch (JavaModelException e) {
-							e.printStackTrace();
-						}
+						this.processRefactor(newContent, _compilationUnit);
 					}
 				}
+			}
+		}
+
+		private void processRefactor(String newContent, ICompilationUnit _compilationUnit) {
+			try {
+				ICompilationUnit _CUorigin = _compilationUnit.getWorkingCopy(new WorkingCopyOwner() {}, null);
+				IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
+
+				_bufferOrigin.replace(0, _bufferOrigin.getLength(), newContent);
+
+				_CUorigin.reconcile(ICompilationUnit.NO_AST, false, null, null);
+				_CUorigin.commitWorkingCopy(false, null);
+				_CUorigin.discardWorkingCopy();
+			} catch (JavaModelException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -263,9 +315,9 @@ public class SpeculativeGenerality extends ViewPart {
 		}
 		public void dispose() {
 		}
-		public Object[] getElements(Object parent) {
-			if(classObjectTable!=null) {
-				return classObjectTable;
+		public Object[] getElements(Object arg) {
+			if(_smellingClassEntries!=null) {
+				return _smellingClassEntries;
 			}
 			else {
 				return new ClassObjectCandidate[] {};
@@ -276,9 +328,9 @@ public class SpeculativeGenerality extends ViewPart {
 			if(arg0 instanceof ClassObjectCandidate) {
 				ClassObjectCandidate target = (ClassObjectCandidate)arg0;
 				
-				for(int i=0; i<classObjectTable.length; i++) {
-					if(classObjectTable[i].getName().equals(target.getName())) {
-						return classObjectTable[i];
+				for(int i=0; i<_smellingClassEntries.length; i++) {
+					if(_smellingClassEntries[i].getName().equals(target.getName())) {
+						return _smellingClassEntries[i];
 					}
 				}
 			}
@@ -613,8 +665,12 @@ public class SpeculativeGenerality extends ViewPart {
 			public void run() {
 				activeProject = selectedProject;
 				CompilationUnitCache.getInstance().clearCache();
-				classObjectTable = getTable();
+				
+				setClassObjectToBeExamined();
+				setSmellingClassEntries( _classObjectToBeExamined );
+				
 				treeViewer.setContentProvider(new ViewContentProvider());
+				
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
 				//evolutionAnalysisAction.setEnabled(true);
@@ -727,15 +783,48 @@ public class SpeculativeGenerality extends ViewPart {
 		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(selectionListener);
 	}
 
+	private void saveResults() {
+		FileDialog fd = new FileDialog(getSite().getWorkbenchWindow().getShell(), SWT.SAVE);
+		fd.setText("Save Results");
+        String[] filterExt = { "*.txt" };
+        fd.setFilterExtensions(filterExt);
+        String selected = fd.open();
+        if(selected != null) {
+        	try {
+        		BufferedWriter out = new BufferedWriter(new FileWriter(selected));
+        		Tree tree = treeViewer.getTree();
+        		/*TreeColumn[] columns = tree.getColumns();
+        		for(int i=0; i<columns.length; i++) {
+        			if(i == columns.length-1)
+        				out.write(columns[i].getText());
+        			else
+        				out.write(columns[i].getText() + "\t");
+        		}
+        		out.newLine();*/
+        		for(int i=0; i<tree.getItemCount(); i++) {
+					TreeItem treeItem = tree.getItem(i);
+					ASTSliceGroup group = (ASTSliceGroup)treeItem.getData();
+					for(ASTSlice candidate : group.getCandidates()) {
+						out.write(candidate.toString());
+						out.newLine();
+					}
+				}
+        		out.close();
+        	} catch (IOException e) {
+        		e.printStackTrace();
+        	}
+        }
+	}
+
 	/**
 	 * @author JaeYeop Lee, JuYong Lee
 	 * @return 
 	 */
-	private ClassObjectCandidate[] getTable() {
-		ClassObjectCandidate[] table = null;
+	public void setClassObjectToBeExamined() {
 		try {
 			IWorkbench wb = PlatformUI.getWorkbench();
 			IProgressService ps = wb.getProgressService();
+			
 			if(ASTReader.getSystemObject() != null && activeProject.equals(ASTReader.getExaminedProject())) {
 				new ASTReader(activeProject, ASTReader.getSystemObject(), null);
 			}
@@ -755,6 +844,7 @@ public class SpeculativeGenerality extends ViewPart {
 					}
 				});
 			}
+			
 			SystemObject systemObject = ASTReader.getSystemObject();
 			if(systemObject != null) {
 				Set<ClassObject> classObjectsToBeExamined = new HashSet<ClassObject>();
@@ -767,10 +857,10 @@ public class SpeculativeGenerality extends ViewPart {
 				}
 				
 				// Duplicated Entry Deletion
-				Set<ClassObject> distinctClassObjectsToBeExamined = new HashSet<ClassObject>();
+				this._classObjectToBeExamined = new HashSet<ClassObject>();
 				for (ClassObject co : classObjectsToBeExamined) {
 					boolean flagExistence = false;
-					for(ClassObject _co : distinctClassObjectsToBeExamined) {
+					for(ClassObject _co : this._classObjectToBeExamined) {
 						if( co.getName().equals(_co.getName()) ) {
 							flagExistence = true;
 							break;
@@ -778,14 +868,14 @@ public class SpeculativeGenerality extends ViewPart {
 					}
 					
 					if(!flagExistence) {
-						distinctClassObjectsToBeExamined.add(co);
+						this._classObjectToBeExamined.add(co);
 					}
 				}
 				
-				// Pass classes in selected target to examine, and get smelling Classes
-				_classObjectToBeExamined = distinctClassObjectsToBeExamined;
+				for(ClassObject _co : this._classObjectToBeExamined) {
+					System.out.println(_co.toString());
+				}
 				
-				table = processMethod(distinctClassObjectsToBeExamined);
 			}
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
@@ -796,17 +886,30 @@ public class SpeculativeGenerality extends ViewPart {
 					"Compilation errors were detected in the project. Fix the errors before using JDeodorant.");
 		}
 		
-		return table;	
+		return;	
 	}
-
+	
+	public void setClassObjectToBeExamined(Set<ClassObject> arg) {
+		this._classObjectToBeExamined = arg;
+	}
+	
+	/**
+	 *  Get the class objects to be examined
+	 *  @return classObjectToBeExamined
+	 */
+	public Set<ClassObject> getClassObjectToBeExamined() {
+		return this._classObjectToBeExamined;
+	}
+	
 	/**
 	 *  Examine the class objects
-	 * @param classObjectsToBeExamined
-	 * @return Array of ClassObject
+	 *  @author JaeYeop Lee, JuYong Lee
+	 *  @param classObjectsToBeExamined
+	 *  @return Array of ClassObject
 	 */
-	private ClassObjectCandidate[] processMethod(final Set<ClassObject> classObjectsToBeExamined){
+	public void setSmellingClassEntries(final Set<ClassObject> classObjectsToBeExamined){
 		final List<ClassObjectCandidate> smellingClassObjectCandidates = new ArrayList<ClassObjectCandidate>();
-				
+		
 		for(ClassObject targetClass : classObjectsToBeExamined) {	
 			// Abstract Class
 			if(targetClass.isAbstract()) {
@@ -914,44 +1017,19 @@ public class SpeculativeGenerality extends ViewPart {
 			}
 		}
 		
-		ClassObjectCandidate[] res = new ClassObjectCandidate[smellingClassObjectCandidates.size()];
+		this._smellingClassEntries = new ClassObjectCandidate[smellingClassObjectCandidates.size()];
 		for(int i=0;i<smellingClassObjectCandidates.size();i++) {
-			res[i]= smellingClassObjectCandidates.get(i);
+			this._smellingClassEntries[i]= smellingClassObjectCandidates.get(i);
 		}
 		
-		return res;
+		 return;
 	}
-
-	private void saveResults() {
-		FileDialog fd = new FileDialog(getSite().getWorkbenchWindow().getShell(), SWT.SAVE);
-		fd.setText("Save Results");
-        String[] filterExt = { "*.txt" };
-        fd.setFilterExtensions(filterExt);
-        String selected = fd.open();
-        if(selected != null) {
-        	try {
-        		BufferedWriter out = new BufferedWriter(new FileWriter(selected));
-        		Tree tree = treeViewer.getTree();
-        		/*TreeColumn[] columns = tree.getColumns();
-        		for(int i=0; i<columns.length; i++) {
-        			if(i == columns.length-1)
-        				out.write(columns[i].getText());
-        			else
-        				out.write(columns[i].getText() + "\t");
-        		}
-        		out.newLine();*/
-        		for(int i=0; i<tree.getItemCount(); i++) {
-					TreeItem treeItem = tree.getItem(i);
-					ASTSliceGroup group = (ASTSliceGroup)treeItem.getData();
-					for(ASTSlice candidate : group.getCandidates()) {
-						out.write(candidate.toString());
-						out.newLine();
-					}
-				}
-        		out.close();
-        	} catch (IOException e) {
-        		e.printStackTrace();
-        	}
-        }
-	}
+	
+	/**
+	 *  Get the class objects
+	 *  @return smellingClassEntries
+	 */
+	public ClassObjectCandidate[] getSmellingClassEntries() {
+		return this._smellingClassEntries;
+	}	
 }

@@ -1,8 +1,6 @@
 package gr.uom.java.ast;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Stack;
 
@@ -42,7 +40,7 @@ public class ClassObjectCandidate extends ClassObject {
         this.typeDeclaration = null;
     	this.iFile = null;
 
-    	this.content = this.setContent();
+    	this.setContent();
         this.codeSmellType = "Speculative Generality";
         this.refactorType = "_";
         this.smellingMethods = new ArrayList<MethodObject>();
@@ -70,7 +68,7 @@ public class ClassObjectCandidate extends ClassObject {
 
     	this.superclass = co.superclass;
 
-    	this.content = this.setContent();
+    	this.setContent();
         this.codeSmellType = "Speculative Generality";
         this.refactorType = "_";
         this.smellingMethods = new ArrayList<MethodObject>();
@@ -129,11 +127,7 @@ public class ClassObjectCandidate extends ClassObject {
 	}
 
 	public List<MethodObject> getSmellingMethods() {
-		if(codeSmellType.equals("Unnecessary Parameters")) {
-			return this.smellingMethods;
-		} else {
-			return this.getMethodList();
-		}
+		return this.smellingMethods;
 	}
 
     /**
@@ -252,7 +246,7 @@ public class ClassObjectCandidate extends ClassObject {
 	 * @author JaeYeop Lee, JuYong Lee
 	 * @return every statement of class
 	 */
-	public List<String> setContent()
+	public void setContent()
 	{	
 		if(this.iFile != null) {
 			IPath _path = iFile.getLocation();
@@ -281,7 +275,8 @@ public class ClassObjectCandidate extends ClassObject {
 								parenthesisChecker.push('{');
 							} else if (line.charAt(i) == '}') {
 								if (parenthesisChecker.isEmpty()) {
-									return result;
+									this.content =  result;
+									return;
 								} else if (parenthesisChecker.peek() == '{') {
 									parenthesisChecker.pop();
 								} else {
@@ -305,10 +300,11 @@ public class ClassObjectCandidate extends ClassObject {
 				e.printStackTrace();
 			}
 
-			return result;
+			this.content =  result;
+			return;
 		}
 
-		return new ArrayList<String>();
+		return ;
 	}
 	
 	public void setContent(List<String> arg) {
@@ -563,11 +559,12 @@ public class ClassObjectCandidate extends ClassObject {
 					newContent.add(childContent.get(i));
 				}
 			}
+			newContent.add("}");
 		}
 		
 		// set Contents
 		this.content.add(0, "/*");
-		this.content.add("*/");
+		this.content.add("} \r\n */");
 		this.setContent(this.content);
 		
 		child.setContent(newContent);

@@ -7,8 +7,6 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
-import JDe5dorant.blackboxTest.testProject;
-
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;

@@ -3,108 +3,119 @@ package junittest;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 
-import gr.uom.java.jdeodorant.refactoring.views.MessageChainStructure;
 import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality;
 import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality.*;
 import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.ClassObjectCandidate;
-import gr.uom.java.ast.ConstructorObject;
 import gr.uom.java.ast.MethodObject;
 
 public class SpeculativeGeneralityUnitTest {
+	SpeculativeGenerality _SG = new SpeculativeGenerality();
+	
 	public ViewContentProvider makeViewContentProvider() {
-		SpeculativeGenerality _SG = new SpeculativeGenerality();
 		return _SG.new ViewContentProvider();
 	}
 	
-	private ClassObject _classObject; 
-	private ClassObjectCandidate _classObjectCandidate;
-	private List<MethodObject> _methodObjectList;
-	private MethodObject _methodObject;
-	private ConstructorObject _constructorObject;
+	public SpeculativeGeneralityRefactoringButtonUI makeRefactoringButtonUI() {
+		return _SG.new SpeculativeGeneralityRefactoringButtonUI();
+	}
 	
-	public SpeculativeGeneralityUnitTest() {
-		this._classObject = new ClassObject();
-		this._classObject.setName("testClass");
-		this._classObjectCandidate = new ClassObjectCandidate();
-		this._methodObjectList = new ArrayList<MethodObject>();
-		this._constructorObject = new ConstructorObject();
-		this._constructorObject.setName("testConstructor");
-		this._methodObject = new MethodObject(_constructorObject);
+	private ClassObject mainClassObject = new ClassObject(); 
+	private ClassObjectCandidate mainClassObjectCandidate = new ClassObjectCandidate();
+	
+	@Test
+	public void testClassObjectToBeExamined() {
+		mainClassObject.setName("target");
+		mainClassObject.setAbstract(true);
+		Set<ClassObject> classObjectToBeExaminedSet = new HashSet<ClassObject>();
+		classObjectToBeExaminedSet.add(mainClassObject);
+		_SG.setClassObjectToBeExamined(classObjectToBeExaminedSet);
+		assertEquals(classObjectToBeExaminedSet, _SG.getClassObjectToBeExamined());
+		
 	}
 	
 	@Test
-    public void testgetChildren() {	
+	public void testSmellingClassEntries() {
+		mainClassObject.setName("target");
+		mainClassObject.setAbstract(true);
+		Set<ClassObject> classObjectToBeExaminedSet = new HashSet<ClassObject>();
+		classObjectToBeExaminedSet.add(mainClassObject);
+		_SG.setClassObjectToBeExamined(classObjectToBeExaminedSet);
+		_SG.setSmellingClassEntries(_SG.getClassObjectToBeExamined());
+		assertEquals( 1, _SG.getSmellingClassEntries().length );
+	}
+	
+	@Test
+	public void testElements() {
+		mainClassObject.setName("target");
+		mainClassObject.setAbstract(true);
+		Set<ClassObject> classObjectToBeExaminedSet = new HashSet<ClassObject>();
+		classObjectToBeExaminedSet.add(mainClassObject);
+		_SG.setClassObjectToBeExamined(classObjectToBeExaminedSet);
+		_SG.setSmellingClassEntries(_SG.getClassObjectToBeExamined());
+		mainClassObjectCandidate = new ClassObjectCandidate(mainClassObject);
+		Object result_element = makeViewContentProvider().getElements(mainClassObjectCandidate);
+		assertEquals(((ClassObjectCandidate[]) result_element)[0].getName(), mainClassObjectCandidate.getName());
+	}
+	
+	@Test
+    public void testChildren() {	
 		Object[] result_null = makeViewContentProvider().getChildren(null);
-	    assertTrue(result_null.length == 0);
+	    assertEquals(result_null.length, 0);
 	    
 		Object[] result_String = makeViewContentProvider().getChildren("String");
-	    assertTrue(result_String.length == 0);
+	    assertEquals(result_String.length, 0);
 
-	    this._classObjectCandidate.setCodeSmellType("Unnecessary Parameters");
-		this._classObjectCandidate.addSmellingMethod(this._methodObject);
-		Object[] result_ClassObjectCandidate = makeViewContentProvider().getChildren(_classObjectCandidate);
-		assertEquals(result_ClassObjectCandidate[0], this._methodObject);
+	    List<MethodObject> methodObjectList = new ArrayList<MethodObject>();
+	    MethodObject methodObject = new  MethodObject(null);
+	    methodObjectList.add(methodObject);
+	    mainClassObjectCandidate.setSmellingMethods( methodObjectList );
+		Object[] result_ClassObjectCandidate = makeViewContentProvider().getChildren(mainClassObjectCandidate);
+		assertEquals(result_ClassObjectCandidate[0], methodObjectList.get(0));
 	}
 	
 	@Test
-	public void testgetParent() {
+	public void testParent() {
 		Object result_null = makeViewContentProvider().getParent(null);
 	    assertTrue(result_null == null);
 	    
-		Object result_fail = makeViewContentProvider().getParent(_classObjectCandidate);
-		assertEquals(result_fail, null);
-	}
-	
-	@Test
-	public void testApplyRefactoring() {
+	    
+	    mainClassObject.setName("target");
+	    mainClassObject.setAbstract(true);
+	    Set<ClassObject> classObjectToBeExaminedSet = new HashSet<ClassObject>();
+	    classObjectToBeExaminedSet.add(mainClassObject);
+	    _SG.setClassObjectToBeExamined(classObjectToBeExaminedSet);
+	    _SG.setSmellingClassEntries(_SG.getClassObjectToBeExamined());
+	    mainClassObjectCandidate = new ClassObjectCandidate(mainClassObject);
+	    Object result_abstract = makeViewContentProvider().getParent(mainClassObjectCandidate);
+		assertEquals(((ClassObjectCandidate) result_abstract).getName(), mainClassObjectCandidate.getName());
 		
-	}
-	
-	@Test
-	public void testRefactroingNoChild() {
-		
-		// Abstract, Interface 둘 다
-		
-	}
-	
-	@Test
-	public void testRefactoringOneChildInterface() {
-		
-		// Interface 지워진것 확인
-		
-	}
-	
-	@Test
-	public void testRefactoringOneChildAbstract() {
-		
-		
-		// 올바른 이름의 파일이 제대로 생겼는지
-		
-		// 그 안의 내용이랑 정답 비교
-	
-	}
-	
-	@Test
-	public void testRefactoringOneChildAbstractwithExceptionalConstructor() {
 
-		
-		// 올바른 이름의 파일이 제대로 생겼는지
-		
-		// 그 안의 내용이랑 정답 비교
-	
+	    mainClassObject.setAbstract(false);
+	    mainClassObject.setInterface(true);
+	    classObjectToBeExaminedSet = new HashSet<ClassObject>();
+	    classObjectToBeExaminedSet.add(mainClassObject);
+	    _SG.setClassObjectToBeExamined(classObjectToBeExaminedSet);
+	    _SG.setSmellingClassEntries(_SG.getClassObjectToBeExamined());
+	    mainClassObjectCandidate = new ClassObjectCandidate(mainClassObject);
+	    Object result_interface = makeViewContentProvider().getParent(mainClassObjectCandidate);
+	    assertEquals(((ClassObjectCandidate) result_interface).getName(), mainClassObjectCandidate.getName());
 	}
 	
 	@Test
-	public void testRefactoringUnnecessaryParameterMethod() {
-		// 정답 확인
-	}
-	
-	@Test
-	public void testRefactoringManyinOneFile() {
-		
+	public void testPressRefactoring() {
+		mainClassObject.setName("target");
+		mainClassObject.setAbstract(true);
+		Set<ClassObject> classObjectToBeExaminedSet = new HashSet<ClassObject>();
+		classObjectToBeExaminedSet.add(mainClassObject);
+		_SG.setClassObjectToBeExamined(classObjectToBeExaminedSet);
+		_SG.setSmellingClassEntries(_SG.getClassObjectToBeExamined());
+		mainClassObjectCandidate = new ClassObjectCandidate(mainClassObject);
 	}
 }

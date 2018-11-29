@@ -1,4 +1,4 @@
-package JDe5dorant.blackboxTest;
+package speculativeGeneralityBlackbox;
 
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
 import static org.junit.Assert.assertEquals;
@@ -35,6 +35,11 @@ import org.junit.Test;
 import org.junit.runner.*;
  
 public class testProject {
+	private static ICompilationUnit classTwoChildUnnecessaryParameter;
+	
+	public static ICompilationUnit getUnnecessaryParameterClass() {
+		return classTwoChildUnnecessaryParameter;
+	}
 	/**
 	 *  Creating (kind of) Mock Project will be exploited during Black-Box Test
 	 *  reference :: https://jaxenter.com/introduction-functional-testing-swtbot-123449.html 
@@ -104,29 +109,28 @@ public class testProject {
     			"	abstract int OneChildInterface_AbstractMethod();\r\n" + 
     			"}";
     	source.append(strOneChildInterface);
-		ICompilationUnit classOneChildInterface = _package.createCompilationUnit("NoChildInterface.java", source.toString(), false, null);
+		ICompilationUnit classOneChildInterface = _package.createCompilationUnit("OneChildInterface.java", source.toString(), false, null);
 		
 		// Generate Java Class : OneChild_Interface
 		source = new StringBuffer();
 		source.append("package " + _package.getElementName() + ";\n");
-		String strOneChild_Interface = "public class OC_Abs extends OneChildAbstract {\r\n" + 
-				"	int var = 5;\r\n" + 
+		String strOneChild_Interface = "public class OC_Int implements OneChildInterface {\r\n" + 
 				"\r\n" + 
-				"	public OC_Abs(int y) {\r\n" + 
-				"		super(y);\r\n" + 
+				"	@Override\r\n" + 
+				"	public int OneChildInterface_Method(int input) {\r\n" + 
+				"		// TODO Auto-generated method stub\r\n" + 
+				"		return 0;\r\n" + 
 				"	}\r\n" + 
 				"\r\n" + 
 				"	@Override\r\n" + 
-				"	public int OneChildAstract_Method(int a) {\r\n" + 
-				"		return a;\r\n" + 
+				"	public int OneChildInterface_AbstractMethod() {\r\n" + 
+				"		// TODO Auto-generated method stub\r\n" + 
+				"		return 0;\r\n" + 
 				"	}\r\n" + 
-				"\r\n" + 
-				"	int OneChildAbstract_Method() {\r\n" + 
-				"		return var;\r\n" + 
-				"	}\r\n" + 
+				"	\r\n" + 
 				"}";
 		source.append(strOneChild_Interface);
-		ICompilationUnit classOneChild_Interface = _package.createCompilationUnit("NoChildInterface.java", source.toString(), false, null);
+		ICompilationUnit classOneChild_Interface = _package.createCompilationUnit("OC_Int.java", source.toString(), false, null);
 				
 		
 		// Generate Java Class : OneChildAbstract
@@ -164,7 +168,7 @@ public class testProject {
 				"	}\r\n" + 
 				"}";
 		source.append(strOneChild_Abstract);
-		ICompilationUnit classOneChild_Abstract = _package.createCompilationUnit("OneChild_Abs.java", source.toString(), false, null);
+		ICompilationUnit classOneChild_Abstract = _package.createCompilationUnit("OC_Abs.java", source.toString(), false, null);
 		
     	// Generate Java Class : TwoChildAbstract
 		source = new StringBuffer();
@@ -196,7 +200,7 @@ public class testProject {
 				"	}\r\n" + 
 				"}";
 		source.append(strTwoChildMoreParameterConstructor);
-		ICompilationUnit classTwoChildMoreParameterConstructor = _package.createCompilationUnit("TwoChild_LongMethod.java", source.toString(), false, null);
+		ICompilationUnit classTwoChildMoreParameterConstructor = _package.createCompilationUnit("TC_MoreParameterConstructor.java", source.toString(), false, null);
 
 		// Generate Java Class : TwoChild_UnnecessaryParameter
 		source = new StringBuffer();
@@ -212,8 +216,7 @@ public class testProject {
 				"	}\r\n" + 
 				"}";
 		source.append(strTwoChildUnnecessaryParameter);
-		ICompilationUnit classTwoChildUnnecessaryParameter = _package.createCompilationUnit("TwoChild_UnnecessaryParameter.java", source.toString(), false, null);
-		
+		classTwoChildUnnecessaryParameter = _package.createCompilationUnit("TC_UnnecessaryParameter.java", source.toString(), false, null);
     }
     
     public static void deleteProject() throws CoreException {
