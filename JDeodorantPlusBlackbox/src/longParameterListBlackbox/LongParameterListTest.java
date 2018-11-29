@@ -72,7 +72,7 @@ public class LongParameterListTest {
 
 	@AfterClass
 	public static void afterClass() throws CoreException {
-		bot.sleep(100000);
+		//bot.sleep(100000);
 		testLPLProject.deleteLPLProject();
 		bot.resetWorkbench();
 	}
@@ -213,15 +213,19 @@ public class LongParameterListTest {
 	}
 
 	@Test
-	public void testLPLRefactoringSuccessSCenario1() {
+	public void testLPLRefactoringSuccessScenario1() {
 		try {
-			testLPLProject.buildLPLProject();
+			//testLPLProject.buildLPLProject();
 			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testLPLProject");
 			IJavaProject javaProject = JavaCore.create(project);
-
 			String originalSource = "";
-			originalSource = javaProject.getPackageFragments()[0].getCompilationUnit("TestLPL").getSource();
-
+			int LPLPkgIndex = 0;
+			for(LPLPkgIndex = 0; LPLPkgIndex < javaProject.getPackageFragments().length; LPLPkgIndex++) {
+				if(javaProject.getPackageFragments()[LPLPkgIndex].getElementName() == "LongParameterList")
+					break;
+			}
+			LPLPkgIndex--;
+			originalSource = javaProject.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").getSource();
 			detectCodeSmellAndOpenRefactoringPopUp();
 			SWTBotShell refactoringWizard = bot.shell("Refactoring");
 			refactoringWizard.bot().table().getTableItem(0).check();
@@ -233,21 +237,22 @@ public class LongParameterListTest {
 			// now in package selection page
 			refactoringWizard.bot().table().getTableItem(0).check();
 			refactoringWizard.bot().button("Finish").click();
-			closeRefactoringPopUp();
+			//closeRefactoringPopUp();
 			closeLPLTab();
 
 			IProject projectUpdated = ResourcesPlugin.getWorkspace().getRoot().getProject("testLPLProject");
 			IJavaProject javaProjectUpdated = JavaCore.create(project);
 
-			assertTrue(javaProject.getPackageFragments()[0].getCompilationUnit("TestLPL").getSource()
+			assertTrue(javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").getSource()
 					.length() < originalSource.length());
 		} catch (Exception e) {
+			e.printStackTrace();
 			fail();
 		} finally {
 			try {
 				testLPLProject.deleteLPLProject();
-				closeRefactoringPopUp();
-				closeLPLTab();
+				//closeRefactoringPopUp();
+				//closeLPLTab();
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
@@ -256,7 +261,7 @@ public class LongParameterListTest {
 	}
 
 	@Test // assert that refactoring through PopUp UI works correctly
-	public void testLPLRefactoringSuccessSCenario2() {
+	public void testLPLRefactoringSuccessScenario2() {
 		try {
 			testLPLProject.buildLPLProject();
 			detectCodeSmellAndOpenRefactoringPopUp();

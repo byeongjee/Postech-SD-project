@@ -248,7 +248,6 @@ public class LongParameterListTest {
 
 			public void replace(int arg0, int arg1, char[] arg2) {
 				// TODO Auto-generated method stub
-				
 			}
 
 			public void replace(int arg0, int arg1, String arg2) {
