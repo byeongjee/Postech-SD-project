@@ -436,6 +436,20 @@ public class ConstructorObject implements AbstractMethodDeclaration {
     	return list;
     }
 
+    public List<String> getParameterNameList() {
+    	List<String> list = new ArrayList<String>();
+    	for(ParameterObject parameterObject : parameterList)
+    		list.add(parameterObject.getName());
+    	return list;
+    }
+    
+    public List<String> getParameterTypeAndNameList() {
+    	List<String> list = new ArrayList<String>();
+    	for(ParameterObject parameterObject : parameterList)
+    		list.add(parameterObject.getType().getClassType() +" "+ parameterObject.getName());
+    	return list;
+    }
+    
     public boolean equals(ClassInstanceCreationObject creationObject) {
     	return this.className.equals(creationObject.getType().getClassType()) &&
     			equalParameterTypes(this.getParameterTypeList(), creationObject.getParameterTypeList());

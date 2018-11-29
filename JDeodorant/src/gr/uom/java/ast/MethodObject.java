@@ -42,17 +42,19 @@ import org.eclipse.jface.text.Position;
 
 public class MethodObject implements AbstractMethodDeclaration {
 
-    private TypeObject returnType;
-    private boolean _abstract;
-    private boolean _static;
-    private boolean _synchronized;
-    private boolean _native;
-    private ConstructorObject constructorObject;
-    private boolean testAnnotation;
-    private volatile int hashCode = 0;
+    protected TypeObject returnType;
+    protected boolean _abstract;
+    protected boolean _static;
+    protected boolean _synchronized;
+    protected boolean _native;
+    protected ConstructorObject constructorObject;
+    protected boolean testAnnotation;
+    protected volatile int hashCode = 0;
+
     private int smell_start = 5;
 	private int smell_length= 10;
 	private ClassObjectCandidate parentClass;
+	
     public MethodObject(ConstructorObject co) {
         this.constructorObject = co;
         this._abstract = false;
@@ -62,6 +64,7 @@ public class MethodObject implements AbstractMethodDeclaration {
         this.testAnnotation = false;
     }
 
+    
     
     public int getstart() {
 		return smell_start;
@@ -90,6 +93,16 @@ public class MethodObject implements AbstractMethodDeclaration {
       annotationMap.put(position, "HELLO");
       return new Object[] {annotationMap};
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     public void setReturnType(TypeObject returnType) {
         this.returnType = returnType;
     }
@@ -734,6 +747,14 @@ public class MethodObject implements AbstractMethodDeclaration {
 
     public List<String> getParameterList() {
     	return constructorObject.getParameterList();
+    }
+    
+    public List<String> getParameterNameList(){
+    	return constructorObject.getParameterNameList();
+    }
+    
+    public List<String> getParameterTypeAndNameList() {
+    	return constructorObject.getParameterTypeAndNameList();
     }
 
     public boolean equals(MethodInvocationObject mio) {
