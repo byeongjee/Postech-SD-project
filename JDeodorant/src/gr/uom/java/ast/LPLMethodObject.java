@@ -1,8 +1,11 @@
 package gr.uom.java.ast;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
@@ -10,6 +13,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.text.Position;
 
 public class LPLMethodObject extends MethodObject {
 
@@ -72,8 +76,19 @@ public class LPLMethodObject extends MethodObject {
 		super(co);
 		codeSmellType = "Long Parameter List";
 	}
-	
-	
+	private int smell_start=10;
+	private int smell_length=15;
+    public Object[] getHighlightPositions() {
+       Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
+       Position position = new Position(smell_start, smell_length);
+      annotationMap.put(position, "LPL_SMELL");
+      return new Object[] {annotationMap};
+    }
+    public IFile getIFile()
+    {
+    	//TODO ::getIfile
+    	return null;
+    }
 
 	public static LPLMethodObject createLPLMethodObjectFrom(MethodObject mo) {
 		LPLMethodObject returnObject = new LPLMethodObject(mo.constructorObject);
