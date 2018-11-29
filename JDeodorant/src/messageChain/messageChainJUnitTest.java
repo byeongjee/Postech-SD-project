@@ -14,6 +14,7 @@ import java.util.List;
 
 import gr.uom.java.jdeodorant.refactoring.views.MessageChain;
 import gr.uom.java.jdeodorant.refactoring.views.MessageChain.ViewContentProvider;
+import gr.uom.java.jdeodorant.refactoring.views.MessageChain.ViewLabelProvider;
 import gr.uom.java.jdeodorant.refactoring.views.MessageChainStructure;
 public class messageChainJUnitTest {
 
@@ -22,6 +23,10 @@ public class messageChainJUnitTest {
       return msgChain.new ViewContentProvider();
    }
    
+   public ViewLabelProvider makeViewLabelProvider() {
+	   MessageChain msgChain = new MessageChain();
+	   return msgChain.new ViewLabelProvider(); 
+   }
    @Test
     public void testgetChildren() {
       MessageChainStructure parent = new MessageChainStructure("ParentClass");
@@ -84,6 +89,27 @@ public class messageChainJUnitTest {
       
       assertTrue(((MessageChainStructure) result[0]).getName()=="ParentClass");
       assertTrue(((MessageChainStructure) result[0]).getStart()==-1);
+      contentProvider.dispose();
+      msgChain.targets = null;
+      assertTrue(contentProvider.getElements(parent).length == 0);
+   }
+   
+   @Test
+   public void testViewLabelProvider() {
+	   ViewLabelProvider labelProvider = makeViewLabelProvider();
+	   MessageChainStructure parent = new MessageChainStructure("ParentClass");
+	   MessageChainStructure child = new MessageChainStructure(15, parent, "A().B().C()", 3);
+	   MessageChainStructure child2 = new MessageChainStructure(-1, parent, "A().B().C()");
+	   assertTrue(parent.addChild(child));
+	   assertTrue(parent.addChild(child2));
+	   
+	   assertTrue(labelProvider.getColumnText(child2, 0).equals(""));
+	   assertTrue(labelProvider.getColumnText(child2, 2).equals(""));
+	   assertTrue(labelProvider.getColumnText(child2, 1).equals("A().B().C()"));
+	   assertTrue(labelProvider.getColumnText(child2, 4).equals(""));
+	   assertTrue(labelProvider.getColumnText(child, 0).equals("15"));
+	   assertTrue(labelProvider.getColumnText(child, 2).equals("3"));
+	   assertTrue(labelProvider.getColumnText("ff", 1).equals(""));
    }
    
    @Test

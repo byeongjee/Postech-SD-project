@@ -4,6 +4,7 @@ import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.eclipse.core.resources.IFolder;
@@ -107,7 +108,7 @@ public class messageChainBasic {
    
    // Add in Iteration 3
    @Test
-   public void testDoubleClick() {
+   public void testDoubleClickToSeeHighlight() {
       bot.menu("Bad Smells").menu("Message Chain").click();
       bot.viewByTitle("Message Chain");
       SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
@@ -121,12 +122,10 @@ public class messageChainBasic {
        detectionApplier.bot().tree().getTreeItem("").expand();
        detectionApplier.bot().tree().getTreeItem("").getNode(0).select();
        detectionApplier.bot().tree().getTreeItem("").getNode(0).doubleClick();
-
-       //assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode("536").isEnabled());
    }
    
    @Test
-   public void testClickRefactoringButton() {
+   public void testButtonClick() {
       bot.menu("Bad Smells").menu("Message Chain").click();
       bot.viewByTitle("Message Chain");
       SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
@@ -138,9 +137,10 @@ public class messageChainBasic {
       detectionApplier.getToolbarButtons().get(0).click();
       detectionApplier.bot().tree().getTreeItem("").select();
        detectionApplier.bot().tree().getTreeItem("").expand();
-       detectionApplier.bot().tree().getTreeItem("").getNode(0).select();
-       //detectionApplier.bot().tree().getTreeItem("").getNode(0).
-       detectionApplier.bot().tree().getTreeItem("").getNode(0).click(3);
-       //assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode("536").isEnabled());
+       detectionApplier.bot().tree().getTreeItem("").getNode(1).select();
+       detectionApplier.bot().tree().getTreeItem("").getNode(1).doubleClick();
+       detectionApplier.bot().button(1).click();
+       bot.saveAllEditors();
+       detectionApplier.close();
    }
 }

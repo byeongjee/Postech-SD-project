@@ -152,11 +152,8 @@ public class MessageChain extends ViewPart {
 	//private IJavaProject 
 	private class MessageChainRefactoringButtonUI extends RefactoringButtonUI{
 		public void pressRefactoringButton(int index) {
-			System.out.println("Clicked index : "+index);
 		}
 		public void pressChildRefactorButton(int parentIndex, int childIndex) {
-			System.out.println("Pressed child refactor button");
-			System.out.println("index: " + parentIndex + " " + childIndex);
 			messageChainRefactoring(parentIndex, childIndex);
 		}
 	}
@@ -203,12 +200,10 @@ public class MessageChain extends ViewPart {
 		
 	}
 
-	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
+	public class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
 		public String getColumnText(Object obj, int index) {
-			//System.out.println("I am at Label Provider>>>>>>>>");
 
 			if(obj instanceof MessageChainStructure) {
-				//System.out.println("I am at Label Provider of mc");
 				MessageChainStructure entry = (MessageChainStructure)obj;
 				switch(index){
 				case 0:
@@ -447,7 +442,6 @@ public class MessageChain extends ViewPart {
 		strOfRefact += newMethodName;
 		strOfRefact += "(";
 		for (String arg : stringOfArgument) {
-			System.out.println("argument list : " +arg);
 			strOfRefact += arg;
 			strOfRefact += ", ";
 		}
@@ -458,6 +452,7 @@ public class MessageChain extends ViewPart {
 		return strOfRefact;
 	}
 	 
+	//Impossible to make junit test because we don't have permission of making MethodInvocationObject mock object
 	/**
 	 * New function for Message Chain Refactoring.
 	 * 
@@ -466,10 +461,7 @@ public class MessageChain extends ViewPart {
 	 * int childIndex: Index of information about children of selected file
 	 * **/
 	public void messageChainRefactoring(int parentIndex, int childIndex) {
-		System.out.println("Click refactoring button!");
-		//IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
 		if(childIndex == -1 && parentIndex == -1) {
-			//selectionTree.setSelection(selectionTree.getItem(parentIndex));
 			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex));
 		}
 		else {
@@ -485,8 +477,6 @@ public class MessageChain extends ViewPart {
 				ClassObject classOfMethodInvocation = systemObject.getClassObject(classNameOfMethodInvocation);
 				IFile fileWithCodeSmell = classWithCodeSmell.getIFile();
 				IFile fileOfMethodInvocation = classOfMethodInvocation.getIFile();
-				
-				System.out.println("Class name for refactoring method :"+originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getOriginClassName());
 				
 				ICompilationUnit compUnitWithCodeSmell = (ICompilationUnit) JavaCore.create(fileWithCodeSmell);
 				ICompilationUnit compUnitOfMethodInvocation = (ICompilationUnit) JavaCore.create(fileOfMethodInvocation);
@@ -504,7 +494,6 @@ public class MessageChain extends ViewPart {
 				for(int i = 0; i<sizeOfMethodInvocation;i++) {
 					stringOfMethodInvocation.add(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(i).getMethodName());
 					for(Object arg : originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(i).getMethodInvocation().arguments() ) {
-						System.out.println("argument ::: "+arg.toString());
 						stringOfArgument.add(arg.toString());
 					}
 					stringOfArgumentType.addAll(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(i).getParameterList());
@@ -539,7 +528,6 @@ public class MessageChain extends ViewPart {
 					
 					newRefactoringMethod.add(classNameOfMethodInvocation+"/"+newMethodName);//add new method name to notify that this code should not be detected.
 					
-				    System.out.println("I am done!!!!!!");
 					
 				} catch (JavaModelException e) {
 					// TODO Auto-generated catch block
@@ -590,15 +578,10 @@ public class MessageChain extends ViewPart {
 	   }
 
 	 private void findCodeSmell() {
-		 //activeProject = selectedProject;
 			CompilationUnitCache.getInstance().clearCache();
-			// sliceGroupTable = getTable();
 			/* Mine */
 			targets = getTable();
 			treeViewer.setContentProvider(new ViewContentProvider());
-			//applyRefactoringAction.setEnabled(true);
-			//saveResultsAction.setEnabled(true);
-			// evolutionAnalysisAction.setEnabled(true);
 			
 			refactorButtonMaker.disposeButtons();
 			
@@ -612,6 +595,7 @@ public class MessageChain extends ViewPart {
 				}
 			});
 	 }
+
 	 
 	private void makeActions() {
 		identifyBadSmellsAction = new Action() {
@@ -683,6 +667,7 @@ public class MessageChain extends ViewPart {
 		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(selectionListener);
 	}
 
+	//Impossible to make junit test because we don't have permission of making MethodInvocationObject mock object
 	private MessageChainStructure[] getTable() {
 		
 		Map<String, Map<Integer, List<MethodInvocationObject>>> table = null;
@@ -781,10 +766,11 @@ public class MessageChain extends ViewPart {
 		return newRefactoringMethod.contains(target);//true : refactoring's result, false : code smell
 	}
 
+	//Impossible to make junit test because we don't have permission of making MethodInvocationObject mock object
 	private Map<String, Map<Integer, List<MethodInvocationObject>>> processMethod(Set<AbstractMethodDeclaration> methodObjects) {
 		Map<String, Map<Integer, List<MethodInvocationObject>>> store = new HashMap<String, Map<Integer, List<MethodInvocationObject>>>();
 		MethodObject[] dummy = new MethodObject[3];
-		//System.out.println("Test at process Method at given objects of " + methodObjects.size());
+		
 		for (AbstractMethodDeclaration methodObject : methodObjects) {
 			if (methodObject.getMethodBody() != null && checkMethodIfFromRefactoring(methodObject.getClassName(),methodObject.getName()) == false) {//check method is from refactoring
 				List<MethodInvocationObject> test = methodObject.getMethodInvocations();
@@ -794,22 +780,15 @@ public class MessageChain extends ViewPart {
 					int startPos = methodInvocation.getStartPosition();
 					String cls = methodObject.getClassName();
 					
-					//System.out.println(");
-					/*System.out.println("class name : " + cls);
-					System.out.println("StartPos   : " + startPos );
-					System.out.println("method name: " + methodInvo.getMethodName());*/
-					
 					if(store.containsKey(cls)) {
 						Map<Integer, List<MethodInvocationObject>> inner = store.get(cls);
 						if(inner.containsKey(startPos)) {
 							inner.get(startPos).add(methodInvo);
-							//System.out.println("if-if");
 						}
 						else {
 							List<MethodInvocationObject> temp = new ArrayList<MethodInvocationObject>();
 							temp.add(methodInvo);
 							inner.put(startPos, temp);
-							//System.out.println("if-else");
 						}
 					}
 					else {
@@ -818,7 +797,6 @@ public class MessageChain extends ViewPart {
 						Map<Integer, List<MethodInvocationObject>> tmp = new HashMap<Integer, List<MethodInvocationObject>>();
 						tmp.put(startPos, temp);
 						store.put(cls, tmp);
-						//System.out.println("else");
 					}
 				}
 				
@@ -827,7 +805,6 @@ public class MessageChain extends ViewPart {
 					Map<Integer, List<MethodInvocationObject>> innerMap = store.get(type);
 					for(Integer i : innerMap.keySet()) {
 						if(innerMap.get(i).size() <= 2) {
-							//System.out.println("startPos " + i + " has been deleted since its size is " + innerMap.get(i).size());
 							deleteList.add(i);
 						}
 					}
@@ -846,18 +823,14 @@ public class MessageChain extends ViewPart {
 		List<String> tempTrashCan = new ArrayList<String> ();
 		if(store.keySet().size()>0) {
 			for(String cls : store.keySet()) {
-				System.out.println("Class name : !!!!"+cls+">>>>>>");
 				if(store.get(cls).keySet().size() == 0) {
-					System.out.println("Map size : "+store.get(cls).keySet().size());
 					tempTrashCan.add(cls);
-					//store.remove(cls);
 				}
 			}
 		}
 		if(tempTrashCan.size()>0) {
 			for(String cls : tempTrashCan) {
 				store.remove(cls);
-				System.out.println("I remove class : "+cls);
 			}
 		}
 		
@@ -865,7 +838,7 @@ public class MessageChain extends ViewPart {
 		return store;
 	}
 
-
+	//Impossible to make junit test because we don't have permission of making MethodInvocationObject mock object
 	private List<MessageChainStructure> convertMap2MCS(Map<String, Map<Integer, List<MethodInvocationObject>>> arg){
 		List<MessageChainStructure> ret = new ArrayList<MessageChainStructure>();
 		if(arg == null) return ret;
@@ -880,7 +853,6 @@ public class MessageChain extends ViewPart {
 					MethodInvocation methodInvocation = methodinvocation.getMethodInvocation();
 					methodName += methodInvocation.getName().toString() + "->";
 					codeLength = codeLength > methodInvocation.getLength() ? codeLength : methodInvocation.getLength();
-					System.out.println(codeLength);
 				}
 				methodName = methodName.substring(0, methodName.length()-2);
 				MessageChainStructure method = new MessageChainStructure(i, cls, methodName,codeLength);
