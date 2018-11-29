@@ -1,6 +1,11 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 import java.util.List;
+import java.util.Map;
+
+import org.eclipse.jface.text.Position;
+
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 public class MessageChainStructure {
 	private Integer startPos;
 	private MessageChainStructure parent;
@@ -54,6 +59,15 @@ public class MessageChainStructure {
 		length = _length;
 		childList = new ArrayList<MessageChainStructure>();
 	}
+	
+	
+    public Object[] getHighlightPositions() {
+        Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
+        Position position = new Position(startPos, length);
+       annotationMap.put(position, "HELLO");
+       return new Object[] {annotationMap};
+       
+     }
 	
 	/**
 	 * Function for getting start position of detected code

@@ -79,6 +79,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.Position;
@@ -124,6 +125,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.IProgressService;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -148,6 +150,8 @@ public class MessageChain extends ViewPart {
 	public MessageChainStructure[] targets;
 	private Map<String, Map<Integer, List<MethodInvocationObject>>> originCodeSmells; // for storing origin map
 	public List<String> newRefactoringMethod;//store method's name and class name of refactoring code. We will add new method name whenever we do refactoring
+	
+	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
 	
 	//private IJavaProject 
 	private class MessageChainRefactoringButtonUI extends RefactoringButtonUI{
@@ -605,9 +609,10 @@ public class MessageChain extends ViewPart {
 			}
 		};
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
-		identifyBadSmellsAction.setImageDescriptor(
-				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-		identifyBadSmellsAction.setEnabled(false);
+	    identifyBadSmellsAction.setImageDescriptor(
+	            PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+	    identifyBadSmellsAction.setEnabled(false);
+		
 
 
 		doubleClickAction = new Action() {
@@ -632,7 +637,7 @@ public class MessageChain extends ViewPart {
 							}
 							Position position = new Position(targetSmell.getStart(), (targetSmell.getLength() + 1));
 							SliceAnnotation annotation = null;
-							annotation = new SliceAnnotation(SliceAnnotation.DUPLICATION, null);
+							annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, "We detect Message Chain!");
 							annotationModel.addAnnotation(annotation, position);
 					
 							sourceEditor.setHighlightRange(position.getOffset(), position.getLength(), true);
