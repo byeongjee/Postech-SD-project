@@ -51,42 +51,19 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
 		
 		try {
 			IPackageFragment[] allPkg = javaProject.getPackageFragments();
-			//List<IPackageFragment> ret = new ArrayList<>();
 			for(IPackageFragment myPackage : allPkg) {
 				if(myPackage.getKind() == IPackageFragmentRoot.K_SOURCE && myPackage.getCompilationUnits().length != 0) {
 					TableItem tableItem = new TableItem(table, SWT.NONE);
 					tableItem.setText(1, myPackage.getElementName());
-					//ret.add(myPackage);
 				}
 			}
 		} catch (Exception e) {
 		}
-		/*table.addListener(SWT.Selection,  new Listener() {
-			public void handleEvent(Event event) {
-				boolean isChecked = false;
-				if(event.detail == SWT.CHECK) {
-					parameterIndexList.clear();
-					for(int i = 0; i < ((Table)event.widget).getItems().length; i++) {
-						TableItem item = ((Table)event.widget).getItem(i);
-						if(item.getChecked()) {
-							parameterIndexList.add(i);
-							isChecked = true;
-						}
-					}
-					if(isChecked) {
-						setPageComplete(true);
-					}
-					else {
-					setPageComplete(false);
-					}
-				}
-			}
-		});*/
+		
 		GridData tableGD = new GridData(GridData.FILL_HORIZONTAL);
         table.setLayoutData(tableGD);
 		
 		Label emptyLabel = new Label(container, SWT.NONE);
-		//setControl(container);
         
         Label label1 = new Label(container, SWT.NONE);
         label1.setText("New package name");

@@ -102,7 +102,6 @@ public class LongParameterListTest {
 		IBuffer buffer = createMockIBuffer();
 		IMethod method = createMockIMethod();
 		String parameterString = "int x, int y";
-		//LPLRefactorWizard lrw = new LPLRefactorWizard(null, null);
 		ArrayList<Integer> parameterIndexList = new ArrayList<Integer>();
 		parameterIndexList.add(1);
 		parameterIndexList.add(2);
@@ -216,17 +215,17 @@ public class LongParameterListTest {
 			}
 
 			public boolean isReadOnly() {
-				// TODO Auto-generated method stub
+				
 				return false;
 			}
 
 			public void removeBufferChangedListener(IBufferChangedListener arg0) {
-				// TODO Auto-generated method stub
+				
 				
 			}
 
 			public void replace(int arg0, int arg1, char[] arg2) {
-				// TODO Auto-generated method stub
+				
 			}
 
 			public void replace(int startIdx, int length, String replacement) {
@@ -234,17 +233,17 @@ public class LongParameterListTest {
 			}
 
 			public void save(IProgressMonitor arg0, boolean arg1) throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				
 			}
 
 			public void setContents(char[] arg0) {
-				// TODO Auto-generated method stub
+				
 				
 			}
 
 			public void setContents(String arg0) {
-				// TODO Auto-generated method stub				
+								
 			}
 		};
 	}
@@ -253,152 +252,152 @@ public class LongParameterListTest {
 		return new IMethod() {
 
 			public String[] getCategories() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IClassFile getClassFile() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public ICompilationUnit getCompilationUnit() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IType getDeclaringType() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public int getFlags() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return 0;
 			}
 
 			public ISourceRange getJavadocRange() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public int getOccurrenceCount() {
-				// TODO Auto-generated method stub
+				
 				return 0;
 			}
 
 			public IType getType(String arg0, int arg1) {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public ITypeRoot getTypeRoot() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public boolean isBinary() {
-				// TODO Auto-generated method stub
+				
 				return false;
 			}
 
 			public boolean exists() {
-				// TODO Auto-generated method stub
+				
 				return false;
 			}
 
 			public IJavaElement getAncestor(int arg0) {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public String getAttachedJavadoc(IProgressMonitor arg0) throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IResource getCorrespondingResource() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public int getElementType() {
-				// TODO Auto-generated method stub
+				
 				return 0;
 			}
 
 			public String getHandleIdentifier() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IJavaModel getJavaModel() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IJavaProject getJavaProject() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IOpenable getOpenable() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IJavaElement getParent() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IPath getPath() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IJavaElement getPrimaryElement() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IResource getResource() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public ISchedulingRule getSchedulingRule() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IResource getUnderlyingResource() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public boolean isReadOnly() {
-				// TODO Auto-generated method stub
+				
 				return false;
 			}
 
 			public boolean isStructureKnown() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return false;
 			}
 
 			public <T> T getAdapter(Class<T> adapter) {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public ISourceRange getNameRange() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public String getSource() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
@@ -406,12 +405,12 @@ public class LongParameterListTest {
 				ISourceRange sourceRange = new ISourceRange() {
 
 					public int getLength() {
-						// TODO Auto-generated method stub
+						
 						return 0;
 					}
 
 					public int getOffset() {
-						// TODO Auto-generated method stub
+						
 						return 21;
 					}
 					
@@ -421,138 +420,138 @@ public class LongParameterListTest {
 
 			public void copy(IJavaElement arg0, IJavaElement arg1, String arg2, boolean arg3, IProgressMonitor arg4)
 					throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				
 			}
 
 			public void delete(boolean arg0, IProgressMonitor arg1) throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				
 			}
 
 			public void move(IJavaElement arg0, IJavaElement arg1, String arg2, boolean arg3, IProgressMonitor arg4)
 					throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				
 			}
 
 			public void rename(String arg0, boolean arg1, IProgressMonitor arg2) throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				
 			}
 
 			public IJavaElement[] getChildren() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public boolean hasChildren() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return false;
 			}
 
 			public IAnnotation getAnnotation(String arg0) {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IAnnotation[] getAnnotations() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public IMemberValuePair getDefaultValue() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public String getElementName() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public String[] getExceptionTypes() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public String getKey() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public int getNumberOfParameters() {
-				// TODO Auto-generated method stub
+				
 				return 0;
 			}
 
 			public String[] getParameterNames() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public String[] getParameterTypes() {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public ILocalVariable[] getParameters() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public String[] getRawParameterNames() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public String getReturnType() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public String getSignature() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public ITypeParameter getTypeParameter(String arg0) {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public String[] getTypeParameterSignatures() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public ITypeParameter[] getTypeParameters() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return null;
 			}
 
 			public boolean isConstructor() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return false;
 			}
 
 			public boolean isLambdaMethod() {
-				// TODO Auto-generated method stub
+				
 				return false;
 			}
 
 			public boolean isMainMethod() throws JavaModelException {
-				// TODO Auto-generated method stub
+				
 				return false;
 			}
 
 			public boolean isResolved() {
-				// TODO Auto-generated method stub
+				
 				return false;
 			}
 
 			public boolean isSimilar(IMethod arg0) {
-				// TODO Auto-generated method stub
+				
 				return false;
 			}
 			
