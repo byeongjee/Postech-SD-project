@@ -172,9 +172,6 @@ public class LongParameterList extends ViewPart {
 	public void editParameterFromBuffer(IBuffer buffer, IMethod method, String parameterString) {
 		try {
 			IMethod convertedIMethod = method;
-			ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit()
-					.getWorkingCopy(new WorkingCopyOwner() {
-					}, null);
 			String replaceSignature = "(";
 			replaceSignature += ")";
 			int startPosition = convertedIMethod.getSourceRange().getOffset();

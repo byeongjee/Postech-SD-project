@@ -64,9 +64,6 @@ public class LPLRefactorWizard extends Wizard {
 	public static void editParameterFromBuffer(IBuffer buffer, IMethod method, String parameterString, ArrayList<Integer> parameterIndexList) {
 		try {
 			IMethod convertedIMethod = method;
-			ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit()
-					.getWorkingCopy(new WorkingCopyOwner() {
-					}, null);
 			
 			int startPosition = convertedIMethod.getSourceRange().getOffset();
 			while (true) {

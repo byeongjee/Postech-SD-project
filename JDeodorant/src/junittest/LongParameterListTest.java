@@ -111,7 +111,7 @@ public class LongParameterListTest {
 		lpl.editParameterFromBuffer(buffer, method, parameterString);
 		
 		assertEquals(buffer.getContents(), "class HighInterest{\n" + 
-				"public int getAccountNumber(int x, int y) {\n" + 
+				"public int getAccountNumber() {\n" + 
 				"return accountNumber;\n" + 
 				"}\n" + 
 				"}\n" + 
@@ -250,9 +250,8 @@ public class LongParameterListTest {
 				// TODO Auto-generated method stub
 			}
 
-			public void replace(int arg0, int arg1, String arg2) {
-				// TODO Auto-generated method stub
-				
+			public void replace(int startIdx, int length, String replacement) {
+				content = content.substring(0, startIdx) + replacement + content.substring(startIdx + length);
 			}
 
 			public void save(IProgressMonitor arg0, boolean arg1) throws JavaModelException {

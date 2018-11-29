@@ -91,7 +91,7 @@ public class testLPLProject {
 	    				"	 			return x + y + z + w;\r\n" + 
 	    				"	 		}\r\n" + 
 	    				"	 		public int getVal4_2 (int x, int y, char u, char v) {\r\n" + 
-	    				"	 			return x + y;\r\n" + 
+	    				"	 			return u + v;\r\n" + 
 	    				"	 		}\r\n" + 
 	    				"	 	}";
 	    	source.append(strSimple);

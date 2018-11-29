@@ -9,6 +9,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
 import org.junit.*;
 import org.junit.runner.RunWith;
+import org.omg.CORBA.portable.Delegate;
 
 import JDe5dorant.blackboxTest.testProject;
 
@@ -73,7 +74,7 @@ public class LongParameterListTest {
 	@AfterClass
 	public static void afterClass() throws CoreException {
 		//bot.sleep(100000);
-		testLPLProject.deleteLPLProject();
+		deleteTestProject();
 		bot.resetWorkbench();
 	}
 
@@ -156,8 +157,12 @@ public class LongParameterListTest {
 		SWTBotShell refactoringWizard = bot.shell("Refactoring");
 		assertTrue(refactoringWizard.isVisible());
 		} finally {
+			try {
 		closeRefactoringPopUp();
 		closeLPLTab();
+			} catch (Exception e) {
+				
+			}
 		}
 	}
 
@@ -170,8 +175,12 @@ public class LongParameterListTest {
 		SWTBotShell refactoringWizard = bot.shell("Refactoring");
 		assertFalse(refactoringWizard.bot().button("Next >").isEnabled());
 		} finally {
+			try {
 		closeRefactoringPopUp();
 		closeLPLTab();
+			} catch (Exception e) {
+				
+			}
 		}
 	}
 
@@ -188,11 +197,16 @@ public class LongParameterListTest {
 		refactoringWizard.bot().button("Next >").click();
 		assertFalse(refactoringWizard.bot().button("Next >").isEnabled());
 		} finally {
+			try {
 		closeRefactoringPopUp();
 		closeLPLTab();
+			} catch (Exception e) {
+				
+			}
 		}
 	}
 
+	@Ignore
 	@Test
 	public void testRefactoringPopUpPackageSelectionPageExceptionScenario() {
 		try {
@@ -207,8 +221,12 @@ public class LongParameterListTest {
 		// now in package selection page
 		assertFalse(refactoringWizard.bot().button("Finish").isEnabled());
 		} finally {
+			try {
 		closeRefactoringPopUp();
 		closeLPLTab();
+			} catch (Exception e) {
+				
+			}
 		}
 	}
 
@@ -237,8 +255,6 @@ public class LongParameterListTest {
 			// now in package selection page
 			refactoringWizard.bot().table().getTableItem(0).check();
 			refactoringWizard.bot().button("Finish").click();
-			//closeRefactoringPopUp();
-			closeLPLTab();
 
 			IProject projectUpdated = ResourcesPlugin.getWorkspace().getRoot().getProject("testLPLProject");
 			IJavaProject javaProjectUpdated = JavaCore.create(project);
@@ -250,20 +266,22 @@ public class LongParameterListTest {
 			fail();
 		} finally {
 			try {
-				testLPLProject.deleteLPLProject();
-				//closeRefactoringPopUp();
-				//closeLPLTab();
-			} catch (CoreException e) {
-				e.printStackTrace();
+		closeRefactoringPopUp();
+		closeLPLTab();
+		testLPLProject.buildLPLProject();
+		deleteTestProject();
+			} catch (Exception e) {
+				
 			}
+
 		}
 
 	}
 
+	@Ignore
 	@Test // assert that refactoring through PopUp UI works correctly
 	public void testLPLRefactoringSuccessScenario2() {
 		try {
-			testLPLProject.buildLPLProject();
 			detectCodeSmellAndOpenRefactoringPopUp();
 			SWTBotShell refactoringWizard = bot.shell("Refactoring");
 			refactoringWizard.bot().table().getTableItem(0).check();
@@ -285,15 +303,28 @@ public class LongParameterListTest {
 			fail();
 		} 
 		finally {
+
 			try {
-				testLPLProject.deleteLPLProject();
+				deleteTestProject();
+				testLPLProject.buildLPLProject();
 				closeRefactoringPopUp();
 				closeLPLTab();
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
+
 		}
 
 	}
+	
+	public static void deleteTestProject() {
+    	bot.resetActivePerspective();
+    	SWTBotView view = bot.viewByTitle("Project Explorer");
+    	view.bot().tree().getTreeItem("testLPLProject").contextMenu("Delete").click();
+    	SWTBotShell deleteShell = bot.shell("Delete Resources");
+    	deleteShell.activate();
+    	bot.checkBox("Delete project contents on disk (cannot be undone)").click();
+    	bot.button("OK").click();
+    }
 
 }
