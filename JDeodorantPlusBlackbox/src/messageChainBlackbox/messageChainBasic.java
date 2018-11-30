@@ -124,6 +124,8 @@ public class messageChainBasic {
        detectionApplier.bot().tree().getTreeItem("").getNode(0).doubleClick();
    }
    
+   // Edit in Iteration 4
+   
    @Test
    public void testButtonClick() {
       bot.menu("Bad Smells").menu("Message Chain").click();
@@ -140,7 +142,13 @@ public class messageChainBasic {
        detectionApplier.bot().tree().getTreeItem("").getNode(1).select();
        detectionApplier.bot().tree().getTreeItem("").getNode(1).doubleClick();
        detectionApplier.bot().button(1).click();
-       bot.saveAllEditors();
-       detectionApplier.close();
+       SWTBotShell refactoringWizard = bot.shell("Refactoring");
+       //refactoringWizard.bot().textWithLabel("New Method name").setText("refactorMethod");
+       SWTBotText text = refactoringWizard.bot().text("New Method name").selectAll().typeText("refactorMethod");
+       
+       bot.sleep(10000);
+
+       //bot.saveAllEditors();
+       //detectionApplier.close();
    }
 }
