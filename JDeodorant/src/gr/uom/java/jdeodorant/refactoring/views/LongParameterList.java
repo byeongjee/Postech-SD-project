@@ -471,8 +471,6 @@ public class LongParameterList extends ViewPart {
 					if(targetSmell != null && methodRange.getOffset() != -1 && methodRange.getLength() != -1) {
 						SystemObject systemObject = ASTReader.getSystemObject();
 						if(systemObject != null) {
-							//ClassObject classwithCodeSmell = systemObject.getClassObject(targetSmell.getParent().getName());
-							//IFile fileWithCodeSmell = classwithCodeSmell.getIFile();
 							IResource checkIfIFile = convertedIMethod.getUnderlyingResource();
 							if(checkIfIFile.getType() != IResource.FILE)
 				        		return;

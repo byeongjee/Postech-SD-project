@@ -25,12 +25,16 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
 	private Text newPackageText;
     private Composite container;
     private IJavaProject javaProject;
+    private int currentCheckedIndex;
+    private boolean canFinishPage;
 
     public LPLRefactorSelectPackagePage(IJavaProject javaProject) {
         super("Select package of new class");
         setTitle("Select package");
         setDescription("Select package of new class, or enter new package name");
         this.javaProject = javaProject;
+        currentCheckedIndex = -1;
+        canFinishPage = false;
     }
 
     public void createControl(Composite parent) {
@@ -60,10 +64,49 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
 		} catch (Exception e) {
 		}
 		
+		table.addListener(SWT.Selection,  new Listener() {
+			public void handleEvent(Event event) {
+				boolean isChecked = false;
+				if(event.detail == SWT.CHECK) {
+					for(int i = 0; i < ((Table)event.widget).getItems().length; i++) {
+						TableItem item = ((Table)event.widget).getItem(i);
+						if(item.getChecked()) {
+							if(currentCheckedIndex == -1) {
+								currentCheckedIndex = i;
+							}
+							else if(currentCheckedIndex != i) {
+								((Table)event.widget).getItem(currentCheckedIndex).setChecked(false);
+								currentCheckedIndex = i;
+							}
+							isChecked = true;
+						}
+					}
+					if(isChecked) {
+						canFinishPage = true;
+						setPageComplete(true);
+						newPackageText.setEditable(false);
+					}
+					else {
+						//setPageComplete(false);
+						newPackageText.setEditable(true);
+						if (!newPackageText.getText().isEmpty()) 
+						{
+							canFinishPage = true;
+		                    setPageComplete(true);
+		                    return;
+		                }
+						canFinishPage = false;
+		                setPageComplete(false);
+					}
+				}
+			}
+		});
+		
 		GridData tableGD = new GridData(GridData.FILL_HORIZONTAL);
+		tableGD.horizontalSpan = 2;
         table.setLayoutData(tableGD);
 		
-		Label emptyLabel = new Label(container, SWT.NONE);
+		//Label emptyLabel = new Label(container, SWT.NONE);
         
         Label label1 = new Label(container, SWT.NONE);
         label1.setText("New package name");
@@ -77,9 +120,11 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
 
             public void keyReleased(KeyEvent e) {
                 if (!newPackageText.getText().isEmpty()) {
+                	canFinishPage = true;
                     setPageComplete(true);
                     return;
                 }
+                canFinishPage = false;
                 setPageComplete(false);
             }
 
@@ -87,12 +132,24 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
         GridData textGD = new GridData(GridData.FILL_HORIZONTAL);
         newPackageText.setLayoutData(textGD);
         setControl(container);
-        setPageComplete(true);
+        setPageComplete(false);
 
     }
 
+    /**
+     * returns the new package name that is input by the user
+     * @return
+     */
     public String getNewPackageName() {
         return newPackageText.getText();
+    }
+    
+    /**
+     * Returns the canFinishPage private variable
+     * @return
+     */
+    public boolean getCanFinishPage() {
+    	return canFinishPage;
     }
 
 }

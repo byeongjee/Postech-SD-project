@@ -1,5 +1,7 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
+import javax.lang.model.SourceVersion;
+
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -36,10 +38,10 @@ public class LPLRefactorClassNamePage extends WizardPage {
             }
 
             public void keyReleased(KeyEvent e) {
-                if (!text1.getText().isEmpty()) {
-                    setPageComplete(true);
-                    return;
-                }
+            	if(isClassName(text1.getText())) {
+            		setPageComplete(true);
+            		return;
+            	}
                 setPageComplete(false);
             }
 
@@ -53,5 +55,9 @@ public class LPLRefactorClassNamePage extends WizardPage {
 
     public String getText1() {
         return text1.getText();
+    }
+    
+    private boolean isClassName(String name) {
+    	return SourceVersion.isIdentifier(name) && !SourceVersion.isKeyword(name);
     }
 }

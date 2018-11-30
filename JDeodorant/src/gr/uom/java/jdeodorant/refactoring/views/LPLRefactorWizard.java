@@ -61,4 +61,13 @@ public class LPLRefactorWizard extends Wizard {
 		return true;
 	}
 	
+	@Override
+	public boolean canFinish() {
+		if(getContainer().getCurrentPage() == packagePage) {
+			if(packagePage.getCanFinishPage())
+				return true;
+		}
+		return false;
+	}
+	
 }
