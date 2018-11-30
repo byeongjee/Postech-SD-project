@@ -47,6 +47,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -58,6 +59,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
@@ -461,8 +463,50 @@ public class LongParameterList extends ViewPart {
 
 		doubleClickAction = new Action() {
 			public void run() {
-				//TODO
+				try {
+					IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+					LPLMethodObject targetSmell = ((LPLMethodObject)selection.getFirstElement());
+					IMethod convertedIMethod = targetSmell.toIMethod(selectedProject);
+					ISourceRange methodRange = convertedIMethod.getSourceRange();
+					if(targetSmell != null && methodRange.getOffset() != -1 && methodRange.getLength() != -1) {
+						SystemObject systemObject = ASTReader.getSystemObject();
+						if(systemObject != null) {
+							//ClassObject classwithCodeSmell = systemObject.getClassObject(targetSmell.getParent().getName());
+							//IFile fileWithCodeSmell = classwithCodeSmell.getIFile();
+							IResource checkIfIFile = convertedIMethod.getUnderlyingResource();
+							if(checkIfIFile.getType() != IResource.FILE)
+				        		return;
+							IFile fileWithCodeSmell = (IFile) checkIfIFile;
+							IJavaElement sourceJavaElement = JavaCore.create(fileWithCodeSmell);
+							try {
+								ITextEditor sourceEditor = (ITextEditor) JavaUI.openInEditor(sourceJavaElement);
+								AnnotationModel annotationModel = (AnnotationModel) sourceEditor.getDocumentProvider()
+										.getAnnotationModel(sourceEditor.getEditorInput());
+								Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
+								while (annotationIterator.hasNext()) {
+									Annotation currentAnnotation = annotationIterator.next();
+	
+									annotationModel.removeAnnotation(currentAnnotation);
+								}
+								Position position = new Position(methodRange.getOffset(), (methodRange.getLength() + 1));
+								SliceAnnotation annotation = null;
+								annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, "We detect Long Parameter List!");
+								annotationModel.addAnnotation(annotation, position);
+						
+								sourceEditor.setHighlightRange(position.getOffset(), position.getLength(), true);
+	
+							} catch (PartInitException e) {
+								e.printStackTrace();
+							} catch (JavaModelException e) {
+								e.printStackTrace();
+							}
+	
+						}
+					}
+				} catch(Exception e) {
+					e.printStackTrace();
 				}
+			}
 		};
 	}
 
@@ -508,7 +552,7 @@ public class LongParameterList extends ViewPart {
 						}
 					}
 				});
-			} // 아마 UI 관련 코드로 예상된다. 대부분의 smell code가 동일하게 가지고 있음
+			}
 
 			final SystemObject systemObject = ASTReader.getSystemObject();
 			if (systemObject != null) {
