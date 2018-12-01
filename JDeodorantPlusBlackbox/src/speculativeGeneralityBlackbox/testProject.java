@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
@@ -55,6 +56,26 @@ public class testProject {
 
 	public static ICompilationUnit getUnnecessaryParameterClass() {
 		return classTwoChildUnnecessaryParameter;
+	}
+	
+	public static ICompilationUnit getNoChildInterfaceClass() {
+		return classNoChildInterface;
+	}
+	
+	public static ICompilationUnit getOneChildInterfaceClass() {
+		return classOneChildInterface;
+	}
+	
+	public static ICompilationUnit getOneChild_InterfaceClass() {
+		return classOneChild_Interface;
+	}
+	
+	public static ICompilationUnit getOneChild_AbstractClass() {
+		return classOneChild_Abstract;
+	}
+	
+	public static ICompilationUnit getOneChildAbstractClass() {
+		return classTwoChildAbstract;
 	}
 
 	/**
@@ -142,7 +163,8 @@ public class testProject {
 			source.append(strOneChild_Interface);
 			classOneChild_Interface = _package.createCompilationUnit("OC_Int.java", source.toString(),
 					false, null);
-
+			break;
+			
 		case 2:
 			// Generate Java Class : OneChildAbstract
 			source = new StringBuffer();

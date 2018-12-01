@@ -295,7 +295,7 @@ public class ParameterMethodRefactoring extends Refactoring {
 			}
 		}
 		
-		if(declarationIdx == -1) {			
+		/*if(declarationIdx == -1) {			
 			String orgContentInOneString = "";
 			for(String c : orgContent) {
 				orgContentInOneString += c + "\r\n";
@@ -303,7 +303,7 @@ public class ParameterMethodRefactoring extends Refactoring {
 			
 			this.refactoredContent = orgContentInOneString;
 			return;
-		}
+		}*/
 		
 		// Write New Content
   		for(int i = 0; i < orgContent.size(); i++) {

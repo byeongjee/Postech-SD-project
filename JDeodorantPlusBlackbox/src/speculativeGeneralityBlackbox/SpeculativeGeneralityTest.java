@@ -48,6 +48,7 @@ import org.eclipse.core.runtime.CoreException;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class SpeculativeGeneralityTest {
 	private static SWTWorkbenchBot bot;
+	private static boolean flagProjectOn = false;
 	
 	private static void openPackageExplorer() {
 		bot.menu("Window").menu("Show View").menu("Other...").click();
@@ -81,12 +82,22 @@ public class SpeculativeGeneralityTest {
 		packageExplorer.bot().tree().getTreeItem("testProject").expand().getNode("src").expand().getNode("SpeculativeGenerality").click();
 	}
 	
+	private void turnOnProject(int arg) throws CoreException {
+		if(!flagProjectOn) {
+			testProject.buildProject(arg);
+			flagProjectOn = true;
+		} else {
+			testProject.deleteProject();
+			testProject.buildProject(arg);
+		}
+	}
+
 	@Test
 	public void testApplyingSGDetection() throws CoreException {
 		SWTBotView detectionApplier;
 		
 		// NoChild
-		testProject.buildProject(0);
+		turnOnProject(0);
 		selectSGTarget();
 		detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
@@ -95,7 +106,7 @@ public class SpeculativeGeneralityTest {
     	testProject.deleteProject();
     	
     	// OneChild
-    	testProject.buildProject(1);
+    	turnOnProject(1);
 		selectSGTarget();
 		detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
@@ -104,7 +115,7 @@ public class SpeculativeGeneralityTest {
     	testProject.deleteProject();
     
     	// TwoChild & Unnecessary Parameter
-    	testProject.buildProject(3);
+    	turnOnProject(3);
 		selectSGTarget();
 		detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
@@ -115,7 +126,7 @@ public class SpeculativeGeneralityTest {
 
 	@Test
 	public void testExpandingSGEntries() throws CoreException {
-		testProject.buildProject(3);
+		turnOnProject(3);
 		selectSGTarget();
 		
 		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
@@ -128,17 +139,16 @@ public class SpeculativeGeneralityTest {
     	testProject.deleteProject();
 	}
 	
-	@Ignore
 	@Test
 	public void testApplyingSGRefactoring_NoChildInterface() throws CoreException {
-		testProject.buildProject(0);
+		turnOnProject(0);
 		selectSGTarget();
 		
 		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
 		
-		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").select();
+		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").select();
 		detectionApplier.bot().button("TEST").click();
     	
     	// Rebuild
@@ -147,13 +157,17 @@ public class SpeculativeGeneralityTest {
 		
     	ICompilationUnit _CUorigin;
 		try {
-			_CUorigin = testProject.getUnnecessaryParameterClass().getWorkingCopy(new WorkingCopyOwner() {}, null);
+			_CUorigin = testProject.getNoChildInterfaceClass().getWorkingCopy(new WorkingCopyOwner() {}, null);
 			
 			IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
-			String answer = "/*" + "public interface NoChildInterface {\r\n" 
-						+ "\t int NoChildInterface_Method(int input);\r\n"
-						+ "}" + "*/";
-	    	assertEquals(_bufferOrigin.toString(), answer);
+			String answer = "/*\r\n" + 
+					"package SpeculativeGenerality;\r\n" + 
+					"public interface NoChildInterface {\r\n" + 
+					"	int NoChildInterface_Method(int input);\r\n" + 
+					"}\r\n" + 
+					"\r\n" + 
+					"*/";
+			assertEquals(_bufferOrigin.getContents(), answer);
 		} catch (JavaModelException e) {
 			e.printStackTrace();
 		}
@@ -161,70 +175,69 @@ public class SpeculativeGeneralityTest {
     	testProject.deleteProject();
 	}
 	
-	@Ignore
-	@Test
-	public void testApplyingSGRefactoring_OneChildAbstract() throws CoreException {
-		testProject.buildProject(1);
-		selectSGTarget();
-		
-		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-		
-		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").select();
-		detectionApplier.bot().button("TEST").click();
-    	
-    	// Rebuild
-    	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
-		IJavaProject javaProject = JavaCore.create(project);
-		
-    	ICompilationUnit _CUorigin;
-		try {
-			_CUorigin = testProject.getUnnecessaryParameterClass().getWorkingCopy(new WorkingCopyOwner() {}, null);
-			
-			IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
-	    	assertTrue(_bufferOrigin.toString().contains("public class OC_abs {"));
-		} catch (JavaModelException e) {
-			e.printStackTrace();
-		}
-		
-    	testProject.deleteProject();
-	}
-	
-	@Ignore
 	@Test
 	public void testApplyingSGRefactoring_OneChildInterface() throws CoreException {
-		testProject.buildProject(2);
+		turnOnProject(1);
 		selectSGTarget();
 		
 		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
 		
-		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").select();
+		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OneChildInterface").select();
 		detectionApplier.bot().button("TEST").click();
     	
     	// Rebuild
     	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
 		IJavaProject javaProject = JavaCore.create(project);
-		
     	ICompilationUnit _CUorigin;
+    	IBuffer _bufferOrigin;
 		try {
-			_CUorigin = testProject.getUnnecessaryParameterClass().getWorkingCopy(new WorkingCopyOwner() {}, null);
-			
-			IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
-	    	assertTrue(_bufferOrigin.toString().contains("public class OC_int {"));
+			_CUorigin = testProject.getOneChild_InterfaceClass().getWorkingCopy(new WorkingCopyOwner() {}, null);
+			_bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
+	    	assertTrue(_bufferOrigin.toString().contains("public class OC_Int {"));
+	    	assertFalse(_bufferOrigin.toString().contains("@override") || _bufferOrigin.toString().contains("@Override"));
+	    	
+	    	_CUorigin = testProject.getOneChildInterfaceClass().getWorkingCopy(new WorkingCopyOwner() {}, null);
+			_bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
+	    	assertTrue(_bufferOrigin.toString().contains("/*") && _bufferOrigin.toString().contains("*/"));
+		} catch (JavaModelException e) {
+			e.printStackTrace();
+		}
+		
+    	testProject.deleteProject();
+	}
+	
+	@Test
+	public void testApplyingSGRefactoring_OneChildAbstract() throws CoreException {
+		turnOnProject(2);
+		selectSGTarget();
+		
+		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
+		detectionApplier.show();
+		detectionApplier.getToolbarButtons().get(0).click();
+		
+		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OneChildAbstract").select();
+		detectionApplier.bot().button("TEST").click();
+    	
+		// Rebuild
+    	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
+		IJavaProject javaProject = JavaCore.create(project);
+    	ICompilationUnit _CUorigin;
+    	IBuffer _bufferOrigin;
+		try {
+			_CUorigin = testProject.getOneChild_AbstractClass().getWorkingCopy(new WorkingCopyOwner() {}, null);
+			_bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
+	    	assertTrue(_bufferOrigin.toString().contains("public class OC_Abs"));
 	    	assertFalse(_bufferOrigin.toString().contains("@override") || _bufferOrigin.toString().contains("@Override"));
 		} catch (JavaModelException e) {
 			e.printStackTrace();
 		}
-		
-    	testProject.deleteProject();
 	}
 	
 	@Test
 	public void testApplyingSGRefactoring_UnnecessaryParameters() throws CoreException {
-		testProject.buildProject(3);
+		turnOnProject(3);
 		selectSGTarget();
 		
 		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");

@@ -32,6 +32,8 @@ import gr.uom.java.jdeodorant.preferences.PreferenceConstants;
 import gr.uom.java.jdeodorant.refactoring.Activator;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSlice;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSliceGroup;
+import gr.uom.java.jdeodorant.refactoring.manipulators.DeleteClassRefactoring;
+import gr.uom.java.jdeodorant.refactoring.manipulators.MergeClassRefactoring;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ParameterMethodRefactoring;
 
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
@@ -143,140 +145,62 @@ public class SpeculativeGenerality extends ViewPart {
 			ClassObjectCandidate targetClass = _smellingClassEntries[index];
 			
 			// Switch w.r.t smell type and Details
-//			if(targetClass.getCodeSmellType().equals("Abstract Class")) {
-//				if(targetClass.getNumChild() == 0) {
-//					// Wrap as comments
-//					List<String> resolvedClassContent = targetClass.getContent();
-//					String newContent = "/*\r\n";
-//					for( String c : resolvedClassContent) {
-//						newContent += c + "\r\n";
-//					}
-//					newContent += "}\r\n\r\n*/";
-//					
-//					// Modify Target
-//					SystemObject systemObject = ASTReader.getSystemObject();
-//					if (systemObject != null) {
-//						IFile _file = targetClass.getIFile();
-//						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-//						
-//						this.processRefactor(newContent, _compilationUnit);
-//					}
-//				} else {
-//					// Integrate Child and Parent
-//					ClassObjectCandidate childClass;
-//					for(ClassObject examiningClass : _classObjectToBeExamined) {
-//						if(examiningClass.getName().equals(targetClass.getName())) continue;
-//						
-//						TypeObject superClass = examiningClass.getSuperclass();
-//						if(superClass != null) {
-//							if (superClass.getClassType().equals(targetClass.getName())) {
-//								childClass = new ClassObjectCandidate(examiningClass);
-//
-//								// Merge TargetClass(Parent) and its Child
-//								targetClass.mergeIntoChild(childClass);
-//								
-//								// Write "new content" On "target class" JavaFile
-//								List<String> resolvedClassContent = targetClass.getContent();
-//								String newContent = "";
-//								for( String c : resolvedClassContent) {
-//									newContent += c + "\r\n";
-//								}
-//								
-//								// Modify Parent
-//								SystemObject systemObject = ASTReader.getSystemObject();
-//								if (systemObject != null) {
-//									IFile _file = targetClass.getIFile();
-//									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-//									
-//									this.processRefactor(newContent, _compilationUnit);
-//								}
-//								
-//								// Modify Child								
-//								resolvedClassContent = childClass.getContent();
-//								newContent = "";
-//								for( String c : resolvedClassContent) {
-//									newContent += c + "\r\n";
-//								}
-//								if (systemObject != null) {
-//									IFile _file = childClass.getIFile();
-//									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-//									
-//									this.processRefactor(newContent, _compilationUnit);
-//								}
-//								
-//								break;
-//							}
-//						}
-//					}
-//				}
-//			} else if (targetClass.getCodeSmellType().equals("Interface Class")) {
-//				if(targetClass.getNumChild() == 0) {
-//					List<String> resolvedClassContent = targetClass.getContent();
-//					String newContent = "/*\r\n";
-//					for( String c : resolvedClassContent) {
-//						newContent += c + "\r\n";
-//					}
-//					newContent += "}\r\n\r\n*/";
-//					
-//					// Modify Target
-//					SystemObject systemObject = ASTReader.getSystemObject();
-//					if (systemObject != null) {
-//						IFile _file = targetClass.getIFile();
-//						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-//						this.processRefactor(newContent, _compilationUnit);
-//					}
-//				} else {					
-//					// Integrate Child and Parent
-//					ClassObjectCandidate childClass;
-//					for(ClassObject examiningClass : _classObjectToBeExamined) {
-//						if(examiningClass.getName().equals(targetClass.getName())) continue;
-//						
-//						ListIterator<TypeObject> parentClasses = examiningClass.getInterfaceIterator();
-//						while(parentClasses.hasNext()) {
-//							TypeObject parentClass = parentClasses.next();
-//							if (parentClass.getClassType().equals(targetClass.getName())) {
-//								childClass = new ClassObjectCandidate(examiningClass);
-//
-//								// Merge TargetClass(Parent) and its Child
-//								targetClass.mergeIntoChild(childClass);
-//
-//								// Write "new content" On "target class" JavaFile
-//								List<String> resolvedClassContent = targetClass.getContent();
-//								String newContent = "";
-//								for( String c : resolvedClassContent) {
-//									newContent += c + "\r\n";
-//								}
-//								
-//								// Modify Parent
-//								SystemObject systemObject = ASTReader.getSystemObject();
-//								if (systemObject != null) {
-//									IFile _file = targetClass.getIFile();
-//									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-//
-//									this.processRefactor(newContent, _compilationUnit);
-//								}
-//								
-//								// Modify Child								
-//								resolvedClassContent = childClass.getContent();
-//								newContent = "";
-//								for( String c : resolvedClassContent) {
-//									newContent += c + "\r\n";
-//								}
-//								if (systemObject != null) {
-//									IFile _file = childClass.getIFile();
-//									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-//									
-//									this.processRefactor(newContent, _compilationUnit);
-//								}
-//								
-//								break;
-//							}
-//						}
-//					}
-//
-//				}
-//			} else 
-			if (targetClass.getCodeSmellType().equals("Unnecessary Parameters")) {
+			if(targetClass.getCodeSmellType().equals("Abstract Class")) {
+				if(targetClass.getNumChild() == 0) {
+					DeleteClassRefactoring _refactor = new DeleteClassRefactoring(targetClass);
+					_refactor.commentizeWholeContent();
+					_refactor.processRefactoring();
+				} else {
+					// Integrate Child and Parent
+					ClassObjectCandidate childClass;
+					for(ClassObject examiningClass : _classObjectToBeExamined) {
+						if(examiningClass.getName().equals(targetClass.getName())) continue;
+						
+						TypeObject superClass = examiningClass.getSuperclass();
+						if(superClass != null) {
+							if (superClass.getClassType().equals(targetClass.getName())) {
+								childClass = new ClassObjectCandidate(examiningClass);
+								
+								MergeClassRefactoring _refactor = new MergeClassRefactoring(targetClass, childClass);
+								_refactor.mergeIntoChild();
+								_refactor.buildContentInOneString();
+								_refactor.processRefactoringParent();
+								_refactor.processRefactoringChild();
+								
+								break;
+							}
+						}
+					}
+				}
+			} else if (targetClass.getCodeSmellType().equals("Interface Class")) {
+				if(targetClass.getNumChild() == 0) {
+					DeleteClassRefactoring _refactor = new DeleteClassRefactoring(targetClass);
+					_refactor.commentizeWholeContent();
+					_refactor.processRefactoring();
+				} else {
+					ClassObjectCandidate childClass;
+					for (ClassObject examiningClass : _classObjectToBeExamined) {
+						if (examiningClass.getName().equals(targetClass.getName()))
+							continue;
+
+						ListIterator<TypeObject> parentClasses = examiningClass.getInterfaceIterator();
+						while(parentClasses.hasNext()) {
+							TypeObject parentClass = parentClasses.next();
+							if (parentClass.getClassType().equals(targetClass.getName())) {
+								childClass = new ClassObjectCandidate(examiningClass);
+
+								MergeClassRefactoring _refactor = new MergeClassRefactoring(targetClass, childClass);
+								_refactor.mergeIntoChild();
+								_refactor.buildContentInOneString();
+								_refactor.processRefactoringParent();
+								_refactor.processRefactoringChild();
+
+								break;
+							}
+						}
+					}
+				}
+			} else if (targetClass.getCodeSmellType().equals("Unnecessary Parameters")) {
 				List<MethodObject> _smellingMethods = targetClass.getSmellingMethods();
 				
 				for(MethodObject target : _smellingMethods) {

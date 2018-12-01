@@ -192,6 +192,10 @@ public class ClassObject extends ClassDeclarationObject {
 		return enumConstantDeclarationList.add(f);
 	}
 	
+	public List<ConstructorObject> getConstructorList() {
+		return constructorList;
+	}
+	
 	public ListIterator<ConstructorObject> getConstructorIterator() {
 		return constructorList.listIterator();
 	}
