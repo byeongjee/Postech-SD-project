@@ -57,7 +57,7 @@ public class messageChainBasic {
    @BeforeClass
    public static void initBot() throws CoreException {
       bot = new SWTWorkbenchBot();
-      bot.viewByTitle("Welcome").close();
+      //bot.viewByTitle("Welcome").close();
       
       testProject.buildProject();
       openPackageExplorer();
@@ -90,6 +90,7 @@ public class messageChainBasic {
       assertTrue(detectionApplier.bot().tree().getTreeItem("").isEnabled());
    }
    
+   @Ignore
    @Test
    public void testExpand() {
       bot.menu("Bad Smells").menu("Message Chain").click();

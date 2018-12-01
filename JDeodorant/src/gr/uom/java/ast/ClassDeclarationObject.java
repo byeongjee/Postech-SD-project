@@ -203,6 +203,10 @@ public abstract class ClassDeclarationObject {
 		return fields;
 	}
 
+	public List<FieldObject> getFieldList() {
+		return this.fieldList;
+	}
+	
 	public FieldObject getField(FieldInstructionObject fieldInstruction) {
 		for(FieldObject field : fieldList) {
 			if(field.equals(fieldInstruction)) {

@@ -2,15 +2,40 @@ package junittest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.Reader;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFileState;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IPathVariableManager;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResourceProxy;
+import org.eclipse.core.resources.IResourceProxyVisitor;
+import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourceAttributes;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.runtime.content.IContentDescription;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
 import gr.uom.java.jdeodorant.refactoring.views.MessageChainStructure;
 import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality;
 import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality.*;
+import gr.uom.java.ast.Access;
 import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.ClassObjectCandidate;
 import gr.uom.java.ast.ConstructorObject;
@@ -112,78 +137,72 @@ public class ClassObjectCandidateUnitTest {
 	}
 	
 	
-	/*@Test
-    public void testUnusedParameter() {
-	    //Number of unusedParameter
-		this.mainClassObjectCandidate.addNumUnusedParameter(3);
-		int answer1 = this.mainClassObjectCandidate.getNumUnusedParameter().get(0);
-		assertEquals(3, answer1);
-		
-		//List of unusedParameter
-		List<String> answer2 = this.mainClassObjectCandidate.getUnusedParameterList().get(0);
-		assertEquals("int", answer2.get(0));
-		assertEquals("a", answer2.get(0));
-	}
-	
-	@Test
-	public void testUsedParameter() {
-		List<String> answer2 = this.mainClassObjectCandidate.getUnusedParameterList().get(0);
-		assertEquals("int", answer2.get(0));
-		assertEquals("a", answer2.get(0));
-	}*/
-	
 	/**
 	 * Test Information Related to Refactoring
 	 */
 	@Test
-	public void testContent() {
-		// Set Content
-		List<String> answer = new ArrayList<String>();
-		answer.add("");
+	public void testFullName() {
+		// Full Name
+		this.rootClassObject.setAccess(Access.PUBLIC);
+		this.rootClassObject.setAbstract(false);
+		this.rootClassObject.setInterface(false);
+		this.rootClassObject.setName("test");
+		this.mainClassObjectCandidate = new ClassObjectCandidate(rootClassObject);
+		assertEquals(mainClassObjectCandidate.getClassFullName(), "public class test");
 		
-		this.mainClassObjectCandidate.setContent(answer);
-		List<String> content = this.mainClassObjectCandidate.getContent();
+
+		// Full Name
+		this.rootClassObject.setAccess(Access.PUBLIC);
+		this.rootClassObject.setAbstract(true);
+		this.rootClassObject.setInterface(false);
+		this.rootClassObject.setName("test");
+		this.mainClassObjectCandidate = new ClassObjectCandidate(rootClassObject);
+		assertEquals(mainClassObjectCandidate.getClassFullName(), "public abstract class test");
 		
-		// Get Content
-		assertEquals(answer, content);
+
+		// Full Name
+		this.rootClassObject.setAccess(Access.PUBLIC);
+		this.rootClassObject.setAbstract(false);
+		this.rootClassObject.setInterface(true);
+		this.rootClassObject.setName("test");
+		this.mainClassObjectCandidate = new ClassObjectCandidate(rootClassObject);
+		assertEquals(mainClassObjectCandidate.getClassFullName(), "public interface test");
+		
+
+		// Full Name
+		this.rootClassObject.setAccess(Access.PUBLIC);
+		this.rootClassObject.setAbstract(false);
+		this.rootClassObject.setInterface(false);
+		this.rootClassObject.setName("test");
+		this.mainClassObjectCandidate = new ClassObjectCandidate(rootClassObject);
+		assertEquals(mainClassObjectCandidate.getClassFullName(), "public class test");
 	}
 	
-	/*@Test
-	public void testMergeIntoChild() {
-		List<String> answerInt = new ArrayList<String>();
-		List<String> answerAbs = new ArrayList<String>();
-		answerInt.add("");
-		answerAbs.add("");
-		
-		// set child and parent relationship
-		assertTrue(this.oneIntClassObjectCandidate.getNumChild() == 1);
-		assertTrue(this.oneAbsClassObjectCandidate.getNumChild() == 1);
-		
-		// operate Merging
-		this.oneIntClassObjectCandidate.mergeIntoChild(this.firstChildClassObjectCandidate);
-		this.oneAbsClassObjectCandidate.mergeIntoChild(this.secondChildClassObjectCandidate);
-		
-		// get Content and Compare
-		assertEquals(answerAbs, this.firstChildClassObjectCandidate.getContent());
-		assertEquals(answerInt, this.secondChildClassObjectCandidate.getContent());
-		
-		assertEquals(null, this.oneIntClassObjectCandidate.getIFile());
-		assertEquals(null, this.oneAbsClassObjectCandidate.getIFile());
-	}*/
-	
-	/*@Ignore
 	@Test
-	public void testResolveUnnecessaryParameters() {
-		// set Content with Unnecessary Parameters
-		List<String> primer = new ArrayList<String>();
-		this.mainClassObjectCandidate.setContent(primer);
-				
-		// resolve the code smell
-		this.mainClassObjectCandidate.resolveUnnecessaryParameters(this.smellingMethods.get(0));
-		List<String> prediction = this.mainClassObjectCandidate.getContent();
+	public void testHighlightPoint() {
+		this.mainClassObjectCandidate.setStart(4);
+		assertEquals(4, this.mainClassObjectCandidate.getStart());
 		
+		this.mainClassObjectCandidate.setLength(5);
+		assertEquals(5, this.mainClassObjectCandidate.getLength());
+	}
+	
+	@Test
+	public void testContent() {
+		List<String> content = new ArrayList<String>();
 		List<String> answer = new ArrayList<String>();
-		answer.add("");
-		assertEquals(answer, prediction);
-	}*/
+		
+		// Set Content Implicitly
+		this.mainClassObjectCandidate.setContent();
+		content = this.mainClassObjectCandidate.getContent();
+		assertEquals(new ArrayList<String>(), content);
+		
+		// Set Content Explicitly
+		answer = new ArrayList<String>();
+		answer.add("Test");
+		this.mainClassObjectCandidate.setContent(answer);
+		content = this.mainClassObjectCandidate.getContent();
+		
+		assertEquals(answer, content);
+	}
 }

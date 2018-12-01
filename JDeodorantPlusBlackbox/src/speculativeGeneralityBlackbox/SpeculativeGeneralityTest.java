@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IWorkingCopy;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
@@ -47,7 +48,7 @@ import org.eclipse.core.runtime.CoreException;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class SpeculativeGeneralityTest {
 	private static SWTWorkbenchBot bot;
-
+	
 	private static void openPackageExplorer() {
 		bot.menu("Window").menu("Show View").menu("Other...").click();
 		SWTBotShell dialog = bot.shell("Show View");
@@ -58,16 +59,12 @@ public class SpeculativeGeneralityTest {
 	@BeforeClass
 	public static void initBot() throws CoreException {
 		bot = new SWTWorkbenchBot();
-		bot.viewByTitle("Welcome").close();
-		
-		testProject.buildProject();
+		//bot.viewByTitle("Welcome").close();
 		openPackageExplorer();
 	}
 
 	@AfterClass
 	public static void afterClass() throws CoreException {
-		bot.sleep(10000000);
-		testProject.deleteProject();
 		bot.resetWorkbench();
 	}
 	
@@ -85,66 +82,173 @@ public class SpeculativeGeneralityTest {
 	}
 	
 	@Test
-	public void testApplyingSGDetection() {
-		selectSGTarget();
+	public void testApplyingSGDetection() throws CoreException {
+		SWTBotView detectionApplier;
 		
-		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
+		// NoChild
+		testProject.buildProject(0);
+		selectSGTarget();
+		detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
-    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").isEnabled());
+    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").isEnabled());	
+    	testProject.deleteProject();
+    	
+    	// OneChild
+    	testProject.buildProject(1);
+		selectSGTarget();
+		detectionApplier = bot.viewByTitle("Speculative Generality");
+		detectionApplier.show();
+		detectionApplier.getToolbarButtons().get(0).click();
+    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OneChildInterface").isEnabled());
+    	testProject.deleteProject();
+    
+    	// TwoChild & Unnecessary Parameter
+    	testProject.buildProject(3);
+		selectSGTarget();
+		detectionApplier = bot.viewByTitle("Speculative Generality");
+		detectionApplier.show();
+		detectionApplier.getToolbarButtons().get(0).click();
+    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").isVisible());
+    	testProject.deleteProject();
 	}
 
 	@Test
-	public void testExpandingSGEntries() {
+	public void testExpandingSGEntries() throws CoreException {
+		testProject.buildProject(3);
 		selectSGTarget();
 		
 		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
 		
-    	detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OC_Int").expand();
-    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OC_Int").getNode("OneChildInterface_Method").isEnabled());
+    	detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").expand();
+    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").getNode("UncessaryParameter").isEnabled());
+
+    	testProject.deleteProject();
 	}
 	
+	@Ignore
 	@Test
-	public void testApplyingSGRefactoring() {
+	public void testApplyingSGRefactoring_NoChildInterface() throws CoreException {
+		testProject.buildProject(0);
 		selectSGTarget();
 		
 		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
 		
-    	detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").click(6);
+		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").select();
+		detectionApplier.bot().button("TEST").click();
     	
-    	// TODO :: Rebuild the Project
-    	
+    	// Rebuild
+    	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
+		IJavaProject javaProject = JavaCore.create(project);
+		
     	ICompilationUnit _CUorigin;
 		try {
 			_CUorigin = testProject.getUnnecessaryParameterClass().getWorkingCopy(new WorkingCopyOwner() {}, null);
-
+			
 			IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
-	    	String str = "";
-	    	
-	    	System.out.println(_bufferOrigin.toString());
-	    	assertFalse(_bufferOrigin.toString().contains("int UncessaryParameter(int a, int b, int c)"));
-
-	    	// Assertion Message Checking
-	    	SWTBotView assuranceChecker = bot.viewByTitle("Refactoring Assertion");
-	    	assertTrue(assuranceChecker.bot().button(1).isEnabled()); // Might be "cancel" button
+			String answer = "/*" + "public interface NoChildInterface {\r\n" 
+						+ "\t int NoChildInterface_Method(int input);\r\n"
+						+ "}" + "*/";
+	    	assertEquals(_bufferOrigin.toString(), answer);
 		} catch (JavaModelException e) {
 			e.printStackTrace();
 		}
-    	
+		
+    	testProject.deleteProject();
 	}
 	
+	@Ignore
 	@Test
-	public void testAppliedSGRefacctoring() {
-		// Applying Refactoring and Assure in Certain Steps
+	public void testApplyingSGRefactoring_OneChildAbstract() throws CoreException {
+		testProject.buildProject(1);
+		selectSGTarget();
+		
 		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
 		
-    	// Assertion 
-		assertFalse(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").isEnabled()); // deleted
+		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").select();
+		detectionApplier.bot().button("TEST").click();
+    	
+    	// Rebuild
+    	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
+		IJavaProject javaProject = JavaCore.create(project);
+		
+    	ICompilationUnit _CUorigin;
+		try {
+			_CUorigin = testProject.getUnnecessaryParameterClass().getWorkingCopy(new WorkingCopyOwner() {}, null);
+			
+			IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
+	    	assertTrue(_bufferOrigin.toString().contains("public class OC_abs {"));
+		} catch (JavaModelException e) {
+			e.printStackTrace();
+		}
+		
+    	testProject.deleteProject();
+	}
+	
+	@Ignore
+	@Test
+	public void testApplyingSGRefactoring_OneChildInterface() throws CoreException {
+		testProject.buildProject(2);
+		selectSGTarget();
+		
+		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
+		detectionApplier.show();
+		detectionApplier.getToolbarButtons().get(0).click();
+		
+		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").select();
+		detectionApplier.bot().button("TEST").click();
+    	
+    	// Rebuild
+    	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
+		IJavaProject javaProject = JavaCore.create(project);
+		
+    	ICompilationUnit _CUorigin;
+		try {
+			_CUorigin = testProject.getUnnecessaryParameterClass().getWorkingCopy(new WorkingCopyOwner() {}, null);
+			
+			IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
+	    	assertTrue(_bufferOrigin.toString().contains("public class OC_int {"));
+	    	assertFalse(_bufferOrigin.toString().contains("@override") || _bufferOrigin.toString().contains("@Override"));
+		} catch (JavaModelException e) {
+			e.printStackTrace();
+		}
+		
+    	testProject.deleteProject();
+	}
+	
+	@Test
+	public void testApplyingSGRefactoring_UnnecessaryParameters() throws CoreException {
+		testProject.buildProject(3);
+		selectSGTarget();
+		
+		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
+		detectionApplier.show();
+		detectionApplier.getToolbarButtons().get(0).click();
+		
+		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").select();
+		detectionApplier.bot().button("TEST").click();
+    	
+    	// Rebuild
+    	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
+		IJavaProject javaProject = JavaCore.create(project);
+		
+    	ICompilationUnit _CUorigin;
+		try {
+			_CUorigin = testProject.getUnnecessaryParameterClass().getWorkingCopy(new WorkingCopyOwner() {}, null);
+			
+			IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
+	    	assertFalse(_bufferOrigin.toString().contains("int UncessaryParameter(int a, int b, int c)"));
+	    	assertTrue(_bufferOrigin.toString().contains("int UncessaryParameter(int a)"));
+		} catch (JavaModelException e) {
+			e.printStackTrace();
+		}
+		
+    	testProject.deleteProject();
 	}
 }

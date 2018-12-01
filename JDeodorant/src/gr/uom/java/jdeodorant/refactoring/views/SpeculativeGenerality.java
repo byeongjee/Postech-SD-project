@@ -20,6 +20,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import gr.uom.java.ast.ASTReader;
 import gr.uom.java.ast.AbstractMethodDeclaration;
+import gr.uom.java.ast.ClassDeclarationObject;
 import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.ClassObjectCandidate;
 import gr.uom.java.ast.CompilationErrorDetectedException;
@@ -31,6 +32,8 @@ import gr.uom.java.jdeodorant.preferences.PreferenceConstants;
 import gr.uom.java.jdeodorant.refactoring.Activator;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSlice;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSliceGroup;
+import gr.uom.java.jdeodorant.refactoring.manipulators.ParameterMethodRefactoring;
+
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.resources.IFile;
@@ -111,7 +114,6 @@ public class SpeculativeGenerality extends ViewPart {
 	private Action identifyBadSmellsAction;
 	private Action applyRefactoringAction;
 	private Action doubleClickAction;
-	private Action saveResultsAction;
 	private IJavaProject selectedProject;
 	private IJavaProject activeProject;
 	private IPackageFragmentRoot selectedPackageFragmentRoot;
@@ -141,179 +143,153 @@ public class SpeculativeGenerality extends ViewPart {
 			ClassObjectCandidate targetClass = _smellingClassEntries[index];
 			
 			// Switch w.r.t smell type and Details
-			if(targetClass.getCodeSmellType().equals("Abstract Class")) {
-				if(targetClass.getNumChild() == 0) {
-					// Wrap as comments
-					List<String> resolvedClassContent = targetClass.getContent();
-					String newContent = "/*\r\n";
-					for( String c : resolvedClassContent) {
-						newContent += c + "\r\n";
-					}
-					newContent += "}\r\n\r\n*/";
-					
-					// Modify Target
-					SystemObject systemObject = ASTReader.getSystemObject();
-					if (systemObject != null) {
-						IFile _file = targetClass.getIFile();
-						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-						
-						this.processRefactor(newContent, _compilationUnit);
-					}
-				} else {
-					// Integrate Child and Parent
-					ClassObjectCandidate childClass;
-					for(ClassObject examiningClass : _classObjectToBeExamined) {
-						if(examiningClass.getName().equals(targetClass.getName())) continue;
-						
-						TypeObject superClass = examiningClass.getSuperclass();
-						if(superClass != null) {
-							if (superClass.getClassType().equals(targetClass.getName())) {
-								childClass = new ClassObjectCandidate(examiningClass);
-
-								// Merge TargetClass(Parent) and its Child
-								targetClass.mergeIntoChild(childClass);
-								
-								// Write "new content" On "target class" JavaFile
-								List<String> resolvedClassContent = targetClass.getContent();
-								String newContent = "";
-								for( String c : resolvedClassContent) {
-									newContent += c + "\r\n";
-								}
-								
-								// Modify Parent
-								SystemObject systemObject = ASTReader.getSystemObject();
-								if (systemObject != null) {
-									IFile _file = targetClass.getIFile();
-									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-									
-									this.processRefactor(newContent, _compilationUnit);
-								}
-								
-								// Modify Child								
-								resolvedClassContent = childClass.getContent();
-								newContent = "";
-								for( String c : resolvedClassContent) {
-									newContent += c + "\r\n";
-								}
-								if (systemObject != null) {
-									IFile _file = childClass.getIFile();
-									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-									
-									this.processRefactor(newContent, _compilationUnit);
-								}
-								
-								break;
-							}
-						}
-					}
-				}
-			} else if (targetClass.getCodeSmellType().equals("Interface Class")) {
-				if(targetClass.getNumChild() == 0) {
-					List<String> resolvedClassContent = targetClass.getContent();
-					String newContent = "/*\r\n";
-					for( String c : resolvedClassContent) {
-						newContent += c + "\r\n";
-					}
-					newContent += "}\r\n\r\n*/";
-					
-					// Modify Target
-					SystemObject systemObject = ASTReader.getSystemObject();
-					if (systemObject != null) {
-						IFile _file = targetClass.getIFile();
-						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-						this.processRefactor(newContent, _compilationUnit);
-					}
-				} else {					
-					// Integrate Child and Parent
-					ClassObjectCandidate childClass;
-					for(ClassObject examiningClass : _classObjectToBeExamined) {
-						if(examiningClass.getName().equals(targetClass.getName())) continue;
-						
-						ListIterator<TypeObject> parentClasses = examiningClass.getInterfaceIterator();
-						while(parentClasses.hasNext()) {
-							TypeObject parentClass = parentClasses.next();
-							if (parentClass.getClassType().equals(targetClass.getName())) {
-								childClass = new ClassObjectCandidate(examiningClass);
-
-								// Merge TargetClass(Parent) and its Child
-								targetClass.mergeIntoChild(childClass);
-
-								// Write "new content" On "target class" JavaFile
-								List<String> resolvedClassContent = targetClass.getContent();
-								String newContent = "";
-								for( String c : resolvedClassContent) {
-									newContent += c + "\r\n";
-								}
-								
-								// Modify Parent
-								IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
-								SystemObject systemObject = ASTReader.getSystemObject();
-								if (systemObject != null) {
-									IFile _file = targetClass.getIFile();
-									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-
-									this.processRefactor(newContent, _compilationUnit);
-								}
-								
-								// Modify Child								
-								resolvedClassContent = childClass.getContent();
-								newContent = "";
-								for( String c : resolvedClassContent) {
-									newContent += c + "\r\n";
-								}
-								if (systemObject != null) {
-									IFile _file = childClass.getIFile();
-									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-									
-									this.processRefactor(newContent, _compilationUnit);
-								}
-								
-								break;
-							}
-						}
-					}
-
-				}
-			} else if (targetClass.getCodeSmellType().equals("Unnecessary Parameters")) {
+//			if(targetClass.getCodeSmellType().equals("Abstract Class")) {
+//				if(targetClass.getNumChild() == 0) {
+//					// Wrap as comments
+//					List<String> resolvedClassContent = targetClass.getContent();
+//					String newContent = "/*\r\n";
+//					for( String c : resolvedClassContent) {
+//						newContent += c + "\r\n";
+//					}
+//					newContent += "}\r\n\r\n*/";
+//					
+//					// Modify Target
+//					SystemObject systemObject = ASTReader.getSystemObject();
+//					if (systemObject != null) {
+//						IFile _file = targetClass.getIFile();
+//						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+//						
+//						this.processRefactor(newContent, _compilationUnit);
+//					}
+//				} else {
+//					// Integrate Child and Parent
+//					ClassObjectCandidate childClass;
+//					for(ClassObject examiningClass : _classObjectToBeExamined) {
+//						if(examiningClass.getName().equals(targetClass.getName())) continue;
+//						
+//						TypeObject superClass = examiningClass.getSuperclass();
+//						if(superClass != null) {
+//							if (superClass.getClassType().equals(targetClass.getName())) {
+//								childClass = new ClassObjectCandidate(examiningClass);
+//
+//								// Merge TargetClass(Parent) and its Child
+//								targetClass.mergeIntoChild(childClass);
+//								
+//								// Write "new content" On "target class" JavaFile
+//								List<String> resolvedClassContent = targetClass.getContent();
+//								String newContent = "";
+//								for( String c : resolvedClassContent) {
+//									newContent += c + "\r\n";
+//								}
+//								
+//								// Modify Parent
+//								SystemObject systemObject = ASTReader.getSystemObject();
+//								if (systemObject != null) {
+//									IFile _file = targetClass.getIFile();
+//									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+//									
+//									this.processRefactor(newContent, _compilationUnit);
+//								}
+//								
+//								// Modify Child								
+//								resolvedClassContent = childClass.getContent();
+//								newContent = "";
+//								for( String c : resolvedClassContent) {
+//									newContent += c + "\r\n";
+//								}
+//								if (systemObject != null) {
+//									IFile _file = childClass.getIFile();
+//									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+//									
+//									this.processRefactor(newContent, _compilationUnit);
+//								}
+//								
+//								break;
+//							}
+//						}
+//					}
+//				}
+//			} else if (targetClass.getCodeSmellType().equals("Interface Class")) {
+//				if(targetClass.getNumChild() == 0) {
+//					List<String> resolvedClassContent = targetClass.getContent();
+//					String newContent = "/*\r\n";
+//					for( String c : resolvedClassContent) {
+//						newContent += c + "\r\n";
+//					}
+//					newContent += "}\r\n\r\n*/";
+//					
+//					// Modify Target
+//					SystemObject systemObject = ASTReader.getSystemObject();
+//					if (systemObject != null) {
+//						IFile _file = targetClass.getIFile();
+//						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+//						this.processRefactor(newContent, _compilationUnit);
+//					}
+//				} else {					
+//					// Integrate Child and Parent
+//					ClassObjectCandidate childClass;
+//					for(ClassObject examiningClass : _classObjectToBeExamined) {
+//						if(examiningClass.getName().equals(targetClass.getName())) continue;
+//						
+//						ListIterator<TypeObject> parentClasses = examiningClass.getInterfaceIterator();
+//						while(parentClasses.hasNext()) {
+//							TypeObject parentClass = parentClasses.next();
+//							if (parentClass.getClassType().equals(targetClass.getName())) {
+//								childClass = new ClassObjectCandidate(examiningClass);
+//
+//								// Merge TargetClass(Parent) and its Child
+//								targetClass.mergeIntoChild(childClass);
+//
+//								// Write "new content" On "target class" JavaFile
+//								List<String> resolvedClassContent = targetClass.getContent();
+//								String newContent = "";
+//								for( String c : resolvedClassContent) {
+//									newContent += c + "\r\n";
+//								}
+//								
+//								// Modify Parent
+//								SystemObject systemObject = ASTReader.getSystemObject();
+//								if (systemObject != null) {
+//									IFile _file = targetClass.getIFile();
+//									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+//
+//									this.processRefactor(newContent, _compilationUnit);
+//								}
+//								
+//								// Modify Child								
+//								resolvedClassContent = childClass.getContent();
+//								newContent = "";
+//								for( String c : resolvedClassContent) {
+//									newContent += c + "\r\n";
+//								}
+//								if (systemObject != null) {
+//									IFile _file = childClass.getIFile();
+//									ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+//									
+//									this.processRefactor(newContent, _compilationUnit);
+//								}
+//								
+//								break;
+//							}
+//						}
+//					}
+//
+//				}
+//			} else 
+			if (targetClass.getCodeSmellType().equals("Unnecessary Parameters")) {
 				List<MethodObject> _smellingMethods = targetClass.getSmellingMethods();
 				
 				for(MethodObject target : _smellingMethods) {
-					// Get "new Content"
-					targetClass.resolveUnnecessaryParameters(target);
-					List<String> resolvedClassContent = targetClass.getContent();
-
-					// Re-write
-					String newContent = "";
-					for( String c : resolvedClassContent) {
-						newContent += c + "\r\n";
-					}
-					
-					// Write "new content" On "target class" JavaFile
-					IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
-					SystemObject systemObject = ASTReader.getSystemObject();
-					if (systemObject != null) {
-						IFile _file = targetClass.getIFile();
-						ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-
-						this.processRefactor(newContent, _compilationUnit);
-					}
+					ParameterMethodRefactoring _refactor = new ParameterMethodRefactoring(targetClass, target);
+					_refactor.setUnusedParameterList();
+					_refactor.setUsedParameterList();
+					_refactor.resolveUnnecessaryParameters();
+					_refactor.processRefactoring();
 				}
 			}
-		}
 
-		private void processRefactor(String newContent, ICompilationUnit _compilationUnit) {
-			try {
-				ICompilationUnit _CUorigin = _compilationUnit.getWorkingCopy(new WorkingCopyOwner() {}, null);
-				IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
-
-				_bufferOrigin.replace(0, _bufferOrigin.getLength(), newContent);
-
-				_CUorigin.reconcile(ICompilationUnit.NO_AST, false, null, null);
-				_CUorigin.commitWorkingCopy(false, null);
-				_CUorigin.discardWorkingCopy();
-			} catch (JavaModelException e) {
-				e.printStackTrace();
-			}
+			// Re-detection
+			identifyBadSmellsAction.run();
 		}
 	}
 
@@ -331,7 +307,6 @@ public class SpeculativeGenerality extends ViewPart {
 			}
 		}
 
-		
 		public Object getParent(Object arg0) {
 			if(arg0 instanceof ClassObjectCandidate) {
 				ClassObjectCandidate target = (ClassObjectCandidate)arg0;
@@ -347,9 +322,7 @@ public class SpeculativeGenerality extends ViewPart {
 		}
 				
 		public Object[] getChildren(Object arg) {
-			/*if(arg instanceof ClassObjectCandidate[]) {
-				return (ClassObjectCandidate[])arg; 
-			} else*/ if(arg instanceof ClassObjectCandidate){
+			if(arg instanceof ClassObjectCandidate){
 				return ((ClassObjectCandidate) arg).getSmellingMethods().toArray(); 
 			} else {
 				ClassObjectCandidate[] res = { };
@@ -370,16 +343,12 @@ public class SpeculativeGenerality extends ViewPart {
 				case 0:
 					return entry.getName();
 				case 1:
-					return entry.getRefactorType();
-				case 2:
 					IFile sourceFile = entry.getIFile();
 					return sourceFile.getFullPath().toString();
-				case 3:
+				case 2:
 					return entry.getCodeSmellType();
-				case 4:
-					return "";
-				case 5:
-					return "";
+				case 3:
+					return entry.getRefactorType();
 				default:
 					return "";
 				}
@@ -394,10 +363,6 @@ public class SpeculativeGenerality extends ViewPart {
 					return "";
 				case 3:
 					return "";
-				case 4:
-					return "";
-				case 5:
-					return "";
 				default:
 					return "";
 				}
@@ -407,21 +372,6 @@ public class SpeculativeGenerality extends ViewPart {
 		
 		public Image getColumnImage(Object obj, int index) {
 			Image image = null;
-			if(obj instanceof ASTSlice) {
-				ASTSlice entry = (ASTSlice)obj;
-				int rate = -1;
-				Integer userRate = entry.getUserRate();
-				if(userRate != null)
-					rate = userRate;
-				switch(index) {
-				case 5:
-					if(rate != -1) {
-						image = Activator.getImageDescriptor("/icons/" + String.valueOf(rate) + ".jpg").createImage();
-					}
-				default:
-					break;
-				}
-			}
 			return image;
 		}
 		public Image getImage(Object obj) {
@@ -523,29 +473,21 @@ public class SpeculativeGenerality extends ViewPart {
 		column0.setResizable(true);
 		column0.pack();
 		TreeColumn column1 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
-		column1.setText("Refactoring Type");
+		column1.setText("Source Path");
 		column1.setResizable(true);
-		column1.pack();		
+		column1.pack();
 		TreeColumn column2 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
-		column2.setText("Source Path");
+		column2.setText("Code Smell Type");
 		column2.setResizable(true);
 		column2.pack();
 		TreeColumn column3 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
-		column3.setText("Code Smell Type");
+		column3.setText("Refactoring Type");
 		column3.setResizable(true);
 		column3.pack();
 		TreeColumn column4 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
-		column4.setText("Duplicated/Extracted");
+		column4.setText("Apply Refactoring");
 		column4.setResizable(true);
 		column4.pack();
-		TreeColumn column5 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
-		column5.setText("Rate it!");
-		column5.setResizable(true);
-		column5.pack();
-		TreeColumn column6 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
-		column6.setText("Do Refactoring");
-		column6.setResizable(true);
-		column6.pack();
 		treeViewer.expandAll();
 		
 		treeViewer.setColumnProperties(new String[] {"type", "source", "variable", "block", "duplicationRatio", "rate"});
@@ -651,7 +593,6 @@ public class SpeculativeGenerality extends ViewPart {
 						eventType == OperationHistoryEvent.OPERATION_ADDED || eventType == OperationHistoryEvent.OPERATION_REMOVED) {
 					if(activeProject != null && CompilationUnitCache.getInstance().getAffectedProjects().contains(activeProject)) {
 						applyRefactoringAction.setEnabled(false);
-						saveResultsAction.setEnabled(false);
 					}
 				}
 			}
@@ -665,8 +606,7 @@ public class SpeculativeGenerality extends ViewPart {
 	
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
-		manager.add(applyRefactoringAction);
-		manager.add(saveResultsAction);
+		//manager.add(applyRefactoringAction);
 		//manager.add(evolutionAnalysisAction);
 	}
 
@@ -676,25 +616,23 @@ public class SpeculativeGenerality extends ViewPart {
 				activeProject = selectedProject;
 				CompilationUnitCache.getInstance().clearCache();
 
-				
 				setClassObjectToBeExamined();
 				setSmellingClassEntries( _classObjectToBeExamined );
 				
 				treeViewer.setContentProvider(new ViewContentProvider());
 				
-				applyRefactoringAction.setEnabled(true);
-				saveResultsAction.setEnabled(true);
+				//applyRefactoringAction.setEnabled(true);
 				//evolutionAnalysisAction.setEnabled(true);
 				
 				refactorButtonMaker.disposeButtons();
 				
 				Tree tree = treeViewer.getTree();
 				refactorButtonMaker.setTree(tree);
-				refactorButtonMaker.makeRefactoringButtons(6);
-
+				
+				refactorButtonMaker.makeRefactoringButtons(4);
 				tree.addListener(SWT.Expand, new Listener() {
 					public void handleEvent(Event e) {
-						refactorButtonMaker.makeChildrenRefactoringButtons(6);
+						refactorButtonMaker.makeChildrenRefactoringButtons(4);
 					}
 				});
 			}
@@ -704,24 +642,12 @@ public class SpeculativeGenerality extends ViewPart {
 		//identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		identifyBadSmellsAction.setImageDescriptor(refactoringButtonImage);
 		identifyBadSmellsAction.setEnabled(false);
-		
-		saveResultsAction = new Action() {
-			public void run() {
-				saveResults();
-			}
-		};
-		saveResultsAction.setToolTipText("Save Results");
-		saveResultsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-			getImageDescriptor(ISharedImages.IMG_ETOOL_SAVE_EDIT));
-		saveResultsAction.setEnabled(false);
 
 		applyRefactoringAction = new Action() {
 			public void run() {
 				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
 				if(selection != null && selection.getFirstElement() instanceof ClassObjectCandidate) {
 					IFile sourceFile = ((ClassObjectCandidate) selection.getFirstElement()).getIFile();
-					System.out.println(sourceFile.getFullPath().toString());
-
 				} else if(selection != null && selection.getFirstElement() instanceof MethodObject) {
 				}
 			}
@@ -827,39 +753,6 @@ public class SpeculativeGenerality extends ViewPart {
 		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(selectionListener);
 	}
 
-	private void saveResults() {
-		FileDialog fd = new FileDialog(getSite().getWorkbenchWindow().getShell(), SWT.SAVE);
-		fd.setText("Save Results");
-        String[] filterExt = { "*.txt" };
-        fd.setFilterExtensions(filterExt);
-        String selected = fd.open();
-        if(selected != null) {
-        	try {
-        		BufferedWriter out = new BufferedWriter(new FileWriter(selected));
-        		Tree tree = treeViewer.getTree();
-        		/*TreeColumn[] columns = tree.getColumns();
-        		for(int i=0; i<columns.length; i++) {
-        			if(i == columns.length-1)
-        				out.write(columns[i].getText());
-        			else
-        				out.write(columns[i].getText() + "\t");
-        		}
-        		out.newLine();*/
-        		for(int i=0; i<tree.getItemCount(); i++) {
-					TreeItem treeItem = tree.getItem(i);
-					ASTSliceGroup group = (ASTSliceGroup)treeItem.getData();
-					for(ASTSlice candidate : group.getCandidates()) {
-						out.write(candidate.toString());
-						out.newLine();
-					}
-				}
-        		out.close();
-        	} catch (IOException e) {
-        		e.printStackTrace();
-        	}
-        }
-	}
-
 	/**
 	 * @author JaeYeop Lee, JuYong Lee
 	 * @return 
@@ -915,12 +808,7 @@ public class SpeculativeGenerality extends ViewPart {
 					if(!flagExistence) {
 						this._classObjectToBeExamined.add(co);
 					}
-				}
-				
-				for(ClassObject _co : this._classObjectToBeExamined) {
-					System.out.println(_co.toString());
-				}
-				
+				}		
 			}
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
@@ -981,6 +869,7 @@ public class SpeculativeGenerality extends ViewPart {
 				if(childOfTargetNum < 2) {
 					target.setNumChild(childOfTargetNum);
 					target.setCodeSmellType("Abstract Class");
+					target.setRefactorType("Merge Class");	
 					smellingClassObjectCandidates.add(target);
 				}
 			}
@@ -1007,7 +896,8 @@ public class SpeculativeGenerality extends ViewPart {
 				if(childOfTargetNum < 2) {
 
 					target.setNumChild(childOfTargetNum);
-					target.setCodeSmellType("Interface Class");	
+					target.setCodeSmellType("Interface Class");
+					target.setRefactorType("Merge Class");	
 					smellingClassObjectCandidates.add(target);
 				}
 			}
@@ -1019,7 +909,6 @@ public class SpeculativeGenerality extends ViewPart {
 				
 				List<MethodObject> _methodList = target.getMethodList();
 				for(int i = 0; i < _methodList.size(); i++) {
-					// WARN :: This can be overridden Method
 					MethodObject targetMethod = _methodList.get(i);
 
 					targetMethod.setparentClass(target);
@@ -1047,7 +936,7 @@ public class SpeculativeGenerality extends ViewPart {
 							// Check the Usage
 							String pTarget = targetMethod.getParameter(p).getName();
 
-							if (!target.checkContainance(methodBodyStatements, pTarget)) {
+							if (!this.checkContainance(methodBodyStatements, pTarget)) {
 								unusedPList.add(pTarget);
 								unusedPNum++;
 							}
@@ -1055,13 +944,46 @@ public class SpeculativeGenerality extends ViewPart {
 					}
 					
 					if(unusedPNum > 0) {
-						target.addUnusedParameterList(unusedPList);
-						target.addNumUnusedParameter(unusedPNum);
+						// Check Overriding
+						boolean flag_overriding = false;
+						for(ClassObject parentCandidate : this._classObjectToBeExamined) {
+							TypeObject superClass = targetClass.getSuperclass();
+														
+							if(superClass != null && targetClass.getSuperclass().getClassType().equals(parentCandidate.getName())) {
+								for( Iterator<MethodObject> itr = parentCandidate.getMethodIterator(); itr.hasNext(); )	{
+									MethodObject tmp = itr.next();
+									if(tmp.getName().equals(targetMethod.getName())) {
+										flag_overriding = true;
+									}
+								}
+							}
+						}
+						ListIterator<TypeObject> parentClasses = targetClass.getInterfaceIterator();
+						while (parentClasses.hasNext()) {
+							TypeObject superClass = parentClasses.next();
+														
+							for(ClassObject parentCandidate : this._classObjectToBeExamined) {
+								if (superClass != null && superClass.getClassType().equals(parentCandidate.getName())) {
+									for (Iterator<MethodObject> itr = parentCandidate.getMethodIterator(); itr.hasNext();) {
+										MethodObject tmp = itr.next();
+										if (tmp.getName().equals(targetMethod.getName())) {
+											flag_overriding = true;
+										}
+									}
+								}
+							}
+						}
+
+						
+						if(!flag_overriding) {
 						target.addSmellingMethod(targetMethod);
+						}
+						
 					}
 				}
 				
 				if(target.getSmellingMethods().size() > 0) {
+					target.setRefactorType("Parameter Method");	
 					smellingClassObjectCandidates.add(target);
 				}
 			}
@@ -1082,4 +1004,29 @@ public class SpeculativeGenerality extends ViewPart {
 	public ClassObjectCandidate[] getSmellingClassEntries() {
 		return this._smellingClassEntries;
 	}	
+	
+	/**
+	TestClass * Check "content" contains "target"
+	 * 
+	 * @author JuYong Lee
+	 * @param method
+	 * @param var
+	 * @return
+	 */
+	public boolean checkContainance(String content, String target) {
+		String[] operator = { " ", "(", ")", "[", "]", ".",	"+", "-", "*", "/", "%",
+				"!", "~", "++", "--", "<<", ">>", ">>>", ">", "<", ">= ", "<=", "==", "!=",
+				"&", "^", "|", "&&", "||", "?", "=", "+=", "/=", "&=", "*=", "-=", 
+				"<<=", ">>=", ">>>=", "^=", "|=", "%=", ";"}; 
+		
+		for(int i = 0; i < operator.length; i++) {
+			for(int j = 0; j < operator.length; j++) {
+				if(content.contains(operator[i] + target + operator[j])) {
+					return true;
+				}
+			}
+		}
+		 
+		return false;
+	}
 }

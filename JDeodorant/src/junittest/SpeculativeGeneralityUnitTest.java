@@ -3,10 +3,28 @@ package junittest;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.launching.IVMInstall;
+import org.eclipse.jdt.launching.JavaRuntime;
+import org.eclipse.jdt.launching.LibraryLocation;
 import org.junit.jupiter.api.Test;
 
 import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality;
@@ -20,10 +38,6 @@ public class SpeculativeGeneralityUnitTest {
 	
 	public ViewContentProvider makeViewContentProvider() {
 		return _SG.new ViewContentProvider();
-	}
-	
-	public SpeculativeGeneralityRefactoringButtonUI makeRefactoringButtonUI() {
-		return _SG.new SpeculativeGeneralityRefactoringButtonUI();
 	}
 	
 	private ClassObject mainClassObject = new ClassObject(); 
@@ -73,11 +87,11 @@ public class SpeculativeGeneralityUnitTest {
 	    assertEquals(result_String.length, 0);
 
 	    List<MethodObject> methodObjectList = new ArrayList<MethodObject>();
-	    MethodObject methodObject = new  MethodObject(null);
+	    MethodObject methodObject = new MethodObject(null);
 	    methodObjectList.add(methodObject);
 	    mainClassObjectCandidate.setSmellingMethods( methodObjectList );
 		Object[] result_ClassObjectCandidate = makeViewContentProvider().getChildren(mainClassObjectCandidate);
-		assertEquals(result_ClassObjectCandidate[0], methodObjectList.get(0));
+		assertEquals(result_ClassObjectCandidate.length, methodObjectList.size());
 	}
 	
 	@Test

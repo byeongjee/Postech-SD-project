@@ -89,8 +89,8 @@ public class MessageChainUnitTest {
 	@Test
 	public void testgetHighlightPositions() {
 		ClassObjectCandidate testcoc =  new ClassObjectCandidate();
-		testcoc.setstart(11);
-		testcoc.setlength(22);
+		testcoc.setStart(11);
+		testcoc.setLength(22);
 		Object testObjectList[] = testcoc.getHighlightPositions();
 		Map<Position, String> annotationMaps = (Map<Position, String>)testObjectList[0];
 		Iterator<Position> annotationIterator = annotationMaps.keySet().iterator();
