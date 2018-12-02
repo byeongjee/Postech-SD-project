@@ -52,7 +52,6 @@ public class messageChainJUnitTest {
       assertTrue(parent.addChild(child));
       
       Object result = makeViewContentProvider().getParent(child);
-      
        assertTrue(((MessageChainStructure) result).getName()=="ParentClass");
        assertTrue(((MessageChainStructure) result).getStart()==-1);
    }

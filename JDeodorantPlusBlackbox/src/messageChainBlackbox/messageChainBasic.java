@@ -90,7 +90,6 @@ public class messageChainBasic {
       assertTrue(detectionApplier.bot().tree().getTreeItem("").isEnabled());
    }
    
-   @Ignore
    @Test
    public void testExpand() {
       bot.menu("Bad Smells").menu("Message Chain").click();
@@ -108,6 +107,7 @@ public class messageChainBasic {
    }
    
    // Add in Iteration 3
+   @Ignore
    @Test
    public void testDoubleClickToSeeHighlight() {
       bot.menu("Bad Smells").menu("Message Chain").click();
@@ -139,9 +139,10 @@ public class messageChainBasic {
       detectionApplier.bot().tree().getTreeItem("").select();
        detectionApplier.bot().tree().getTreeItem("").expand();
        detectionApplier.bot().tree().getTreeItem("").getNode(1).select();
-       detectionApplier.bot().tree().getTreeItem("").getNode(1).doubleClick();
+      // detectionApplier.bot().tree().getTreeItem("").getNode(1).doubleClick();
        detectionApplier.bot().button(1).click();
        bot.saveAllEditors();
+
        detectionApplier.close();
    }
 }

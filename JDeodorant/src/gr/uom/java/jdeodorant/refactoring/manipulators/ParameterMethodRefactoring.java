@@ -174,52 +174,11 @@ public class ParameterMethodRefactoring extends Refactoring {
 		}
 	}
 
-	public String getRefactoredContent() {
-		return refactoredContent;
-	}
-	
-	/**
-	 *  Write "refactoredContent" On "target class" JavaFile
-	 */
-	public void processRefactoring() {
-		SystemObject systemObject = ASTReader.getSystemObject();
-		if (systemObject != null) {
-			IFile _file = targetClass.getIFile();
-			ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
-
-			try {
-				ICompilationUnit _CUorigin = _compilationUnit.getWorkingCopy(new WorkingCopyOwner() {}, null);
-				IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
-
-				_bufferOrigin.replace(0, _bufferOrigin.getLength(), this.refactoredContent);
-
-				_CUorigin.reconcile(ICompilationUnit.NO_AST, false, null, null);
-				_CUorigin.commitWorkingCopy(false, null);
-				_CUorigin.discardWorkingCopy();
-			} catch (JavaModelException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
 	public void setUnusedParameterList() {
 		int unusedPNum = 0;
 		List<String> unusedPList = new ArrayList<String>();
 		
-		// GetStatements
-		String methodBodyStatements = null;
-		MethodBodyObject _methodBody = targetMethod.getMethodBody();
-		if (_methodBody != null) {
-			CompositeStatementObject _compositeStatement = _methodBody.getCompositeStatement();
-			if (_compositeStatement != null) {
-				Statement _statement = _compositeStatement.getStatement();
-				if (_statement != null) {
-					methodBodyStatements = _statement.toString();
-				}
-			}
-		}
-
-		if (methodBodyStatements != null) {
+		if (this.originalContent != null) {
 			// Get Parameters
 			int pNum = targetMethod.getParameterList().size();
 
@@ -227,7 +186,8 @@ public class ParameterMethodRefactoring extends Refactoring {
 				// Check the Usage
 				String pTarget = targetMethod.getParameter(p).getName();
 
-				if (!checkContainance(methodBodyStatements, pTarget)) {
+				if (!checkContainance(originalContent, pTarget)) {
+					System.out.println(pTarget + " is not in " + originalContent);
 					unusedPList.add(pTarget);
 					unusedPNum++;
 				}
@@ -254,6 +214,8 @@ public class ParameterMethodRefactoring extends Refactoring {
 			String param = pList.get(i);
 
 			if (this.checkContainance(originalContent, param)) {
+				System.out.println(param + " is in " + this.originalContent);
+				
 				flagUsed = true;
 			}
 
@@ -284,26 +246,21 @@ public class ParameterMethodRefactoring extends Refactoring {
 		List<String> orgContent = this.targetClass.getContent();
 		List<String> newContent = new ArrayList<String>();
 		
+		
+		System.out.println(targetMethod.getName());
+		System.out.println(this.dotParser(targetMethod.getAccess().toString()));
+		System.out.println(this.dotParser(targetMethod.getReturnType().toString()));
+		
 		// Find the target Method Poisition
 		int declarationIdx = -1;
 		for(int i = 0; i < orgContent.size(); i++) {
 			if(this.checkContainance(orgContent.get(i), targetMethod.getName())
-					&& this.checkContainance(orgContent.get(i), targetMethod.getAccess().toString())
-					&& this.checkContainance(orgContent.get(i), targetMethod.getReturnType().toString())) {
+					&& this.checkContainance(orgContent.get(i), this.dotParser(targetMethod.getAccess().toString()))
+					&& this.checkContainance(orgContent.get(i), this.dotParser(targetMethod.getReturnType().toString()))) {
 				declarationIdx = i;
 				break;
 			}
 		}
-		
-		/*if(declarationIdx == -1) {			
-			String orgContentInOneString = "";
-			for(String c : orgContent) {
-				orgContentInOneString += c + "\r\n";
-			};
-			
-			this.refactoredContent = orgContentInOneString;
-			return;
-		}*/
 		
 		// Write New Content
   		for(int i = 0; i < orgContent.size(); i++) {
@@ -316,8 +273,8 @@ public class ParameterMethodRefactoring extends Refactoring {
 				if(targetMethod.getAccess().toString() != "") {
 					newDeclarationCode += " ";
 				}
-				newDeclarationCode += targetMethod.getReturnType().toString() + " ";
-				newDeclarationCode += targetMethod.getName() + "(";
+				newDeclarationCode += this.dotParser(targetMethod.getReturnType().toString()) + " ";
+				newDeclarationCode += this.dotParser(targetMethod.getName()) + "(";
 				
 				for(int p = 0; p < this.usedParameterList.size(); p++) {
 					String _par = this.usedParameterList.get(p);
@@ -339,37 +296,53 @@ public class ParameterMethodRefactoring extends Refactoring {
 		}
 		
   		// In One String
-  		String newContentInOneString = "";
+  		refactoredContent = "";
 		for(String c : newContent) {
-			newContentInOneString += c + "\r\n";
+			refactoredContent += c + "\r\n";
 		};
-		 
-		this.refactoredContent = newContentInOneString;
+		
+		System.out.println(this.refactoredContent);
 		return;
 	}
 	
-	@Override
-	public String getName() {
-		return this.getName();
+	/**
+	 *  Write "refactoredContent" On "target class" JavaFile
+	 */
+	public void processRefactoring() {
+		SystemObject systemObject = ASTReader.getSystemObject();
+		if (systemObject != null) {
+			IFile _file = targetClass.getIFile();
+			ICompilationUnit _compilationUnit = (ICompilationUnit) JavaCore.create(_file);
+
+			try {
+				ICompilationUnit _CUorigin = _compilationUnit.getWorkingCopy(new WorkingCopyOwner() {}, null);
+				IBuffer _bufferOrigin = ((IOpenable) _CUorigin).getBuffer();
+
+				_bufferOrigin.replace(0, _bufferOrigin.getLength(), this.refactoredContent);
+
+				_CUorigin.reconcile(ICompilationUnit.NO_AST, false, null, null);
+				_CUorigin.commitWorkingCopy(false, null);
+				_CUorigin.discardWorkingCopy();
+			} catch (JavaModelException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
-	@Override
-	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
-			throws CoreException, OperationCanceledException {
-		return null;
-	}
-
-	@Override
-	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
-			throws CoreException, OperationCanceledException {
-		return null;
-	}
-
-	@Override
-	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
-		return null;
+	public String getRefactoredContent() {
+		return refactoredContent;
 	}
 	
+    /**
+     * @author Taeyoung Son
+     * @param to_be_parsed string to be parsed which contains dot
+     * @return the last string of given string split with dot
+     */
+	private String dotParser(String to_be_parsed) {
+		String[] tokens = to_be_parsed.split("\\.");
+		return tokens[tokens.length-1];
+	}
+
 	/**
 	TestClass * Check "content" contains "target"
 	 * 
@@ -394,5 +367,26 @@ public class ParameterMethodRefactoring extends Refactoring {
 		 
 		return false;
 	}
+	
+	@Override
+	public String getName() {
+		return this.getName();
+	}
 
+	@Override
+	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
+			throws CoreException, OperationCanceledException {
+		return null;
+	}
+
+	@Override
+	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
+			throws CoreException, OperationCanceledException {
+		return null;
+	}
+
+	@Override
+	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
+		return null;
+	}
 }

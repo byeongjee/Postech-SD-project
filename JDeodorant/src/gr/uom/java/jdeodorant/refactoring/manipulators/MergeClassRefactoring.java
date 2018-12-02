@@ -402,7 +402,10 @@ public class MergeClassRefactoring extends Refactoring {
 		}
 	}
 	
-	public void processRefactoringParent() {		
+	public void processRefactoringParent() {	
+		System.out.println("<Original>\n" + this.parentOriginalContent);
+		System.out.println("<Refactor>\n" + this.parentRefactoredContent);
+		
 		SystemObject systemObject = ASTReader.getSystemObject();
 		if (systemObject != null) {
 			IFile _file = parentClass.getIFile();
