@@ -1,12 +1,19 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IOpenable;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jface.wizard.Wizard;
 
@@ -45,6 +52,7 @@ public class LPLRefactorWizard extends Wizard {
 	public boolean performFinish() {
 		System.out.println("Finish");
 		System.out.println(initialPage.getParameterIndexList());
+		System.out.println(packagePage.getPackageName());
 		try {
 			IMethod convertedIMethod = methodToRefactor.toIMethod(javaProject);
 			ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit()
@@ -69,5 +77,52 @@ public class LPLRefactorWizard extends Wizard {
 		}
 		return false;
 	}
+	
+	public IPackageFragment getIPackageFragment(String packageName) throws JavaModelException {
+		IPackageFragment[] allPkg = javaProject.getPackageFragments();
+		List<IPackageFragment> srcPkgs = new ArrayList<IPackageFragment>();
+		for(IPackageFragment myPackage : allPkg) {
+			if(myPackage.getElementName() == packageName) {
+				return myPackage;
+			}
+		}
+		return null;
+	}
+	
+	/*static public void changeMethodsInProject(IJavaProject javaProject) {
+		IPackageFragment[] allPkg = javaProject.getPackageFragments();
+		List<IPackageFragment> srcPkgs = new ArrayList<IPackageFragment>();
+		for(IPackageFragment myPackage : allPkg) {
+			if(myPackage.getKind() == IPackageFragmentRoot.K_SOURCE && myPackage.getCompilationUnits().length != 0) {
+				srcPkgs.add(myPackage);
+			}
+		}
+		
+		for(IPackageFragment srcPkg)
+		if(parentElement instanceof IJavaProject) {
+			IPackageFragment[] allPkg = ((IJavaProject) parentElement).getPackageFragments();
+			List<IPackageFragment> ret = new ArrayList<>();
+			for(IPackageFragment myPackage : allPkg) {
+				if(myPackage.getKind() == IPackageFragmentRoot.K_SOURCE && myPackage.getCompilationUnits().length != 0) {
+					ret.add(myPackage);
+				}
+			}
+			return ret.toArray();
+		}
+		if(parentElement instanceof IPackageFragment) {
+			return ((IPackageFragment) parentElement).getCompilationUnits();
+		}
+		if(parentElement instanceof ICompilationUnit) {
+			IType[] allTypes = ((ICompilationUnit) parentElement).getTypes();
+			List<IMember> ret = new ArrayList<>();
+			for(IType t : allTypes) {
+				ret.addAll(Arrays.asList(t.getFields()));
+			}
+			for(IType t : allTypes) {
+				ret.addAll(Arrays.asList(t.getMethods()));
+			}
+			return ret.toArray();
+		}
+	}*/
 	
 }

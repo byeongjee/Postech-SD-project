@@ -27,6 +27,7 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
     private IJavaProject javaProject;
     private int currentCheckedIndex;
     private boolean canFinishPage;
+    private String packageName;
 
     public LPLRefactorSelectPackagePage(IJavaProject javaProject) {
         super("Select package of new class");
@@ -73,10 +74,12 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
 						if(item.getChecked()) {
 							if(currentCheckedIndex == -1) {
 								currentCheckedIndex = i;
+								packageName = ((Table)event.widget).getItem(currentCheckedIndex).getText(1);
 							}
 							else if(currentCheckedIndex != i) {
 								((Table)event.widget).getItem(currentCheckedIndex).setChecked(false);
 								currentCheckedIndex = i;
+								packageName = ((Table)event.widget).getItem(currentCheckedIndex).getText(1);
 							}
 							isChecked = true;
 						}
@@ -88,10 +91,12 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
 					}
 					else {
 						//setPageComplete(false);
+						currentCheckedIndex = -1;
 						newPackageText.setEditable(true);
 						if (!newPackageText.getText().isEmpty()) 
 						{
 							canFinishPage = true;
+							packageName = newPackageText.getText();
 		                    setPageComplete(true);
 		                    return;
 		                }
@@ -121,6 +126,7 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
             public void keyReleased(KeyEvent e) {
                 if (!newPackageText.getText().isEmpty()) {
                 	canFinishPage = true;
+                	packageName = newPackageText.getText();
                     setPageComplete(true);
                     return;
                 }
@@ -140,8 +146,9 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
      * returns the new package name that is input by the user
      * @return
      */
-    public String getNewPackageName() {
-        return newPackageText.getText();
+    public String getPackageName() {
+        //return newPackageText.getText();
+    	return packageName;
     }
     
     /**
