@@ -53,7 +53,7 @@ public class LPLRefactorClassNamePage extends WizardPage {
 
     }
 
-    public String getText1() {
+    public String getClassName() {
         return text1.getText();
     }
     

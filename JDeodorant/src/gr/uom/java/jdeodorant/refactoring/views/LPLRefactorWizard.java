@@ -60,6 +60,14 @@ public class LPLRefactorWizard extends Wizard {
 					}, null);
 			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
 			LPLMethodObject.editParameterFromBuffer(buffer, convertedIMethod, "", initialPage.getParameterIndexList());
+			
+			IPackageFragment pf = getIPackageFragment(packagePage.getPackageName());
+			String className = namePage.getClassName();
+			List<String> parameterTypes = initialPage.getExtractParameterTypes();
+			List<String> parameterNames = initialPage.getExtractParameterNames();
+			
+			LPLMethodObject.createNewParameterClass(pf, className, parameterTypes, parameterNames);
+			
 			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
 			workingCopy.commitWorkingCopy(false, null);
 			workingCopy.discardWorkingCopy();

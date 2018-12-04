@@ -36,6 +36,8 @@ public class LPLRefactorInitialPage extends WizardPage {
         this.methodToRefactor = methodToRefactor;
         setTitle(methodToRefactor.getName());
         setDescription("Select parameters to extract");
+        extractParameterNames = new ArrayList<String>();
+        extractParameterTypes = new ArrayList<String>();
         parameterIndexList = new ArrayList<Integer>();
     }
 
