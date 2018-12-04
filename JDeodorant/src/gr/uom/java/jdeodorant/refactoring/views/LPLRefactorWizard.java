@@ -88,9 +88,8 @@ public class LPLRefactorWizard extends Wizard {
 	
 	public IPackageFragment getIPackageFragment(String packageName) throws JavaModelException {
 		IPackageFragment[] allPkg = javaProject.getPackageFragments();
-		List<IPackageFragment> srcPkgs = new ArrayList<IPackageFragment>();
 		for(IPackageFragment myPackage : allPkg) {
-			if(myPackage.getElementName() == packageName) {
+			if(myPackage.getElementName().equals(packageName)) {
 				return myPackage;
 			}
 		}

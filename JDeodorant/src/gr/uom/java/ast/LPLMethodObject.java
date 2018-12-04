@@ -51,7 +51,7 @@ public class LPLMethodObject extends MethodObject {
 			}
 			
 			String packageName = pf.getElementName();
-			String packageDeclaration = "package " + packageName + "\n\n";
+			String packageDeclaration = "package " + packageName + ";\n\n";
 			
 			StringBuilder parameterDeclarationBuilder = new StringBuilder();
 			for (String parameterTypeAndName: parameterTypeAndNames) {
@@ -60,7 +60,7 @@ public class LPLMethodObject extends MethodObject {
 			String parameterDeclaration = parameterDeclarationBuilder.toString();
 			
 			StringBuilder constructorBuilder = new StringBuilder();
-			constructorBuilder.append("\tpublic" + className);
+			constructorBuilder.append("\tpublic " + className);
 			constructorBuilder.append("(");
 			for (int i = 0; i < parameterTypeAndNames.size() - 1; ++i) {
 				String parameterTypeAndName = parameterTypeAndNames.get(i);
@@ -68,13 +68,19 @@ public class LPLMethodObject extends MethodObject {
 				constructorBuilder.append(", ");
 			}
 			constructorBuilder.append(parameterTypeAndNames.get(parameterTypeAndNames.size() - 1));
-			constructorBuilder.append(")");
-			
+			constructorBuilder.append(") ");
+			constructorBuilder.append("{ \n");
+			for (String parameterName: parameterNames) {
+				constructorBuilder.append("\t\tthis."+parameterName+" = " +parameterName + ";\n");
+			}
+			constructorBuilder.append("\n\t}\n");
+			String constructor = constructorBuilder.toString();
 			StringBuilder classDeclarationBuilder = new StringBuilder();
 			classDeclarationBuilder.append("public class ");
 			classDeclarationBuilder.append(className);
 			classDeclarationBuilder.append("{ \n");
 			classDeclarationBuilder.append(parameterDeclaration);
+			classDeclarationBuilder.append(constructor);
 			classDeclarationBuilder.append("}");
 			
 			String classDeclaration = classDeclarationBuilder.toString();
