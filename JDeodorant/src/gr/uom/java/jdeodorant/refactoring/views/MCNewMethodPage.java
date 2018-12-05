@@ -47,7 +47,7 @@ public class MCNewMethodPage extends WizardPage {
         container = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         container.setLayout(layout);
-        layout.numColumns = 2;
+        layout.numColumns = 1;
         Label label1 = new Label(container, SWT.NONE);
         label1.setText("New Method name :");
 
@@ -67,6 +67,10 @@ public class MCNewMethodPage extends WizardPage {
        
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         text1.setLayoutData(gd);
+        
+        Label label2 = new Label(container, SWT.NONE);
+        label2.setText(" * Refactoring all codes that are same to this Message Chain codes");
+        
         setControl(container);
         setPageComplete(false);
     }
