@@ -884,7 +884,7 @@ public class MessageChain extends ViewPart {
 				for(String type : store.keySet()) {
 					Map<Integer, List<MethodInvocationObject>> innerMap = store.get(type);
 					for(Integer i : innerMap.keySet()) {
-						if(innerMap.get(i).size() <= 2) {
+						if(innerMap.get(i).size() <= 2 || !isPossibleChange(innerMap.get(i).get(0).getOriginClassName())) {
 							deleteList.add(i);
 						}
 					}
