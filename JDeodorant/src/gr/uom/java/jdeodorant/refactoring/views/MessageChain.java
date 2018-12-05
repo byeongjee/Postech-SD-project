@@ -834,7 +834,7 @@ public class MessageChain extends ViewPart {
 		
 		return newRefactoringMethod.contains(target);//true : refactoring's result, false : code smell
 	}
-
+	
 	//Impossible to make junit test because we don't have permission of making MethodInvocationObject mock object
 	private Map<String, Map<Integer, List<MethodInvocationObject>>> processMethod(Set<AbstractMethodDeclaration> methodObjects) {
 		Map<String, Map<Integer, List<MethodInvocationObject>>> store = new HashMap<String, Map<Integer, List<MethodInvocationObject>>>();

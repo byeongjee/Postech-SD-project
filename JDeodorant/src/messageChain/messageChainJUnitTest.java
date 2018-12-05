@@ -1871,7 +1871,17 @@ public class messageChainJUnitTest {
 	      msgChain.targets = target;
 	      assertTrue(msgChain.findMCSwithGivenName("A->B->C").equals(child));
 	      assertTrue(msgChain.findMCSwithGivenName("A->C->B")==null);
-	      
-	      
+   }
+   
+   @Test
+   public void testcheckChangePosibility() {
+	   MessageChain msgChain = new MessageChain();
+	   boolean result = true;
+	   result = msgChain.isPossibleChange("java.asdf.as");
+	   assertFalse(result);
+	   result = msgChain.isPossibleChange("org.asdf.as");
+	   assertFalse(result);
+	   result = msgChain.isPossibleChange("simple.asdf");
+	   assertTrue(result);
    }
 }
