@@ -93,7 +93,7 @@ public class LPLMethodObject extends MethodObject {
 		}
 	}
 	
-	public static void editParameterFromBuffer(IBuffer buffer, IMethod method, String parameterString, ArrayList<Integer> parameterIndexList) {
+	public static void editParameterFromBuffer(IBuffer buffer, IMethod method, ArrayList<Integer> parameterIndexList, String newClassName) {
 		try {
 			IMethod convertedIMethod = method;
 			
@@ -127,11 +127,11 @@ public class LPLMethodObject extends MethodObject {
 			String refactoredArgumentString = "";
 			for(String s : argumentParts) {
 				if(s != null) {
-					refactoredArgumentString += s;
-					refactoredArgumentString += ",";
+					refactoredArgumentString += s.trim();
+					refactoredArgumentString += ", ";
 				}
 			}
-			refactoredArgumentString = refactoredArgumentString.substring(0, refactoredArgumentString.length() - 1);
+			refactoredArgumentString = refactoredArgumentString.substring(0, refactoredArgumentString.length() - 2);
 			String replaceSignature = "(";
 			replaceSignature += refactoredArgumentString;
 			replaceSignature += ")";

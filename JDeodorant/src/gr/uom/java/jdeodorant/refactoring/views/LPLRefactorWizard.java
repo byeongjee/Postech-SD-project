@@ -66,7 +66,12 @@ public class LPLRefactorWizard extends Wizard {
 					.getWorkingCopy(new WorkingCopyOwner() {
 					}, null);
 			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
-			LPLMethodObject.editParameterFromBuffer(buffer, convertedIMethod, "", initialPage.getParameterIndexList());
+			LPLMethodObject.editParameterFromBuffer(buffer, convertedIMethod, initialPage.getParameterIndexList(), packagePage.getPackageName());
+			
+			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
+			workingCopy.commitWorkingCopy(false, null);
+			workingCopy.discardWorkingCopy();
+			workingCopy.discardWorkingCopy();
 			
 			IPackageFragment pf = getIPackageFragment(packagePage.getPackageName());
 			String className = namePage.getClassName();
@@ -77,10 +82,7 @@ public class LPLRefactorWizard extends Wizard {
 			LPLSmellContent smellContent = new LPLSmellContent(methodToRefactor, initialPage.getParameterIndexList(), className);
 			changeMethodsInProject(javaProject, smellContent);
 			
-			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
-			workingCopy.commitWorkingCopy(false, null);
-			workingCopy.discardWorkingCopy();
-			workingCopy.discardWorkingCopy();
+			
 		} catch (Exception e) {
 		}
 		return true;
@@ -105,7 +107,7 @@ public class LPLRefactorWizard extends Wizard {
 		return null;
 	}
 	
-	static public void changeMethodsInProject(IJavaProject javaProject, LPLSmellContent smellContent) throws JavaModelException {
+	static public void changeMethodsInProject(IJavaProject javaProject, final LPLSmellContent smellContent) throws JavaModelException {
 		IPackageFragment[] allPkg = javaProject.getPackageFragments();
 		List<IPackageFragment> srcPkgs = new ArrayList<IPackageFragment>();
 		for(IPackageFragment myPackage : allPkg) {
@@ -119,25 +121,105 @@ public class LPLRefactorWizard extends Wizard {
 		for(IPackageFragment srcPkg : srcPkgs) {
 			srcCompilationUnits.addAll(Arrays.asList(srcPkg.getCompilationUnits()));
 		}
+		int i = 0;
 		
-		for(ICompilationUnit iCu : srcCompilationUnits) {
+		for(final ICompilationUnit iCu : srcCompilationUnits) {
+			System.out.println(i);
+			System.out.println("cu name: " + iCu.getElementName());
+			i++;
 			if(iCu.getUnderlyingResource() instanceof IFile) {
 				ASTParser parser = ASTParser.newParser(AST.JLS8);
 				parser.setResolveBindings(true);
 				parser.setKind(ASTParser.K_COMPILATION_UNIT);
 				parser.setBindingsRecovery(true);
 				parser.setSource(iCu);
-				CompilationUnit cU = (CompilationUnit) parser.createAST(null);
-				
-				cU.accept(new ASTVisitor() {
+				CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+				//System.out.println(iCu.getElementName());
+				ASTVisitor visitor = new ASTVisitor() {
 					public boolean visit(MethodInvocation node) {
-						System.out.println(node.getName());
+						System.out.println(node.getName().toString());
+						if(node.getName().toString().equals(smellContent.getLPLMethodObject().getName()))
+							System.out.println("Found same name");
+							changeMethodCall(iCu, node.getStartPosition(), smellContent);
 						return true;
 					}
-				});
+				};
+				cu.accept(visitor);
 			}
 		}
 	}
+	
+	public class LPLRefactorVistor extends ASTVisitor {
+		
+	}
+
+	protected static void changeMethodCall(ICompilationUnit iCu, int startPosition, LPLSmellContent smellContent) {
+		try {
+			ICompilationUnit workingCopy = iCu
+					.getWorkingCopy(new WorkingCopyOwner() {
+					}, null);
+			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
+			
+			while (true) {
+				if (buffer.getChar(startPosition) != '(') {
+					startPosition += 1;
+					continue;
+				}
+				break;
+			}
+			int numOfLeftPar = 0;
+			int endPosition = startPosition;
+			while (true) {
+				if (buffer.getChar(endPosition) == '(') {
+					numOfLeftPar += 1;
+				} 
+				else if (buffer.getChar(endPosition) == ')') {
+					if (numOfLeftPar == 1)
+						break;
+					else
+						numOfLeftPar -= 1;
+				}
+				endPosition += 1;
+			}
+			String argumentString = buffer.getContents().substring(startPosition + 1, endPosition);
+			String argumentParts[] = argumentString.split(",");
+			ArrayList<String> extractedArguments;
+			extractedArguments = new ArrayList<String>();
+			for(int it : smellContent.getIndexList()) {
+				extractedArguments.add(argumentParts[it]);
+				argumentParts[it] = null;
+			}
+			String refactoredArgumentString = "";
+			for(String s : argumentParts) {
+				if(s != null) {
+					refactoredArgumentString += s.trim();
+					refactoredArgumentString += ", ";
+				}
+			}
+
+			String extractedArgumentString = "";
+			for(String s : extractedArguments) {
+				extractedArgumentString += s.trim();
+				extractedArgumentString += ", ";
+			}
+			extractedArgumentString = extractedArgumentString.substring(0, extractedArgumentString.length() - 2);
+			String replaceSignature = "(";
+			replaceSignature += refactoredArgumentString;
+			replaceSignature += "new " + smellContent.getNewClassName() + "(" + extractedArgumentString + ")";
+			replaceSignature += ")";
+			
+			//System.out.println(refactoredArgumentString);
+			
+			buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
+			
+			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
+			workingCopy.commitWorkingCopy(false, null);
+			workingCopy.discardWorkingCopy();
+			workingCopy.discardWorkingCopy();
+		} catch (Exception e) {
+		}
+	}
+	
 	
 	
 	
