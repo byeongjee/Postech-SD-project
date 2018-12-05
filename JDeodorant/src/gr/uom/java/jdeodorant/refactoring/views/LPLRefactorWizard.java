@@ -61,12 +61,13 @@ public class LPLRefactorWizard extends Wizard {
 		System.out.println(initialPage.getParameterIndexList());
 		System.out.println(packagePage.getPackageName());
 		try {
+			LPLSmellContent smellContent = new LPLSmellContent(methodToRefactor, initialPage.getParameterIndexList(), namePage.getClassName(), namePage.getParameterName());
 			IMethod convertedIMethod = methodToRefactor.toIMethod(javaProject);
 			ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit()
 					.getWorkingCopy(new WorkingCopyOwner() {
 					}, null);
 			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
-			LPLMethodObject.editParameterFromBuffer(buffer, convertedIMethod, initialPage.getParameterIndexList(), packagePage.getPackageName());
+			LPLMethodObject.editParameterFromBuffer(buffer, convertedIMethod, initialPage.getParameterIndexList(), smellContent);
 			
 			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
 			workingCopy.commitWorkingCopy(false, null);
@@ -79,7 +80,6 @@ public class LPLRefactorWizard extends Wizard {
 			List<String> parameterNames = initialPage.getExtractParameterNames();
 			
 			LPLMethodObject.createNewParameterClass(pf, className, parameterTypes, parameterNames);
-			LPLSmellContent smellContent = new LPLSmellContent(methodToRefactor, initialPage.getParameterIndexList(), className);
 			changeMethodsInProject(javaProject, smellContent);
 			
 			

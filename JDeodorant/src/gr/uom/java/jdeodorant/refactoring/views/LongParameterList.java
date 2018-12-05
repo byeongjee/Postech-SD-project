@@ -252,15 +252,6 @@ public class LongParameterList extends ViewPart {
 		}
 	}
 
-	class NameSorter extends ViewerSorter {
-		public int compare(Viewer viewer, Object obj1, Object obj2) {
-			if (obj1 instanceof LPLMethodObject && obj2 instanceof LPLMethodObject) {
-				return ((LPLMethodObject) obj1).compareTo((LPLMethodObject) obj2);
-			}
-			return 0;
-		}
-	}
-
 	private ISelectionListener selectionListener = new ISelectionListener() {
 		public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
 			if (selection instanceof IStructuredSelection) {
@@ -329,7 +320,6 @@ public class LongParameterList extends ViewPart {
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
-		treeViewer.setSorter(new NameSorter());
 		treeViewer.setInput(getViewSite());
 		TableLayout layout = new TableLayout();
 		layout.addColumnData(new ColumnWeightData(40, true));

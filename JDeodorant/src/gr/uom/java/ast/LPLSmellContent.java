@@ -6,11 +6,13 @@ public class LPLSmellContent {
 	private LPLMethodObject methodObject;
 	private ArrayList<Integer> indexList;
 	private String newClassName;
+	private String newParameterName;
 	
-	public LPLSmellContent(LPLMethodObject methodObject, ArrayList<Integer> indexList, String newClassName) {
+	public LPLSmellContent(LPLMethodObject methodObject, ArrayList<Integer> indexList, String newClassName, String newParamterName) {
 		this.methodObject = methodObject;
 		this.indexList = indexList;
 		this.newClassName = newClassName;
+		this.newParameterName = newParamterName;
 	}
 	
 	public LPLMethodObject getLPLMethodObject() {
@@ -23,5 +25,9 @@ public class LPLSmellContent {
 	
 	public String getNewClassName() {
 		return this.newClassName;
+	}
+	
+	public String getNewParameterName() {
+		return this.newParameterName;
 	}
 }
