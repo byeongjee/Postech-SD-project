@@ -43,6 +43,12 @@ public class MCRefactorWizard extends Wizard {
       return true;
    }
    
+   @Override
+	public boolean performCancel() {
+	   newMethodName = null;
+      return true;
+  }
+   
    public String getNewMethodName()
    {
       return newMethodName;

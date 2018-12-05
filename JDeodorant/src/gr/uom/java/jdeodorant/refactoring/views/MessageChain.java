@@ -173,7 +173,8 @@ public class MessageChain extends ViewPart {
 	      newMethodName = wizard.getNewMethodName();
 	      //System.out.println("New Method Name is: " + newMethodName);
 	         
-	      messageChainRefactoring(parentIndex, childIndex);
+	      if(newMethodName != null)   
+	    	  messageChainRefactoring(parentIndex, childIndex);
 	  }
 	}
 
