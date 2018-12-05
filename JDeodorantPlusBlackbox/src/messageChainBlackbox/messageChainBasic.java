@@ -123,7 +123,7 @@ public class messageChainBasic {
       detectionApplier.bot().tree().getTreeItem("").select();
        detectionApplier.bot().tree().getTreeItem("").expand();
        detectionApplier.bot().tree().getTreeItem("").getNode(0).select();
-       detectionApplier.bot().tree().getTreeItem("").getNode(0).doubleClick();
+       //detectionApplier.bot().tree().getTreeItem("").getNode(0).doubleClick();
 	  }catch(Exception e) {
 		  
 	  }
@@ -144,12 +144,62 @@ public class messageChainBasic {
       detectionApplier.bot().tree().getTreeItem("").select();
        detectionApplier.bot().tree().getTreeItem("").expand();
        detectionApplier.bot().tree().getTreeItem("").getNode(1).select();
-       detectionApplier.bot().tree().getTreeItem("").getNode(1).doubleClick();
+       //detectionApplier.bot().tree().getTreeItem("").getNode(1).doubleClick();
        detectionApplier.bot().button(2).click();
        bot.shell("Refactoring").activate();
        bot.textWithLabel("New Method name :").setText("refactorMethod");
        bot.button("Finish").click();
        //bot.sleep(100000);
+	  } catch(Exception e) {
+		  
+	  }
+   }
+   
+   @Test
+   public void testRefactorClickCancelWithoutAnyTyping() {
+	  try {
+      bot.menu("Bad Smells").menu("Message Chain").click();
+      bot.viewByTitle("Message Chain");
+      SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
+      packageExplorer.show();
+      packageExplorer.bot().tree().getTreeItem("testProject").click();
+      
+      SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
+      detectionApplier.show();
+      detectionApplier.getToolbarButtons().get(0).click();
+      detectionApplier.bot().tree().getTreeItem("").select();
+       detectionApplier.bot().tree().getTreeItem("").expand();
+       detectionApplier.bot().tree().getTreeItem("").getNode(1).select();
+       //detectionApplier.bot().tree().getTreeItem("").getNode(1).doubleClick();
+       detectionApplier.bot().button(2).click();
+       bot.shell("Refactoring").activate();
+       bot.button("Cancel").click();
+       //bot.sleep(100000);
+	  } catch(Exception e) {
+		  
+	  }
+   }
+   
+   @Test
+   public void testRefactorClickCancelWithTyping() {
+	  try {
+      bot.menu("Bad Smells").menu("Message Chain").click();
+      bot.viewByTitle("Message Chain");
+      SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
+      packageExplorer.show();
+      packageExplorer.bot().tree().getTreeItem("testProject").click();
+      
+      SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
+      detectionApplier.show();
+      detectionApplier.getToolbarButtons().get(0).click();
+      detectionApplier.bot().tree().getTreeItem("").select();
+       detectionApplier.bot().tree().getTreeItem("").expand();
+       detectionApplier.bot().tree().getTreeItem("").getNode(1).select();
+
+       detectionApplier.bot().button(2).click();
+       bot.shell("Refactoring").activate();
+       bot.textWithLabel("New Method name :").setText("refactorMethod");
+       bot.button("Cancel").click();
 	  } catch(Exception e) {
 		  
 	  }

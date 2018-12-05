@@ -165,13 +165,13 @@ public class MessageChain extends ViewPart {
 	   }
 	   // Edit it in Iteration 4
 	   public void pressChildRefactorButton(int parentIndex, int childIndex) {
-	      System.out.println("Success");
+	      //System.out.println("Success");
 	      MCRefactorWizard wizard = new MCRefactorWizard(selectedProject);
 	         
 	      WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); dialog.open();
 	         
 	      newMethodName = wizard.getNewMethodName();
-	      System.out.println("New Method Name is: " + newMethodName);
+	      //System.out.println("New Method Name is: " + newMethodName);
 	         
 	      messageChainRefactoring(parentIndex, childIndex);
 	  }
@@ -701,7 +701,7 @@ public class MessageChain extends ViewPart {
 							}
 							Position position = new Position(targetSmell.getStart(), (targetSmell.getLength() + 1));
 							SliceAnnotation annotation = null;
-							annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, "We detect Message Chain!");
+							annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, "Message Chain");
 							annotationModel.addAnnotation(annotation, position);
 					
 							sourceEditor.setHighlightRange(position.getOffset(), position.getLength(), true);
