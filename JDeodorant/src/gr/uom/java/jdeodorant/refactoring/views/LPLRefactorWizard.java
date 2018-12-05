@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
@@ -15,9 +16,15 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jface.wizard.Wizard;
 
 import gr.uom.java.ast.LPLMethodObject;
+import gr.uom.java.ast.LPLSmellContent;
 
 public class LPLRefactorWizard extends Wizard {
 	private IJavaProject javaProject;
@@ -67,6 +74,8 @@ public class LPLRefactorWizard extends Wizard {
 			List<String> parameterNames = initialPage.getExtractParameterNames();
 			
 			LPLMethodObject.createNewParameterClass(pf, className, parameterTypes, parameterNames);
+			LPLSmellContent smellContent = new LPLSmellContent(methodToRefactor, initialPage.getParameterIndexList(), className);
+			changeMethodsInProject(javaProject, smellContent);
 			
 			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
 			workingCopy.commitWorkingCopy(false, null);
@@ -96,7 +105,7 @@ public class LPLRefactorWizard extends Wizard {
 		return null;
 	}
 	
-	/*static public void changeMethodsInProject(IJavaProject javaProject) {
+	static public void changeMethodsInProject(IJavaProject javaProject, LPLSmellContent smellContent) throws JavaModelException {
 		IPackageFragment[] allPkg = javaProject.getPackageFragments();
 		List<IPackageFragment> srcPkgs = new ArrayList<IPackageFragment>();
 		for(IPackageFragment myPackage : allPkg) {
@@ -105,31 +114,31 @@ public class LPLRefactorWizard extends Wizard {
 			}
 		}
 		
-		for(IPackageFragment srcPkg)
-		if(parentElement instanceof IJavaProject) {
-			IPackageFragment[] allPkg = ((IJavaProject) parentElement).getPackageFragments();
-			List<IPackageFragment> ret = new ArrayList<>();
-			for(IPackageFragment myPackage : allPkg) {
-				if(myPackage.getKind() == IPackageFragmentRoot.K_SOURCE && myPackage.getCompilationUnits().length != 0) {
-					ret.add(myPackage);
-				}
-			}
-			return ret.toArray();
+		ArrayList<ICompilationUnit> srcCompilationUnits;
+		srcCompilationUnits = new ArrayList<ICompilationUnit>();
+		for(IPackageFragment srcPkg : srcPkgs) {
+			srcCompilationUnits.addAll(Arrays.asList(srcPkg.getCompilationUnits()));
 		}
-		if(parentElement instanceof IPackageFragment) {
-			return ((IPackageFragment) parentElement).getCompilationUnits();
-		}
-		if(parentElement instanceof ICompilationUnit) {
-			IType[] allTypes = ((ICompilationUnit) parentElement).getTypes();
-			List<IMember> ret = new ArrayList<>();
-			for(IType t : allTypes) {
-				ret.addAll(Arrays.asList(t.getFields()));
+		
+		for(ICompilationUnit iCu : srcCompilationUnits) {
+			if(iCu.getUnderlyingResource() instanceof IFile) {
+				ASTParser parser = ASTParser.newParser(AST.JLS8);
+				parser.setResolveBindings(true);
+				parser.setKind(ASTParser.K_COMPILATION_UNIT);
+				parser.setBindingsRecovery(true);
+				parser.setSource(iCu);
+				CompilationUnit cU = (CompilationUnit) parser.createAST(null);
+				
+				cU.accept(new ASTVisitor() {
+					public boolean visit(MethodInvocation node) {
+						System.out.println(node.getName());
+						return true;
+					}
+				});
 			}
-			for(IType t : allTypes) {
-				ret.addAll(Arrays.asList(t.getMethods()));
-			}
-			return ret.toArray();
 		}
-	}*/
+	}
+	
+	
 	
 }
