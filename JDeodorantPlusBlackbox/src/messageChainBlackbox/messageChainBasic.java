@@ -104,7 +104,7 @@ public class messageChainBasic {
       detectionApplier.getToolbarButtons().get(0).click();
       detectionApplier.bot().tree().getTreeItem("").select();
        detectionApplier.bot().tree().getTreeItem("").expand();
-       assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode("536").isEnabled());
+       assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode(1).isEnabled());
    }
    
    // Add in Iteration 3

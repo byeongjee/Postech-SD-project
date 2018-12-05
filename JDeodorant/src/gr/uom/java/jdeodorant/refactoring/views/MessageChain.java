@@ -702,7 +702,12 @@ public class MessageChain extends ViewPart {
 							}
 							Position position = new Position(targetSmell.getStart(), (targetSmell.getLength() + 1));
 							SliceAnnotation annotation = null;
-							annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, "Message Chain");
+							annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, "Message Chain : We detect Method Invocation Chain consisting of "+targetSmell.getName()+".\r\n "
+									+ "We strongly recommend refactoring this message chain."
+									+ " If you want to refactor this message chain, press the table's refactoring button."
+									+ " We will then remove the long message chain where the message chain originated and add a new wrapper method for that message chain."
+									+ " The name of the new wrapper method can be specified by the user. ");
+
 							annotationModel.addAnnotation(annotation, position);
 					
 							sourceEditor.setHighlightRange(position.getOffset(), position.getLength(), true);
