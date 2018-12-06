@@ -10,16 +10,90 @@ import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jface.text.Position;
 
 public class LPLMethodObject extends MethodObject {
 
 	static int NumParameterLimit = 3;
 	
-	public static void editParameterFromBuffer(IBuffer buffer, IMethod method, String parameterString, ArrayList<Integer> parameterIndexList) {
+	public static void createNewParameterClass(IPackageFragment pf, String className, List<String> parameterTypes, List<String> parameterNames) {
+		try {
+			assert(pf != null);
+			ICompilationUnit cu = pf.createCompilationUnit(className + ".java", "", false, null);
+			ICompilationUnit workingCopy = cu
+					.getWorkingCopy(new WorkingCopyOwner() {
+					}, null);
+			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
+			
+			fillNewParameterClass(buffer, pf, className, parameterTypes, parameterNames);
+			
+			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
+			workingCopy.commitWorkingCopy(false, null);
+			workingCopy.discardWorkingCopy();
+			workingCopy.discardWorkingCopy();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static void fillNewParameterClass(IBuffer buffer, IPackageFragment pf, String className, List<String> parameterTypes, List<String> parameterNames) {
+		try {
+			assert(parameterTypes.size() == parameterNames.size());
+			List<String> parameterTypeAndNames = new ArrayList<String>();
+			for (int i = 0; i < parameterTypes.size(); ++i) {
+				parameterTypeAndNames.add(parameterTypes.get(i) + " " + parameterNames.get(i));
+			}
+			
+			String packageName = pf.getElementName();
+			String packageDeclaration = "package " + packageName + ";\n\n";
+			
+			StringBuilder parameterDeclarationBuilder = new StringBuilder();
+			for (String parameterTypeAndName: parameterTypeAndNames) {
+				parameterDeclarationBuilder.append("\tprivate " + parameterTypeAndName + ";\n" );
+			}
+			String parameterDeclaration = parameterDeclarationBuilder.toString();
+			
+			StringBuilder constructorBuilder = new StringBuilder();
+			constructorBuilder.append("\tpublic " + className);
+			constructorBuilder.append("(");
+			for (int i = 0; i < parameterTypeAndNames.size() - 1; ++i) {
+				String parameterTypeAndName = parameterTypeAndNames.get(i);
+				constructorBuilder.append(parameterTypeAndName);
+				constructorBuilder.append(", ");
+			}
+			constructorBuilder.append(parameterTypeAndNames.get(parameterTypeAndNames.size() - 1));
+			constructorBuilder.append(") ");
+			constructorBuilder.append("{ \n");
+			for (String parameterName: parameterNames) {
+				constructorBuilder.append("\t\tthis."+parameterName+" = " +parameterName + ";\n");
+			}
+			constructorBuilder.append("\n\t}\n");
+			String constructor = constructorBuilder.toString();
+			StringBuilder classDeclarationBuilder = new StringBuilder();
+			classDeclarationBuilder.append("public class ");
+			classDeclarationBuilder.append(className);
+			classDeclarationBuilder.append("{ \n");
+			classDeclarationBuilder.append(parameterDeclaration);
+			classDeclarationBuilder.append(constructor);
+			classDeclarationBuilder.append("}");
+			
+			String classDeclaration = classDeclarationBuilder.toString();
+			
+			buffer.append(packageDeclaration);
+			buffer.append(classDeclaration);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void editParameterFromBuffer(IBuffer buffer, IMethod method, ArrayList<Integer> parameterIndexList, LPLSmellContent smellContent) {
 		try {
 			IMethod convertedIMethod = method;
 			
@@ -53,13 +127,14 @@ public class LPLMethodObject extends MethodObject {
 			String refactoredArgumentString = "";
 			for(String s : argumentParts) {
 				if(s != null) {
-					refactoredArgumentString += s;
-					refactoredArgumentString += ",";
+					refactoredArgumentString += s.trim();
+					refactoredArgumentString += ", ";
 				}
 			}
-			refactoredArgumentString = refactoredArgumentString.substring(0, refactoredArgumentString.length() - 1);
+			//refactoredArgumentString = refactoredArgumentString.substring(0, refactoredArgumentString.length() - 2);
 			String replaceSignature = "(";
 			replaceSignature += refactoredArgumentString;
+			replaceSignature += smellContent.getNewClassName() + " " + smellContent.getNewParameterName();
 			replaceSignature += ")";
 			
 			System.out.println(refactoredArgumentString);

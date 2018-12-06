@@ -28,12 +28,16 @@ public class LPLRefactorInitialPage extends WizardPage {
     private Composite container;
     private LPLMethodObject methodToRefactor;
     private TableViewer tableViewer;
+    private ArrayList<String> extractParameterNames;
+    private ArrayList<String> extractParameterTypes;
 
     public LPLRefactorInitialPage(LPLMethodObject methodToRefactor) {
         super("First Page");
         this.methodToRefactor = methodToRefactor;
         setTitle(methodToRefactor.getName());
         setDescription("Select parameters to extract");
+        extractParameterNames = new ArrayList<String>();
+        extractParameterTypes = new ArrayList<String>();
         parameterIndexList = new ArrayList<Integer>();
     }
 
@@ -67,10 +71,14 @@ public class LPLRefactorInitialPage extends WizardPage {
 				boolean isChecked = false;
 				if(event.detail == SWT.CHECK) {
 					parameterIndexList.clear();
+					extractParameterTypes.clear();
+					extractParameterNames.clear();
 					for(int i = 0; i < ((Table)event.widget).getItems().length; i++) {
 						TableItem item = ((Table)event.widget).getItem(i);
 						if(item.getChecked()) {
 							parameterIndexList.add(i);
+							extractParameterTypes.add(((Table)event.widget).getItem(i).getText(1));
+							extractParameterNames.add(((Table)event.widget).getItem(i).getText(2));
 							isChecked = true;
 						}
 					}
@@ -93,6 +101,14 @@ public class LPLRefactorInitialPage extends WizardPage {
 
     public ArrayList getParameterIndexList() {
         return parameterIndexList;
+    }
+    
+    public ArrayList getExtractParameterNames() {
+    	return extractParameterNames;
+    }
+    
+    public ArrayList getExtractParameterTypes() {
+    	return extractParameterTypes;
     }
 
 }
