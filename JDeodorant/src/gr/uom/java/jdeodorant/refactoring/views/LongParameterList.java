@@ -196,7 +196,6 @@ public class LongParameterList extends ViewPart {
 		
 		
 		public void pressRefactorButton(int index) {
-			System.out.println("Success");
 			LPLMethodObject methodToRefactor = methodObjectTable[methodObjectTable.length - index - 1];
 			LPLRefactorWizard wizard = new LPLRefactorWizard(selectedProject, methodToRefactor);
 			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); dialog.open();
@@ -407,7 +406,6 @@ public class LongParameterList extends ViewPart {
 				activeProject = selectedProject;
 				CompilationUnitCache.getInstance().clearCache();
 				methodObjectTable = getTable();
-				System.out.println("methodObjectTable created");
 				treeViewer.setContentProvider(new ViewContentProvider());
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
@@ -427,7 +425,6 @@ public class LongParameterList extends ViewPart {
 		};
 		ImageDescriptor refactoringButtonImage = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/search_button.png");
         identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
-        //identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
         identifyBadSmellsAction.setImageDescriptor(refactoringButtonImage);
         identifyBadSmellsAction.setEnabled(false);
 
@@ -443,7 +440,6 @@ public class LongParameterList extends ViewPart {
 
 		applyRefactoringAction = new Action() {
 			public void run() {
-				System.out.println("hi");
 			}
 		};
 		applyRefactoringAction.setToolTipText("Apply Refactoring");

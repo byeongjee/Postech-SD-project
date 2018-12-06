@@ -28,6 +28,7 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
     private int currentCheckedIndex;
     private boolean canFinishPage;
     private String packageName;
+    private Label existingWarningLabel;
 
     public LPLRefactorSelectPackagePage(IJavaProject javaProject) {
         super("Select package of new class");
@@ -100,6 +101,13 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
 		GridData tableGD = new GridData(GridData.FILL_HORIZONTAL);
 		tableGD.horizontalSpan = 2;
         table.setLayoutData(tableGD);
+        
+        
+        existingWarningLabel = new Label(container, SWT.NONE);
+        existingWarningLabel.setText("");
+        GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+        gd2.horizontalSpan = 2;
+        existingWarningLabel.setLayoutData(gd2);
 
         setControl(container);
         setPageComplete(false);
@@ -120,6 +128,18 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
      */
     public boolean getCanFinishPage() {
     	return canFinishPage;
+    }
+    
+    /**
+     * Sets the warning label if class name with same name exists.
+     * @param set if true, set warning label
+     */
+    public void setExistingWarningLabel(boolean set) {
+    	if(set) {
+    		existingWarningLabel.setText("* Class with same name already exists!");
+    	} else {
+    		existingWarningLabel.setText("");
+    	}
     }
 
 }

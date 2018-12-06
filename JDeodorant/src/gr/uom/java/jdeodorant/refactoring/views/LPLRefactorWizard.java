@@ -91,12 +91,54 @@ public class LPLRefactorWizard extends Wizard {
 	@Override
 	public boolean canFinish() {
 		if(getContainer().getCurrentPage() == packagePage) {
-			if(packagePage.getCanFinishPage())
-				return true;
+			if(packagePage.getCanFinishPage()) {
+				//if(getIPackageFragment(packagePage.getPackageName()).getCompilationUnit(namePage.getClassName() + ".java") != null) {
+				if(classExists(packagePage.getPackageName(), namePage.getClassName())) {
+					packagePage.setExistingWarningLabel(true);
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
+			else {
+				packagePage.setExistingWarningLabel(false);
+				return false;
+			}
 		}
 		return false;
 	}
 	
+	/**
+	 * Checks if class with name newClassName exists in package
+	 * @param packageName name of package to search
+	 * @param newClassName name of class to search
+	 * @return true if class exists, false otherwise
+	 */
+	public boolean classExists(String packageName, String newClassName) {
+		try {
+			IPackageFragment searchPackage = getIPackageFragment(packageName);
+			if(searchPackage == null) {
+				return false;
+			}
+			for(ICompilationUnit cu : searchPackage.getCompilationUnits()) {
+				if(cu.getElementName().equals(newClassName + ".java")) {
+					return true;
+				}
+			}
+			return false;
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	/**
+	 * Returns IPackageFragment of name packageName
+	 * @param packageName name of package
+	 * @return IPackageFragment if package exists, null otherwise
+	 * @throws JavaModelException
+	 */
 	public IPackageFragment getIPackageFragment(String packageName) throws JavaModelException {
 		IPackageFragment[] allPkg = javaProject.getPackageFragments();
 		for(IPackageFragment myPackage : allPkg) {
@@ -148,9 +190,6 @@ public class LPLRefactorWizard extends Wizard {
 		}
 	}
 	
-	public class LPLRefactorVistor extends ASTVisitor {
-		
-	}
 
 	protected static void changeMethodCall(ICompilationUnit iCu, int startPosition, LPLSmellContent smellContent) {
 		try {
