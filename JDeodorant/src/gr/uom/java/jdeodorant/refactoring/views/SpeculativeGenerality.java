@@ -499,7 +499,7 @@ public class SpeculativeGenerality extends ViewPart {
 		//identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		identifyBadSmellsAction.setImageDescriptor(refactoringButtonImage);
 		identifyBadSmellsAction.setEnabled(false);
-
+/*
 		applyRefactoringAction = new Action() {
 			public void run() {
 				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
@@ -514,7 +514,7 @@ public class SpeculativeGenerality extends ViewPart {
 		applyRefactoringAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 				getImageDescriptor(ISharedImages.IMG_DEF_VIEW));
 		applyRefactoringAction.setEnabled(false);
-		
+*/		
 		doubleClickAction = new Action() {
 			public void run() {
 				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();

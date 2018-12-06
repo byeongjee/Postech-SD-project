@@ -600,7 +600,7 @@ public class LongMethod extends ViewPart {
 		manager.add(identifyBadSmellsAction);
 		//uncomment below line to make refactor button appear
 		//manager.add(applyRefactoringAction);
-		manager.add(saveResultsAction);
+	//	manager.add(saveResultsAction);
 		//manager.add(evolutionAnalysisAction);
 	}
 

@@ -45,6 +45,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.part.*;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.IProgressService;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
@@ -65,6 +66,7 @@ import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationModel;
@@ -115,6 +117,7 @@ public class GodClass extends ViewPart {
 	private ICompilationUnit selectedCompilationUnit;
 	private IType selectedType;
 
+	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}
@@ -494,9 +497,9 @@ public class GodClass extends ViewPart {
 
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
-		manager.add(applyRefactoringAction);
-		manager.add(saveResultsAction);
-		manager.add(packageExplorerAction);
+		//manager.add(applyRefactoringAction);
+	//	manager.add(saveResultsAction);
+	//	manager.add(packageExplorerAction);
 	}
 
 	private void makeActions() {
@@ -520,10 +523,11 @@ public class GodClass extends ViewPart {
 					openPackageExplorerViewPart();
 			}
 		};
-		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
-		identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-		identifyBadSmellsAction.setEnabled(false);
+		ImageDescriptor refactoringButtonImage = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/search_button.png");
+        identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
+        //identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+        identifyBadSmellsAction.setImageDescriptor(refactoringButtonImage);
+        identifyBadSmellsAction.setEnabled(false);
 
 		saveResultsAction = new Action() {
 			public void run() {

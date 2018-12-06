@@ -475,10 +475,10 @@ public class FeatureEnvy extends ViewPart {
 
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
-		manager.add(applyRefactoringAction);
-		manager.add(saveResultsAction);
+	//	manager.add(applyRefactoringAction);
+	//	manager.add(saveResultsAction);
 		//manager.add(evolutionAnalysisAction);
-		manager.add(packageExplorerAction);
+	//	manager.add(packageExplorerAction);
 	}
 
 	private void makeActions() {
