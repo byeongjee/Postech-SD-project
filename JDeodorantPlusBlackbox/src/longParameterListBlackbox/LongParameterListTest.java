@@ -77,7 +77,7 @@ public class LongParameterListTest {
 	}
 
 	private void openLPLTab() {
-		bot.menu("Bad Smells").menu("Long Parameter List").click();
+		bot.menu("JDe5dorant").menu("Long Parameter List").click();
 	}
 
 	private void closeLPLTab() {

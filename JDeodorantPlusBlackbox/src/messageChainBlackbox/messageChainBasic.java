@@ -71,14 +71,14 @@ public class messageChainBasic {
 
 	@Test
 	public void testOpenMessageChainTab() {
-		bot.menu("Bad Smells").menu("Message Chain").click();
+		bot.menu("JDe5dorant").menu("Message Chain").click();
 		bot.viewByTitle("Message Chain");
 		assertTrue(bot.viewByTitle("Message Chain").isActive());
 	}
 
 	@Test
 	public void testApplyingMCDetection() {
-		bot.menu("Bad Smells").menu("Message Chain").click();
+		bot.menu("JDe5dorant").menu("Message Chain").click();
 		bot.viewByTitle("Message Chain");
 		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
 		packageExplorer.show();
@@ -92,7 +92,7 @@ public class messageChainBasic {
 
 	@Test
 	public void testExpand() {
-		bot.menu("Bad Smells").menu("Message Chain").click();
+		bot.menu("JDe5dorant").menu("Message Chain").click();
 		bot.viewByTitle("Message Chain");
 		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
 		packageExplorer.show();
@@ -111,7 +111,7 @@ public class messageChainBasic {
 	@Test
 	public void testDoubleClickToSeeHighlight() {
 		try {
-			bot.menu("Bad Smells").menu("Message Chain").click();
+			bot.menu("JDe5dorant").menu("Message Chain").click();
 			bot.viewByTitle("Message Chain");
 			SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
 			packageExplorer.show();
@@ -132,7 +132,7 @@ public class messageChainBasic {
 	@Test
 	public void testButtonClick() {
 		try {
-			bot.menu("Bad Smells").menu("Message Chain").click();
+			bot.menu("JDe5dorant").menu("Message Chain").click();
 			bot.viewByTitle("Message Chain");
 			SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
 			packageExplorer.show();
@@ -158,7 +158,7 @@ public class messageChainBasic {
 	@Test
 	public void testRefactorClickCancelWithoutAnyTyping() {
 		try {
-			bot.menu("Bad Smells").menu("Message Chain").click();
+			bot.menu("JDe5dorant").menu("Message Chain").click();
 			bot.viewByTitle("Message Chain");
 			SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
 			packageExplorer.show();
@@ -183,7 +183,7 @@ public class messageChainBasic {
 	@Test
 	public void testRefactorClickCancelWithTyping() {
 		try {
-			bot.menu("Bad Smells").menu("Message Chain").click();
+			bot.menu("JDe5dorant").menu("Message Chain").click();
 			bot.viewByTitle("Message Chain");
 			SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
 			packageExplorer.show();

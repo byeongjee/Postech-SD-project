@@ -71,7 +71,7 @@ public class SpeculativeGeneralityTest {
 	
 	@Test
 	public void testOpenSpeculativeGeneralityTab() {
-		bot.menu("Bad Smells").menu("Speculative Generality").click();
+		bot.menu("JDe5dorant").menu("Speculative Generality").click();
 		bot.viewByTitle("Speculative Generality");
 		assertTrue(bot.viewByTitle("Speculative Generality").isActive());
 	}
