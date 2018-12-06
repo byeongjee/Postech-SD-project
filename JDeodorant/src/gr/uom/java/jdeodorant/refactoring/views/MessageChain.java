@@ -101,6 +101,7 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.SWT;
@@ -155,16 +156,28 @@ public class MessageChain extends ViewPart {
 	private Map<String, Map<Integer, List<MethodInvocationObject>>> originCodeSmells; // for storing origin map
 	public List<String> newRefactoringMethod;//store method's name and class name of refactoring code. We will add new method name whenever we do refactoring
 	
-	
+	// Do it in Iteration 4
+	public String newMethodName;
+	   
 	//private IJavaProject 
 	private class MessageChainRefactoringButtonUI extends RefactoringButtonUI{
-		public void pressRefactoringButton(int index) {
-			
-		}
-		public void pressChildRefactorButton(int parentIndex, int childIndex) {
-			messageChainRefactoring(parentIndex, childIndex);
-		}
+	   public void pressRefactoringButton(int index) {	         
+	   }
+	   // Edit it in Iteration 4
+	   public void pressChildRefactorButton(int parentIndex, int childIndex) {
+	      //System.out.println("Success");
+	      MCRefactorWizard wizard = new MCRefactorWizard(selectedProject);
+	         
+	      WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); dialog.open();
+	         
+	      newMethodName = wizard.getNewMethodName();
+	      //System.out.println("New Method Name is: " + newMethodName);
+	         
+	      if(newMethodName != null)   
+	    	  messageChainRefactoring(parentIndex, childIndex);
+	  }
 	}
+
 	private MessageChainRefactoringButtonUI refactorButtonMaker;
 	
 	public class ViewContentProvider implements ITreeContentProvider {
@@ -480,16 +493,13 @@ public class MessageChain extends ViewPart {
 		if(targetSmell != null && targetSmell.getStart() != -1 && targetSmell.getLength() != -1) {
 			SystemObject systemObject = ASTReader.getSystemObject();
 			if(systemObject != null) {
+				String targetSmellName = targetSmell.getName();
 				String classNameOfMethodInvocation = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getOriginClassName();
-				ClassObject classWithCodeSmell = systemObject.getClassObject(targetSmell.getParent().getName());
-				ClassObject classOfMethodInvocation = systemObject.getClassObject(classNameOfMethodInvocation);
-				IFile fileWithCodeSmell = classWithCodeSmell.getIFile();
-				IFile fileOfMethodInvocation = classOfMethodInvocation.getIFile();
+
+				ICompilationUnit compUnitWithCodeSmell = getCompUnit (systemObject, targetSmell.getParent().getName());
+				ICompilationUnit compUnitOfMethodInvocation = getCompUnit (systemObject, classNameOfMethodInvocation);
 				
-				ICompilationUnit compUnitWithCodeSmell = (ICompilationUnit) JavaCore.create(fileWithCodeSmell);
-				ICompilationUnit compUnitOfMethodInvocation = (ICompilationUnit) JavaCore.create(fileOfMethodInvocation);
-				
-				String newMethodName = "myMethod";//TODO : we have to get methodName from user
+//				String newMethodName = "myMethod";//TODO : we have to get methodName from user
 				
 				int sizeOfMethodInvocation = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).size();
 				String stringOfMethod = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(sizeOfMethodInvocation-1).getReturnType().toString();
@@ -512,39 +522,88 @@ public class MessageChain extends ViewPart {
 				String strOfRefact = makeNewRefactorCode(newMethodName, stringOfArgument);
 				String strOfMethod = makeNewMethodCode(newMethodName, returnType, stringOfArgumentType, numOfArgumentOfEachMethod, stringOfMethodInvocation);
 
+				modifyMethodInvocationFile (compUnitOfMethodInvocation, strOfMethod);
+				modifyCodeSmellFile (compUnitWithCodeSmell, strOfRefact, targetSmell);
 				
-				try {
-					
-					ICompilationUnit workingCopyOfMethodInvocation = compUnitOfMethodInvocation.getWorkingCopy(new WorkingCopyOwner() {}, null);
-				    IBuffer bufferOfMethodInvocation = ((IOpenable)workingCopyOfMethodInvocation).getBuffer();
-				    
-				    int modifyPosition = getModifyPosition(bufferOfMethodInvocation);
-	                bufferOfMethodInvocation.replace(modifyPosition,0,strOfMethod);
-	                workingCopyOfMethodInvocation.reconcile(ICompilationUnit.NO_AST,false,null,null);
-				    workingCopyOfMethodInvocation.commitWorkingCopy(false,null);
-				    workingCopyOfMethodInvocation.discardWorkingCopy();
-				    
-				    ICompilationUnit workingCopyWithCodeSmell = compUnitWithCodeSmell.getWorkingCopy(new WorkingCopyOwner() {}, null);
-				    IBuffer bufferWithCodeSmell = ((IOpenable)workingCopyWithCodeSmell).getBuffer();
-				    
-				    String temp = bufferWithCodeSmell.getText(targetSmell.getStart(), targetSmell.getLength());
-				    int startPos = temp.indexOf(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getMethodName());
-					
-				    bufferWithCodeSmell.replace(targetSmell.getStart() + startPos, targetSmell.getLength()-startPos, strOfRefact);
-					workingCopyWithCodeSmell.reconcile(ICompilationUnit.NO_AST,false,null,null);
-					workingCopyWithCodeSmell.commitWorkingCopy(false, null);
-					workingCopyWithCodeSmell.discardWorkingCopy();
-					
-					newRefactoringMethod.add(classNameOfMethodInvocation+"/"+newMethodName);//add new method name to notify that this code should not be detected.
-					
-					
-				} catch (JavaModelException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				newRefactoringMethod.add(classNameOfMethodInvocation+"/"+newMethodName);//add new method name to notify that this code should not be detected.
 				findCodeSmell();
+				
+				MessageChainStructure nextTargetSmell = findMCSwithGivenName(targetSmellName);
+				while(nextTargetSmell != null) {
+					ICompilationUnit compUnitWithNextCodeSmell = getCompUnit (systemObject, nextTargetSmell.getParent().getName());
+					
+					List<String> stringOfNextArgument = new ArrayList<String> ();
+					for(int i = 0; i<sizeOfMethodInvocation;i++) {
+						for(Object arg : originCodeSmells.get(nextTargetSmell.getParent().getName()).get(nextTargetSmell.getStart()).get(i).getMethodInvocation().arguments() ) {
+							stringOfNextArgument.add(arg.toString());
+						}
+					}
+					
+					String strOfNextRefact = makeNewRefactorCode(newMethodName, stringOfNextArgument);
+					
+					modifyCodeSmellFile (compUnitWithNextCodeSmell, strOfNextRefact, nextTargetSmell);
+					
+					findCodeSmell();
+					nextTargetSmell = findMCSwithGivenName(targetSmellName);
+				}
 			}
 		}
+	}
+	
+	public ICompilationUnit getCompUnit (SystemObject systemObject, String className) {
+		ClassObject classWithCodeSmell = systemObject.getClassObject(className);
+		IFile fileWithCodeSmell = classWithCodeSmell.getIFile();	
+		ICompilationUnit compUnitWithCodeSmell = (ICompilationUnit) JavaCore.create(fileWithCodeSmell);
+		return compUnitWithCodeSmell;
+	}
+	
+	public void modifyCodeSmellFile (ICompilationUnit compUnitWithCodeSmell, String stringForChange, MessageChainStructure targetSmell) {
+		try {
+			ICompilationUnit workingCopyWithCodeSmell = compUnitWithCodeSmell.getWorkingCopy(new WorkingCopyOwner() {}, null);
+			IBuffer bufferWithCodeSmell = ((IOpenable)workingCopyWithCodeSmell).getBuffer();
+		    
+		    String temp = bufferWithCodeSmell.getText(targetSmell.getStart(), targetSmell.getLength());
+		    int startPos = temp.indexOf(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getMethodName());
+			
+		    modifyCompUnit(workingCopyWithCodeSmell, bufferWithCodeSmell, targetSmell.getStart() + startPos, targetSmell.getLength()-startPos, stringForChange);
+		} catch (JavaModelException e) {
+		}
+	}
+	
+	public void modifyMethodInvocationFile (ICompilationUnit compUnitOfMethodInvocation, String strOfMethod) {
+		try {
+			ICompilationUnit workingCopyOfMethodInvocation = compUnitOfMethodInvocation.getWorkingCopy(new WorkingCopyOwner() {}, null);
+			IBuffer bufferOfMethodInvocation = ((IOpenable)workingCopyOfMethodInvocation).getBuffer();
+		    
+			   
+		    int modifyPosition = getModifyPosition(bufferOfMethodInvocation);
+		    
+		    modifyCompUnit(workingCopyOfMethodInvocation, bufferOfMethodInvocation, modifyPosition,0,strOfMethod);
+		} catch (JavaModelException e) {
+		}
+	    
+	}
+	
+	public void modifyCompUnit (ICompilationUnit workingCopy, IBuffer buffer, int startPos, int len, String stringForChange) {
+		try {					
+			buffer.replace(startPos, len, stringForChange);
+			workingCopy.reconcile(ICompilationUnit.NO_AST,false,null,null);
+			workingCopy.commitWorkingCopy(false,null);
+			workingCopy.discardWorkingCopy();
+		} catch (JavaModelException e) {
+		}
+		
+	}
+	
+	public MessageChainStructure findMCSwithGivenName(String name) {
+		for(MessageChainStructure mcs : targets) {
+			for(MessageChainStructure child :mcs.getChildren()) {
+				if(child.getName().equals(name)) {
+					return child;
+				}
+			}
+		}
+		return null;
 	}
 	
 	/**
@@ -643,7 +702,12 @@ public class MessageChain extends ViewPart {
 							}
 							Position position = new Position(targetSmell.getStart(), (targetSmell.getLength() + 1));
 							SliceAnnotation annotation = null;
-							annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, "We detect Message Chain!");
+							annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, "Message Chain : We detect Method Invocation Chain consisting of "+targetSmell.getName()+".\r\n "
+									+ "We strongly recommend refactoring this message chain."
+									+ " If you want to refactor this message chain, press the table's refactoring button."
+									+ " We will then remove the long message chain where the message chain originated and add a new wrapper method for that message chain."
+									+ " The name of the new wrapper method can be specified by the user. ");
+
 							annotationModel.addAnnotation(annotation, position);
 					
 							sourceEditor.setHighlightRange(position.getOffset(), position.getLength(), true);
@@ -776,7 +840,18 @@ public class MessageChain extends ViewPart {
 		
 		return newRefactoringMethod.contains(target);//true : refactoring's result, false : code smell
 	}
-
+	
+	/**
+	 * New function for checking possibility to modify codes in that class.
+	 * 
+	 * <Arguments>
+	 * String className: Name of class
+	 * **/
+	public boolean isPossibleChange (String className)
+	{
+		return !(className.contains("java") || className.contains("org"));
+	}
+	
 	//Impossible to make junit test because we don't have permission of making MethodInvocationObject mock object
 	private Map<String, Map<Integer, List<MethodInvocationObject>>> processMethod(Set<AbstractMethodDeclaration> methodObjects) {
 		Map<String, Map<Integer, List<MethodInvocationObject>>> store = new HashMap<String, Map<Integer, List<MethodInvocationObject>>>();
@@ -815,7 +890,7 @@ public class MessageChain extends ViewPart {
 				for(String type : store.keySet()) {
 					Map<Integer, List<MethodInvocationObject>> innerMap = store.get(type);
 					for(Integer i : innerMap.keySet()) {
-						if(innerMap.get(i).size() <= 2) {
+						if(innerMap.get(i).size() <= 2 || !isPossibleChange(innerMap.get(i).get(0).getOriginClassName())) {
 							deleteList.add(i);
 						}
 					}

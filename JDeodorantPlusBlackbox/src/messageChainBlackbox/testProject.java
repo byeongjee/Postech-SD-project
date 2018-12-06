@@ -115,7 +115,9 @@ public class testProject {
 		// Generate Java Class : Simple2
 		source = new StringBuffer();
     	source.append("package " + _package.getElementName() + ";\n");
-    	String strSimple2 = "public class Simple2 {\r\n" + 
+    	String strSimple2 = "import java.util.List;\r\n"+
+    			"import java.util.ArrayList;\r\n\r\n"+
+    			"public class Simple2 {\r\n" + 
     			"	public Simple test;\r\n" +
     			"	public Simple test3;\r\n" +
     			"	public Simple2(){\r\n" +
@@ -133,6 +135,9 @@ public class testProject {
     			"		Simple test2 = new Simple();\r\n" +
     			"		test2.method2().method3();\r\n" +
     			"		test_message(3,4).method2().method3();\r\n" +
+    			"		List<String> str = new ArrayList<String> ();\r\n"+
+    			"       str.add(\"HelloIt'sMe\");\r\n" + 
+    			"       str.get(0).substring(0, 2).substring(6).length();\r\n" + 
     			"	}\r\n" +
     			"	public void test_message3(){\r\n" +
     			"		int a = test_message(11,22).method2().method3().method4();\r\n" +

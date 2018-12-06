@@ -25,8 +25,8 @@ public class ClassObjectCandidate extends ClassObject {
     
     private List<MethodObject> smellingMethods;
     
-    private int smell_start = 15;
-    private int smell_length = 20;
+    private int smell_start = 0;
+    private int smell_length = 0;
     
 
     private int numChild = 0;
@@ -51,6 +51,7 @@ public class ClassObjectCandidate extends ClassObject {
         this.codeSmellType = "Speculative Generality";
         this.refactorType = "_";
         this.smellingMethods = new ArrayList<MethodObject>();
+        this.setHighlightPositions();
     }
 
     public ClassObjectCandidate(ClassObject co) {
@@ -77,7 +78,9 @@ public class ClassObjectCandidate extends ClassObject {
         this.codeSmellType = "Speculative Generality";
         this.refactorType = "_";
         this.smellingMethods = new ArrayList<MethodObject>();
+        this.setHighlightPositions();
     }
+    
 
     /**
      * Methods Setting, and Getting Number of Child
@@ -87,9 +90,6 @@ public class ClassObjectCandidate extends ClassObject {
     	this.numChild = arg;
     }
 
-    /*public ClassObject getClassObject() {
-    	return this._root;
-    }*/
     public Object[] getHighlightPositions() {
     	Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
     	Position position = new Position(this.smell_start, this.smell_length);
@@ -194,8 +194,7 @@ public class ClassObjectCandidate extends ClassObject {
 			IPath _path = iFile.getLocation();
 			String filepath = _path.toString();
 
-			Stack<Character> parenthesisChecker = new Stack<Character>();
-			boolean readFlag = false;
+			boolean readFlag = true;
 			try {
 				BufferedReader buffer = new BufferedReader(new FileReader(filepath));
 				result.add(buffer.readLine());
@@ -205,34 +204,20 @@ public class ClassObjectCandidate extends ClassObject {
 					if (line == null) {
 						break;
 					}
-					if (line.contains(this.getClassFullName())) {
-						readFlag = true;
-					}
-
-					if (readFlag) {
-						for (int i = 0; i < line.length(); i++) {
-							if (line.charAt(i) == '{') {
-								parenthesisChecker.push('{');
-							} else if (line.charAt(i) == '}') {
-								if (parenthesisChecker.isEmpty()) {
-									this.content =  result;
-									return;
-								} else if (parenthesisChecker.peek() == '{') {
-									parenthesisChecker.pop();
-								} else {
-									parenthesisChecker.push('}');
-								}
-							}
-						}
-					}
-
-					// Adding Each Lines to Result
-					if (readFlag) {
-						result.add(line);
+					else if (line.length() > 1 && line.substring(0,2).equals("/*")) {
+						readFlag = false;
 					}
 					
-					if (parenthesisChecker.isEmpty()) {
-						readFlag = false;
+					else if(line.length() > 1 && line.substring(line.length()-2, line.length()).equals("*/")) {
+						readFlag = true;
+					}
+					
+					else if (line.length() > 1 && line.substring(0,2).equals("//")) {
+						continue;
+					}
+
+					else if (readFlag) {
+						result.add(line);
 					}
 				}
 				buffer.close();
@@ -262,4 +247,26 @@ public class ClassObjectCandidate extends ClassObject {
 		String[] tokens = to_be_parsed.split("\\.");
 		return tokens[tokens.length-1];
 	}
+	
+	/**
+     * set Highlight Positions
+     * @author Taeyoung Son
+     */
+    private void setHighlightPositions() {
+    	List<String> myContent = getContent();
+    	int startPos=0;
+    	int length =0;
+    	for(String s: myContent) {
+    		for(int i=0; i<s.length(); i++) {
+    			if(s.charAt(i) == '{' && s.substring(0,i).equals(getClassFullName())) {
+    				this.smell_start = startPos;
+    				this.smell_length = length + s.length();
+    				return;
+    			}
+    		}
+    		startPos += s.length() + 1;
+    		length += 1;
+    		
+    	}
+    }
 }

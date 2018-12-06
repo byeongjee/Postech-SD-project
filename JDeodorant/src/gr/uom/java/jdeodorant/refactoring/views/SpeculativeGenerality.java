@@ -76,6 +76,7 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -143,77 +144,9 @@ public class SpeculativeGenerality extends ViewPart {
 		 */
 		public void pressRefactorButton(int index) {
 			ClassObjectCandidate targetClass = _smellingClassEntries[index];
-			
-			// Switch w.r.t smell type and Details
-			if(targetClass.getCodeSmellType().equals("Abstract Class")) {
-				if(targetClass.getNumChild() == 0) {
-					DeleteClassRefactoring _refactor = new DeleteClassRefactoring(targetClass);
-					_refactor.commentizeWholeContent();
-					_refactor.processRefactoring();
-				} else {
-					// Integrate Child and Parent
-					ClassObjectCandidate childClass;
-					for(ClassObject examiningClass : _classObjectToBeExamined) {
-						if(examiningClass.getName().equals(targetClass.getName())) continue;
-						
-						TypeObject superClass = examiningClass.getSuperclass();
-						if(superClass != null) {
-							if (superClass.getClassType().equals(targetClass.getName())) {
-								childClass = new ClassObjectCandidate(examiningClass);
-								
-								MergeClassRefactoring _refactor = new MergeClassRefactoring(targetClass, childClass);
-								_refactor.mergeIntoChild();
-								_refactor.buildContentInOneString();
-								_refactor.processRefactoringParent();
-								_refactor.processRefactoringChild();
-								
-								break;
-							}
-						}
-					}
-				}
-			} else if (targetClass.getCodeSmellType().equals("Interface Class")) {
-				if(targetClass.getNumChild() == 0) {
-					DeleteClassRefactoring _refactor = new DeleteClassRefactoring(targetClass);
-					_refactor.commentizeWholeContent();
-					_refactor.processRefactoring();
-				} else {
-					ClassObjectCandidate childClass;
-					for (ClassObject examiningClass : _classObjectToBeExamined) {
-						if (examiningClass.getName().equals(targetClass.getName()))
-							continue;
+			SGRefactorWizard wizard = new SGRefactorWizard(targetClass,_classObjectToBeExamined,identifyBadSmellsAction);
+			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); dialog.open();
 
-						ListIterator<TypeObject> parentClasses = examiningClass.getInterfaceIterator();
-						while(parentClasses.hasNext()) {
-							TypeObject parentClass = parentClasses.next();
-							if (parentClass.getClassType().equals(targetClass.getName())) {
-								childClass = new ClassObjectCandidate(examiningClass);
-
-								MergeClassRefactoring _refactor = new MergeClassRefactoring(targetClass, childClass);
-								_refactor.mergeIntoChild();
-								_refactor.buildContentInOneString();
-								_refactor.processRefactoringParent();
-								_refactor.processRefactoringChild();
-
-								break;
-							}
-						}
-					}
-				}
-			} else if (targetClass.getCodeSmellType().equals("Unnecessary Parameters")) {
-				List<MethodObject> _smellingMethods = targetClass.getSmellingMethods();
-				
-				for(MethodObject target : _smellingMethods) {
-					ParameterMethodRefactoring _refactor = new ParameterMethodRefactoring(targetClass, target);
-					_refactor.setUnusedParameterList();
-					_refactor.setUsedParameterList();
-					_refactor.resolveUnnecessaryParameters();
-					_refactor.processRefactoring();
-				}
-			}
-
-			// Re-detection
-			identifyBadSmellsAction.run();
 		}
 	}
 

@@ -96,7 +96,7 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 
 /**
  * Resolve Unnecessary Generalization in Class Hierarchy,
- * and Progress Refactoring 
+ * and Progress Refactoring
  * @author 손태영, 이주용
  */
 public class MergeClassRefactoring extends Refactoring {
@@ -109,39 +109,39 @@ public class MergeClassRefactoring extends Refactoring {
 	private List<FieldObject> childFieldList;
 	private List<ConstructorObject> childConstructorList;
 	private List<MethodObject> childMethodList;
-	
+
 	private List<String> parentOriginalContentList = new ArrayList<String>();
 	private List<String> childOriginalContentList = new ArrayList<String>();
 	private String parentOriginalContent = "";
 	private String childOriginalContent = "";
-	
+
 	private List<String> parentRefactoredContentList = new ArrayList<String>();
 	private List<String> childRefactoredContentList = new ArrayList<String>();
 	private String parentRefactoredContent = "";
 	private String childRefactoredContent = "";
-	
-	/*	
+
+	/*
  	public MergeClassRefactoring() {
 		targetClass = new ClassObjectCandidate();
-		
+
 		fieldList = new ArrayList<FieldObject>();
 		constructorList = new ArrayList<MethodObject>();
 		methodList = new ArrayList<MethodObject>();
 	}
 	*/
-		
+
 	public MergeClassRefactoring(ClassObjectCandidate parent, ClassObjectCandidate child) {
 		parentClass = parent;
 		childClass = child;
-		
+
 		parentFieldList = parent.getFieldList();
 		parentConstructorList = parent.getConstructorList();
 		parentMethodList = parent.getMethodList();
-		
+
 		childFieldList = child.getFieldList();
 		childConstructorList = child.getConstructorList();
 		childMethodList = child.getMethodList();
-		
+
 		parentOriginalContentList = parent.getContent();
 		childOriginalContentList = child.getContent();
 	}
@@ -191,7 +191,7 @@ public class MergeClassRefactoring extends Refactoring {
 		for(MethodObject mo : arg.getMethodList()) {
 			ret.add(mo.toString());
 		}
-		
+
 		return ret;
 	}
 
@@ -204,10 +204,10 @@ public class MergeClassRefactoring extends Refactoring {
 		for(ConstructorObject co : arg.getConstructorList()) {
 			ret.add(co.toString());
 		}
-		
+
 		return ret;
 	}
-	
+
     /**
      * @author Taeyoung Son
      * @param fullContent the content collected by getContent()
@@ -247,22 +247,22 @@ public class MergeClassRefactoring extends Refactoring {
      */
 	private List<String> constructorContentCreator(List<String> fullContent) {
 		List<String> ret = new ArrayList<String>();
-		
+
 		return ret;
 	}
-	
+
     /**
      * @author Taeyoung Son, JuYong Lee
      * @param child the ClassObjectCandidate to merge with this ClassObjectCandidate
      */
 	public void mergeIntoChild(){
 		assert this.parentClass.getNumChild() == 1;
-		
+
 		// Abstract Class with One Child
 		if(this.parentClass.isAbstract()) {
 			List<String> myContent = this.parentOriginalContentList;
 			List<String> childContent = this.childOriginalContentList;
-			
+
 			List<String> newFieldList = new ArrayList<String>();
 			for(String s : stringFieldList(parentClass)) {
 				if(!stringFieldList(childClass).contains(s)) {
@@ -270,7 +270,7 @@ public class MergeClassRefactoring extends Refactoring {
 				}
 			}
 			newFieldList.addAll(stringFieldList(childClass));
-			
+
 			// Consider Constructors
 			List<String> newConstructorList = new ArrayList<String>();
 			for(ConstructorObject _constructor  : this.childConstructorList) {
@@ -278,11 +278,26 @@ public class MergeClassRefactoring extends Refactoring {
 				String content = _constructor.toString();
 
 			}
-			
+
+            // Conside packages
+            List<String> newImportList = new ArrayList<String>();
+            for(String s : myContent){
+                if(s.length() > 5 && s.substring(0,6).equals("import")){
+                	System.out.println(s);
+                    newImportList.add(s);
+                }
+            }
+            for(String s : childContent){
+                if(s.length() > 5 && s.substring(0,6).equals("import")){
+                	System.out.println(s);
+                    newImportList.add(s);
+                }
+            }
+
 			// Consider Methods
 			List<String> newMethodList = new ArrayList<String>();
 			List<String> myMethodObjectList = stringMethodList(parentClass);
-			List<String> childMethodObjectList = stringMethodList(childClass);	
+			List<String> childMethodObjectList = stringMethodList(childClass);
 			for (String s : myMethodObjectList) {
 				if (childMethodObjectList.contains(s) || s.contains("abstract") || s.contains(dotParser(parentClass.getName()))) {
 					// overriden method
@@ -344,11 +359,12 @@ public class MergeClassRefactoring extends Refactoring {
 
 			// Refactor Child
 			this.childRefactoredContentList.add(childContent.get(0) + "\n");
+            this.childRefactoredContentList.addAll(newImportList);
 			this.childRefactoredContentList.add("public class " + dotParser(childClass.getName()) + "{");
 			this.childRefactoredContentList.addAll(newFieldList);
 			this.childRefactoredContentList.addAll(newMethodList);
 			this.childRefactoredContentList.add("}");
-			
+
 			// Refactor Parent
 			this.parentRefactoredContentList.add("/*");
 			for(String c : this.parentOriginalContentList) {
@@ -356,7 +372,7 @@ public class MergeClassRefactoring extends Refactoring {
 			}
 			this.parentRefactoredContentList.add("*/");
 		}
-		
+
 		// Interface Class with One Child
 		if(this.parentClass.isInterface()) {
 			// Find the Initial Part
@@ -371,7 +387,7 @@ public class MergeClassRefactoring extends Refactoring {
 					break;
 				}
 			}
-			
+
 			// Child Refactoring
 			if(initialIdx == -1) {
 				this.childRefactoredContentList.add("/*");
@@ -391,7 +407,7 @@ public class MergeClassRefactoring extends Refactoring {
 					}
 				}
 			}
-			
+
 
 			// Parent Refactoring
 			this.parentRefactoredContentList.add("/*");
@@ -402,10 +418,7 @@ public class MergeClassRefactoring extends Refactoring {
 		}
 	}
 	
-	public void processRefactoringParent() {	
-		System.out.println("<Original>\n" + this.parentOriginalContent);
-		System.out.println("<Refactor>\n" + this.parentRefactoredContent);
-		
+	public void processRefactoringParent() {
 		SystemObject systemObject = ASTReader.getSystemObject();
 		if (systemObject != null) {
 			IFile _file = parentClass.getIFile();
@@ -425,7 +438,7 @@ public class MergeClassRefactoring extends Refactoring {
 			}
 		}
 	}
-	
+
 	public void processRefactoringChild() {
 		SystemObject systemObject = ASTReader.getSystemObject();
 		if (systemObject != null) {
@@ -446,7 +459,7 @@ public class MergeClassRefactoring extends Refactoring {
 			}
 		}
 	}
-	
+
 	/**
 	 *  Link List of String of Contents into one String line
 	 */
@@ -457,7 +470,7 @@ public class MergeClassRefactoring extends Refactoring {
 		for(String c : this.childOriginalContentList) {
 			this.childOriginalContent += c + "\r\n";
 		}
-		
+
 		for(String c : this.parentRefactoredContentList) {
 			this.parentRefactoredContent += c + "\r\n";
 		}
@@ -465,7 +478,7 @@ public class MergeClassRefactoring extends Refactoring {
 			this.childRefactoredContent += c + "\r\n";
 		}
 	}
-	
+
     /**
      * @author Taeyoung Son
      * @param to_be_parsed string to be parsed which contains dot
@@ -476,10 +489,10 @@ public class MergeClassRefactoring extends Refactoring {
 		return tokens[tokens.length-1];
 	}
 
-	
+
 	/**
 	TestClass * Check "content" contains "target"
-	 * 
+	 *
 	 * @author JuYong Lee
 	 * @param method
 	 * @param var
@@ -488,9 +501,9 @@ public class MergeClassRefactoring extends Refactoring {
 	public boolean checkContainance(String content, String target) {
 		String[] operator = { " ", "(", ")", "[", "]", ".",	"+", "-", "*", "/", "%",
 				"!", "~", "++", "--", "<<", ">>", ">>>", ">", "<", ">= ", "<=", "==", "!=",
-				"&", "^", "|", "&&", "||", "?", "=", "+=", "/=", "&=", "*=", "-=", 
-				"<<=", ">>=", ">>>=", "^=", "|=", "%=", ";"}; 
-		
+				"&", "^", "|", "&&", "||", "?", "=", "+=", "/=", "&=", "*=", "-=",
+				"<<=", ">>=", ">>>=", "^=", "|=", "%=", ";"};
+
 		for(int i = 0; i < operator.length; i++) {
 			for(int j = 0; j < operator.length; j++) {
 				if(content.contains(operator[i] + target + operator[j])) {
@@ -498,10 +511,10 @@ public class MergeClassRefactoring extends Refactoring {
 				}
 			}
 		}
-		 
+
 		return false;
 	}
-	
+
 	@Override
 	public String getName() {
 		return this.getName();

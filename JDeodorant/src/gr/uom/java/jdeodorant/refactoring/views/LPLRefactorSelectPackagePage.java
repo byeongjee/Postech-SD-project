@@ -25,12 +25,18 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
 	private Text newPackageText;
     private Composite container;
     private IJavaProject javaProject;
+    private int currentCheckedIndex;
+    private boolean canFinishPage;
+    private String packageName;
+    private Label existingWarningLabel;
 
     public LPLRefactorSelectPackagePage(IJavaProject javaProject) {
         super("Select package of new class");
         setTitle("Select package");
         setDescription("Select package of new class, or enter new package name");
         this.javaProject = javaProject;
+        currentCheckedIndex = -1;
+        canFinishPage = false;
     }
 
     public void createControl(Composite parent) {
@@ -60,39 +66,80 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
 		} catch (Exception e) {
 		}
 		
-		GridData tableGD = new GridData(GridData.FILL_HORIZONTAL);
-        table.setLayoutData(tableGD);
+		table.addListener(SWT.Selection,  new Listener() {
+			public void handleEvent(Event event) {
+				boolean isChecked = false;
+				if(event.detail == SWT.CHECK) {
+					for(int i = 0; i < ((Table)event.widget).getItems().length; i++) {
+						TableItem item = ((Table)event.widget).getItem(i);
+						if(item.getChecked()) {
+							if(currentCheckedIndex == -1) {
+								currentCheckedIndex = i;
+								packageName = ((Table)event.widget).getItem(currentCheckedIndex).getText(1);
+							}
+							else if(currentCheckedIndex != i) {
+								((Table)event.widget).getItem(currentCheckedIndex).setChecked(false);
+								currentCheckedIndex = i;
+								packageName = ((Table)event.widget).getItem(currentCheckedIndex).getText(1);
+							}
+							isChecked = true;
+						}
+					}
+					if(isChecked) {
+						canFinishPage = true;
+						setPageComplete(true);
+					}
+					else {
+						currentCheckedIndex = -1;
+						canFinishPage = false;
+		                setPageComplete(false);
+					}
+				}
+			}
+		});
 		
-		Label emptyLabel = new Label(container, SWT.NONE);
+		GridData tableGD = new GridData(GridData.FILL_HORIZONTAL);
+		tableGD.horizontalSpan = 2;
+        table.setLayoutData(tableGD);
         
-        Label label1 = new Label(container, SWT.NONE);
-        label1.setText("New package name");
+        
+        existingWarningLabel = new Label(container, SWT.NONE);
+        existingWarningLabel.setText("");
+        GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+        gd2.horizontalSpan = 2;
+        existingWarningLabel.setLayoutData(gd2);
 
-        newPackageText = new Text(container, SWT.BORDER | SWT.SINGLE);
-        newPackageText.setText("");
-        newPackageText.addKeyListener(new KeyListener() {
-
-            public void keyPressed(KeyEvent e) {
-            }
-
-            public void keyReleased(KeyEvent e) {
-                if (!newPackageText.getText().isEmpty()) {
-                    setPageComplete(true);
-                    return;
-                }
-                setPageComplete(false);
-            }
-
-        });
-        GridData textGD = new GridData(GridData.FILL_HORIZONTAL);
-        newPackageText.setLayoutData(textGD);
         setControl(container);
-        setPageComplete(true);
+        setPageComplete(false);
 
     }
 
-    public String getNewPackageName() {
-        return newPackageText.getText();
+    /**
+     * returns the new package name that is input by the user
+     * @return
+     */
+    public String getPackageName() {
+    	return packageName;
+    }
+    
+    /**
+     * Returns the canFinishPage private variable
+     * @return
+     */
+    public boolean getCanFinishPage() {
+    	return canFinishPage;
+    }
+    
+    /**
+     * Sets the warning label if class name with same name exists.
+     * @param set if true, set warning label
+     */
+    public void setExistingWarningLabel(boolean set) {
+    	if(set) {
+    		existingWarningLabel.setText("* Class with same name already exists!");
+    	} else {
+    		existingWarningLabel.setText("");
+    	}
     }
 
 }

@@ -47,6 +47,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -58,6 +59,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
@@ -194,7 +196,6 @@ public class LongParameterList extends ViewPart {
 		
 		
 		public void pressRefactorButton(int index) {
-			System.out.println("Success");
 			LPLMethodObject methodToRefactor = methodObjectTable[methodObjectTable.length - index - 1];
 			LPLRefactorWizard wizard = new LPLRefactorWizard(selectedProject, methodToRefactor);
 			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); dialog.open();
@@ -247,15 +248,6 @@ public class LongParameterList extends ViewPart {
 
 		public Image getImage(Object obj) {
 			return null;
-		}
-	}
-
-	class NameSorter extends ViewerSorter {
-		public int compare(Viewer viewer, Object obj1, Object obj2) {
-			if (obj1 instanceof LPLMethodObject && obj2 instanceof LPLMethodObject) {
-				return ((LPLMethodObject) obj1).compareTo((LPLMethodObject) obj2);
-			}
-			return 0;
 		}
 	}
 
@@ -327,7 +319,6 @@ public class LongParameterList extends ViewPart {
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
-		treeViewer.setSorter(new NameSorter());
 		treeViewer.setInput(getViewSite());
 		TableLayout layout = new TableLayout();
 		layout.addColumnData(new ColumnWeightData(40, true));
@@ -415,7 +406,6 @@ public class LongParameterList extends ViewPart {
 				activeProject = selectedProject;
 				CompilationUnitCache.getInstance().clearCache();
 				methodObjectTable = getTable();
-				System.out.println("methodObjectTable created");
 				treeViewer.setContentProvider(new ViewContentProvider());
 				applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
@@ -435,7 +425,6 @@ public class LongParameterList extends ViewPart {
 		};
 		ImageDescriptor refactoringButtonImage = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/search_button.png");
         identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
-        //identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
         identifyBadSmellsAction.setImageDescriptor(refactoringButtonImage);
         identifyBadSmellsAction.setEnabled(false);
 
@@ -451,7 +440,6 @@ public class LongParameterList extends ViewPart {
 
 		applyRefactoringAction = new Action() {
 			public void run() {
-				System.out.println("hi");
 			}
 		};
 		applyRefactoringAction.setToolTipText("Apply Refactoring");
@@ -461,8 +449,48 @@ public class LongParameterList extends ViewPart {
 
 		doubleClickAction = new Action() {
 			public void run() {
-				//TODO
+				try {
+					IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+					LPLMethodObject targetSmell = ((LPLMethodObject)selection.getFirstElement());
+					IMethod convertedIMethod = targetSmell.toIMethod(selectedProject);
+					ISourceRange methodRange = convertedIMethod.getSourceRange();
+					if(targetSmell != null && methodRange.getOffset() != -1 && methodRange.getLength() != -1) {
+						SystemObject systemObject = ASTReader.getSystemObject();
+						if(systemObject != null) {
+							IResource checkIfIFile = convertedIMethod.getUnderlyingResource();
+							if(checkIfIFile.getType() != IResource.FILE)
+				        		return;
+							IFile fileWithCodeSmell = (IFile) checkIfIFile;
+							IJavaElement sourceJavaElement = JavaCore.create(fileWithCodeSmell);
+							try {
+								ITextEditor sourceEditor = (ITextEditor) JavaUI.openInEditor(sourceJavaElement);
+								AnnotationModel annotationModel = (AnnotationModel) sourceEditor.getDocumentProvider()
+										.getAnnotationModel(sourceEditor.getEditorInput());
+								Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
+								while (annotationIterator.hasNext()) {
+									Annotation currentAnnotation = annotationIterator.next();
+	
+									annotationModel.removeAnnotation(currentAnnotation);
+								}
+								Position position = new Position(methodRange.getOffset(), (methodRange.getLength() + 1));
+								SliceAnnotation annotation = null;
+								annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, "We detect Long Parameter List!");
+								annotationModel.addAnnotation(annotation, position);
+						
+								sourceEditor.setHighlightRange(position.getOffset(), position.getLength(), true);
+	
+							} catch (PartInitException e) {
+								e.printStackTrace();
+							} catch (JavaModelException e) {
+								e.printStackTrace();
+							}
+	
+						}
+					}
+				} catch(Exception e) {
+					e.printStackTrace();
 				}
+			}
 		};
 	}
 
@@ -508,7 +536,7 @@ public class LongParameterList extends ViewPart {
 						}
 					}
 				});
-			} // 아마 UI 관련 코드로 예상된다. 대부분의 smell code가 동일하게 가지고 있음
+			}
 
 			final SystemObject systemObject = ASTReader.getSystemObject();
 			if (systemObject != null) {
