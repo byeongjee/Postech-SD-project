@@ -282,12 +282,14 @@ public class MergeClassRefactoring extends Refactoring {
             // Conside packages
             List<String> newImportList = new ArrayList<String>();
             for(String s : myContent){
-                if(s.substring(6).equals("import ")){
+                if(s.length() > 5 && s.substring(0,6).equals("import")){
+                	System.out.println(s);
                     newImportList.add(s);
                 }
             }
             for(String s : childContent){
-                if(s.substring(6).equals("import ")){
+                if(s.length() > 5 && s.substring(0,6).equals("import")){
+                	System.out.println(s);
                     newImportList.add(s);
                 }
             }
