@@ -87,19 +87,9 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
 					if(isChecked) {
 						canFinishPage = true;
 						setPageComplete(true);
-						newPackageText.setEditable(false);
 					}
 					else {
-						//setPageComplete(false);
 						currentCheckedIndex = -1;
-						newPackageText.setEditable(true);
-						if (!newPackageText.getText().isEmpty()) 
-						{
-							canFinishPage = true;
-							packageName = newPackageText.getText();
-		                    setPageComplete(true);
-		                    return;
-		                }
 						canFinishPage = false;
 		                setPageComplete(false);
 					}
@@ -110,33 +100,7 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
 		GridData tableGD = new GridData(GridData.FILL_HORIZONTAL);
 		tableGD.horizontalSpan = 2;
         table.setLayoutData(tableGD);
-		
-		//Label emptyLabel = new Label(container, SWT.NONE);
-        
-        Label label1 = new Label(container, SWT.NONE);
-        label1.setText("New package name");
 
-        newPackageText = new Text(container, SWT.BORDER | SWT.SINGLE);
-        newPackageText.setText("");
-        newPackageText.addKeyListener(new KeyListener() {
-
-            public void keyPressed(KeyEvent e) {
-            }
-
-            public void keyReleased(KeyEvent e) {
-                if (!newPackageText.getText().isEmpty()) {
-                	canFinishPage = true;
-                	packageName = newPackageText.getText();
-                    setPageComplete(true);
-                    return;
-                }
-                canFinishPage = false;
-                setPageComplete(false);
-            }
-
-        });
-        GridData textGD = new GridData(GridData.FILL_HORIZONTAL);
-        newPackageText.setLayoutData(textGD);
         setControl(container);
         setPageComplete(false);
 
@@ -147,7 +111,6 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
      * @return
      */
     public String getPackageName() {
-        //return newPackageText.getText();
     	return packageName;
     }
     

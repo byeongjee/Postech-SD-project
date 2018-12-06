@@ -139,7 +139,6 @@ public class LPLRefactorWizard extends Wizard {
 					public boolean visit(MethodInvocation node) {
 						System.out.println(node.getName().toString());
 						if(node.getName().toString().equals(smellContent.getLPLMethodObject().getName()))
-							System.out.println("Found same name");
 							changeMethodCall(iCu, node.getStartPosition(), smellContent);
 						return true;
 					}
