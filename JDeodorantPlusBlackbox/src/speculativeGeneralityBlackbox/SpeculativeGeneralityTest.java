@@ -150,6 +150,9 @@ public class SpeculativeGeneralityTest {
 		
 		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").select();
 		detectionApplier.bot().button("TEST").click();
+		
+		bot.shell("Refactoring").activate();
+		bot.button("Finish").click();
     	
     	// Rebuild
     	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
@@ -186,6 +189,9 @@ public class SpeculativeGeneralityTest {
 		
 		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OneChildInterface").select();
 		detectionApplier.bot().button("TEST").click();
+		
+		bot.shell("Refactoring").activate();
+		bot.button("Finish").click();
     	
     	// Rebuild
     	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
@@ -219,10 +225,14 @@ public class SpeculativeGeneralityTest {
 		
 		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OneChildAbstract").select();
 		detectionApplier.bot().button("TEST").click();
+		
+		bot.shell("Refactoring").activate();
+		bot.button("Finish").click();
     	
 		// Rebuild
     	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
 		IJavaProject javaProject = JavaCore.create(project);
+		
     	ICompilationUnit _CUorigin;
     	IBuffer _bufferOrigin;
 		try {
@@ -246,6 +256,9 @@ public class SpeculativeGeneralityTest {
 		
 		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").select();
 		detectionApplier.bot().button("TEST").click();
+		
+		bot.shell("Refactoring").activate();
+		bot.button("Finish").click();
     	
     	// Rebuild
     	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
