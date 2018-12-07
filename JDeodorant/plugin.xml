@@ -225,7 +225,7 @@
       <specification
             annotationType="gr.uom.java.jdeodorant.extractionAnnotation"
             colorPreferenceKey="extractionAnnotation_color"
-            colorPreferenceValue="192,255,192"
+            colorPreferenceValue= "255,160,160"
             contributesToHeader="false"
             highlightPreferenceKey="extractionAnnotation_highlight"
             highlightPreferenceValue="true"
@@ -250,7 +250,7 @@
       <specification
             annotationType="gr.uom.java.jdeodorant.duplicationAnnotation"
             colorPreferenceKey="duplicationAnnotation_color"
-            colorPreferenceValue="255,160,160"
+            colorPreferenceValue="192,255,192"
             contributesToHeader="false"
             highlightPreferenceKey="duplicationAnnotation_highlight"
             highlightPreferenceValue="true"

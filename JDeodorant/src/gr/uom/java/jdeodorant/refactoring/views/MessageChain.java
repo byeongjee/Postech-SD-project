@@ -711,13 +711,13 @@ public class MessageChain extends ViewPart {
 							annotationModel.addAnnotation(annotation, position);
 					
 							sourceEditor.setHighlightRange(position.getOffset(), position.getLength(), true);
-
+							System.out.println("Highlighted!!!");
+							
 						} catch (PartInitException e) {
 							e.printStackTrace();
 						} catch (JavaModelException e) {
 							e.printStackTrace();
 						}
-
 					}
 				}		
 			}

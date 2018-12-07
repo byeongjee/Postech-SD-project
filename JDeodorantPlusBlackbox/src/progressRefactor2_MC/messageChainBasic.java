@@ -1,4 +1,4 @@
-package messageChainBlackbox;
+package progressRefactor2_MC;
 
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
@@ -148,7 +148,6 @@ public class messageChainBasic {
 			bot.shell("Refactoring").activate();
 			bot.textWithLabel("New Method name :").setText("refactorMethod");
 			bot.button("Finish").click();
-			bot.sleep(1000000);
 		} catch (Exception e) {
 
 		}

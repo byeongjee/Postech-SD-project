@@ -793,6 +793,7 @@ public class LongMethod extends ViewPart {
 								annotationModel.removeAnnotation(currentAnnotation);
 							}
 						}
+						
 						for(Position position : annotationMap.keySet()) {
 							SliceAnnotation annotation = null;
 							String annotationText = annotationMap.get(position);
@@ -809,6 +810,7 @@ public class LongMethod extends ViewPart {
 						int offset = firstPosition.getOffset();
 						int length = lastPosition.getOffset() + lastPosition.getLength() - firstPosition.getOffset();
 						sourceEditor.setHighlightRange(offset, length, true);
+						
 					} catch (PartInitException e) {
 						e.printStackTrace();
 					} catch (JavaModelException e) {

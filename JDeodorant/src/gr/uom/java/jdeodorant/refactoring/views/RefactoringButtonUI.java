@@ -132,6 +132,7 @@ public class RefactoringButtonUI {
 						  event.gc.drawImage( image, event.width/2-8, event.height/2-8 );
 					  }
 				});
+				button.setText("Child");
 				
 				button.setSize(3, 3);
 				button.pack();
