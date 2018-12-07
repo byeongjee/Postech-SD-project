@@ -144,7 +144,7 @@ public class SpeculativeGenerality extends ViewPart {
 		 */
 		public void pressRefactorButton(int index) {
 			ClassObjectCandidate targetClass = _smellingClassEntries[index];
-			SGRefactorWizard wizard = new SGRefactorWizard(targetClass,_classObjectToBeExamined,identifyBadSmellsAction);
+			SGRefactorWizard wizard = new SGRefactorWizard(targetClass, _classObjectToBeExamined, identifyBadSmellsAction, activeProject);
 			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); dialog.open();
 
 		}
