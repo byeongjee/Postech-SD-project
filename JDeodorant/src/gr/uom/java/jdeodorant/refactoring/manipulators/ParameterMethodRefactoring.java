@@ -189,7 +189,6 @@ public class ParameterMethodRefactoring extends Refactoring {
 				String pTarget = targetMethod.getParameter(p).getName();
 
 				if (!checkContainance(originalContent, pTarget)) {
-					System.out.println(pTarget + " is not in " + originalContent);
 					unusedPList.add(pTarget);
 					unusedPIndex.add(p);
 					unusedPNum++;
@@ -218,7 +217,6 @@ public class ParameterMethodRefactoring extends Refactoring {
 			String param = pList.get(i);
 
 			if (this.checkContainance(originalContent, param)) {
-				System.out.println(param + " is in " + this.originalContent);
 				
 				flagUsed = true;
 			}
@@ -250,10 +248,6 @@ public class ParameterMethodRefactoring extends Refactoring {
 		List<String> orgContent = this.targetClass.getContent();
 		List<String> newContent = new ArrayList<String>();
 		
-		
-		System.out.println(targetMethod.getName());
-		System.out.println(this.dotParser(targetMethod.getAccess().toString()));
-		System.out.println(this.dotParser(targetMethod.getReturnType().toString()));
 		
 		// Find the target Method Poisition
 		int declarationIdx = -1;
@@ -305,7 +299,6 @@ public class ParameterMethodRefactoring extends Refactoring {
 			refactoredContent += c + "\r\n";
 		};
 		
-		System.out.println(this.refactoredContent);
 		return;
 	}
 	

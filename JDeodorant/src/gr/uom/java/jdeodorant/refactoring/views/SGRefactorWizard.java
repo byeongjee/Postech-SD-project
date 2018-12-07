@@ -33,6 +33,11 @@ import gr.uom.java.jdeodorant.refactoring.manipulators.DeleteClassRefactoring;
 import gr.uom.java.jdeodorant.refactoring.manipulators.MergeClassRefactoring;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ParameterMethodRefactoring;
 
+/**
+ * Popup wizard for speculative generality
+ * @author Jaeyeop Lee, Taeyoung Son (referred from LPL Team)
+ * 
+ */
 public class SGRefactorWizard extends Wizard {
 
 	private ClassObjectCandidate classToRefactor;
@@ -145,6 +150,13 @@ public class SGRefactorWizard extends Wizard {
 	}
 	
 	
+	/**
+	 * @author Jaeyeop Lee, Taeyoung Son (referred from LPL Team)
+	 * @param javaProject
+	 * @param smellContent
+	 * @param indexList
+	 * @throws JavaModelException
+	 */
 	static public void changeMethodsInProject(IJavaProject javaProject, final MethodObject smellContent, final List<Integer> indexList) throws JavaModelException {
 		IPackageFragment[] allPkg = javaProject.getPackageFragments();
 		List<IPackageFragment> srcPkgs = new ArrayList<IPackageFragment>();
@@ -162,8 +174,6 @@ public class SGRefactorWizard extends Wizard {
 		int i = 0;
 		
 		for(final ICompilationUnit iCu : srcCompilationUnits) {
-			System.out.println(i);
-			System.out.println("cu name: " + iCu.getElementName());
 			i++;
 			if(iCu.getUnderlyingResource() instanceof IFile) {
 				ASTParser parser = ASTParser.newParser(AST.JLS8);
@@ -172,10 +182,8 @@ public class SGRefactorWizard extends Wizard {
 				parser.setBindingsRecovery(true);
 				parser.setSource(iCu);
 				CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-				//System.out.println(iCu.getElementName());
 				ASTVisitor visitor = new ASTVisitor() {
 					public boolean visit(MethodInvocation node) {
-						System.out.println(node.getName().toString());
 						if(node.getName().toString().equals(smellContent.getName()))
 							changeMethodCall(iCu, node.getStartPosition(), smellContent, indexList);
 						return true;
@@ -186,7 +194,13 @@ public class SGRefactorWizard extends Wizard {
 		}
 	}
 	
-
+	/**
+	 * @author Jaeyeop Lee, Taeyoung Son (referred from LPL Team)
+	 * @param iCu
+	 * @param startPosition
+	 * @param smellContent
+	 * @param indexList
+	 */
 	protected static void changeMethodCall(ICompilationUnit iCu, int startPosition, MethodObject smellContent, List<Integer> indexList) {
 		try {
 			ICompilationUnit workingCopy = iCu
@@ -232,7 +246,7 @@ public class SGRefactorWizard extends Wizard {
 			}
 			
 			refactoredArgumentString = "(" + refactoredArgumentString.substring(0, refactoredArgumentString.length()-2) + ")";
-			System.out.println(refactoredArgumentString);
+
 			
 			buffer.replace(startPosition, endPosition - startPosition + 1, refactoredArgumentString);
 			
