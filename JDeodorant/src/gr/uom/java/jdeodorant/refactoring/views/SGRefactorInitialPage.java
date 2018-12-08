@@ -12,6 +12,11 @@ import org.eclipse.swt.widgets.Text;
 
 import gr.uom.java.ast.ClassObjectCandidate;
 
+/**
+ * initial page of refactoring pop up wizard for speculative generality
+ * @author Jaeyeop Lee, Taeyoung Son(referred from LPL Team)
+ *
+ */
 public class SGRefactorInitialPage extends WizardPage {
 	private Text text1;
     private Composite container;

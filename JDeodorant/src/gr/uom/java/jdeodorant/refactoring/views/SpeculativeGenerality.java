@@ -77,15 +77,10 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.TreeEditor;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -99,6 +94,7 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -143,102 +139,101 @@ public class SpeculativeGenerality extends ViewPart {
 	private SpeculativeGeneralityRefactoringButtonUI refactorButtonMaker;
 	
 	public class SpeculativeGeneralityRefactoringButtonUI extends RefactoringButtonUI {
-		@Override
-		public void makeRefactoringButtons(int columnIndex) {
-			TreeItem[] items = tree.getItems();
-			for(int i = 0; i < items.length; i++) {			
-				TreeItem item1 = items[i];
-				TreeEditor editor = new TreeEditor(item1.getParent());
-				Button button = new Button(item1.getParent(), SWT.PUSH);
-
-				button.setText("TEST");
-				button.setSize(16, 16);
-				button.pack();
-				button.setData("index", i);
-				
-				editor.horizontalAlignment = SWT.RIGHT;
-				editor.grabHorizontal = true;
-				editor.minimumWidth = 50;
-				editor.setEditor(button, item1, columnIndex);
-				buttonList.add(button);
-				button.addSelectionListener(new SelectionListener() {
-					public void widgetSelected(SelectionEvent event) {
-						pressRefactorButton((Integer) event.widget.getData("index"));
-					}
-
-					public void widgetDefaultSelected(SelectionEvent event) {
-					}
-				});
-				
-				button.addPaintListener(new PaintListener() {
-					public void paintControl( PaintEvent event ) {
-						  event.gc.setBackground( event.display.getSystemColor( SWT.COLOR_WHITE ) );
-						  event.gc.fillRectangle( event.x, event.y, event.width, event.height );
-						  Image image = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/refactoring_button.png").createImage();
-						  event.gc.drawImage( image, event.width/2-8, event.height/2-8 );
-					}
-				});
-				
-			}
-		}
-		
-		public void makeChildrenRefactoringButtons(int columnIndex) {
-			TreeItem[] items = tree.getItems();
-			for(int i = 0; i < items.length; i++) {
-				TreeEditor editor = new TreeEditor(tree);
-				
-				TreeItem item1 = items[i];
-				
-				this.getChildrenButtonList().add(new ArrayList<Button>());
-							
-				for(int j = 0; j < item1.getItems().length; j++) {
-					TreeEditor editor2 = new TreeEditor(item1.getItem(j).getParent());
-					Button button = new Button(item1.getItem(j).getParent(), SWT.PUSH);	
-					button.setData("parentIndex", i);
-					button.setData("childIndex", j);
-		  
-					button.addPaintListener( new PaintListener() {
-						  //@Override
-						  public void paintControl( PaintEvent event ) {
-							  event.gc.setBackground( event.display.getSystemColor( SWT.COLOR_WHITE ) );
-							  event.gc.fillRectangle( event.x, event.y, event.width, event.height );
-						  }
-					});
-
-					button.setText("Child");
-					button.setSize(3, 3);
-					button.pack();
-					
-					button.addSelectionListener(new SelectionListener() {
-						public void widgetSelected(SelectionEvent event) {
-							Integer parentIndex = (Integer) event.widget.getData("parentIndex");
-							Integer childIndex = (Integer) event.widget.getData("childIndex");
-							pressChildRefactorButton(parentIndex, childIndex);
-						}
-						
-						public void widgetDefaultSelected(SelectionEvent event) {
-						}
-					});
-					
-					editor2.horizontalAlignment = SWT.RIGHT;
-					editor2.grabHorizontal = true;
-					editor2.minimumWidth = 50;
-					editor2.setEditor(button, item1.getItem(j), columnIndex);
-					((ArrayList<Button>)this.getChildrenButtonList().get(i)).add(button);
-				}
-			}
-		}
-		
 		/**
 		 * Action on Refactoring Button
 		 * 
 		 * @author 손태영, 이주용 
 		 */
 		public void pressRefactorButton(int index) {
-			ClassObjectCandidate targetClass = _smellingClassEntries[index];
-			SGRefactorWizard wizard = new SGRefactorWizard(targetClass,_classObjectToBeExamined,identifyBadSmellsAction);
-			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); dialog.open();
+			ClassObjectCandidate classToRefactor = _smellingClassEntries[index];
+			
+			if(classToRefactor.getCodeSmellType().equals("Abstract Class")) {
+				if(classToRefactor.getNumChild() == 0) {
+					DeleteClassRefactoring _refactor = new DeleteClassRefactoring(classToRefactor);
+					_refactor.commentizeWholeContent();
+					_refactor.processRefactoring();
+				} else {
+					// Integrate Child and Parent
+					ClassObjectCandidate childClass;
+					for(ClassObject examiningClass : _classObjectToBeExamined) {
+						if(examiningClass.getName().equals(classToRefactor.getName())) continue;
+						
+						TypeObject superClass = examiningClass.getSuperclass();
+						if(superClass != null) {
+							if (superClass.getClassType().equals(classToRefactor.getName())) {
+								childClass = new ClassObjectCandidate(examiningClass);
+								
+								MergeClassRefactoring _refactor = new MergeClassRefactoring(classToRefactor, childClass);
+								_refactor.mergeIntoChild();
+								_refactor.buildContentInOneString();
+								_refactor.processRefactoringParent();
+								_refactor.processRefactoringChild();
+								
+								break;
+							}
+						}
+					}
+				}
+			} else if (classToRefactor.getCodeSmellType().equals("Interface Class")) {
+				if(classToRefactor.getNumChild() == 0) {
+					DeleteClassRefactoring _refactor = new DeleteClassRefactoring(classToRefactor);
+					
+					// Preview Tab
+					MyRefactoringWizard wizard = new MyRefactoringWizard(_refactor, null);
+					RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
+					try { 
+						String titleForFailedChecks = ""; //$NON-NLS-1$ 
+						op.run(getSite().getShell(), titleForFailedChecks); 
+					} catch(InterruptedException e) {
+						e.printStackTrace();
+					}
+					
+					System.out.println("After Wizard");
+					
+				} else {
+					ClassObjectCandidate childClass;
+					for (ClassObject examiningClass : _classObjectToBeExamined) {
+						if (examiningClass.getName().equals(classToRefactor.getName()))
+							continue;
 
+						ListIterator<TypeObject> parentClasses = examiningClass.getInterfaceIterator();
+						while(parentClasses.hasNext()) {
+							TypeObject parentClass = parentClasses.next();
+							if (parentClass.getClassType().equals(classToRefactor.getName())) {
+								childClass = new ClassObjectCandidate(examiningClass);
+
+								MergeClassRefactoring _refactor = new MergeClassRefactoring(classToRefactor, childClass);
+								_refactor.mergeIntoChild();
+								_refactor.buildContentInOneString();
+								_refactor.processRefactoringParent();
+								_refactor.processRefactoringChild();
+
+								break;
+							}
+						}
+					}
+				}
+			} else if (classToRefactor.getCodeSmellType().equals("Unnecessary Parameters")) {
+				List<MethodObject> _smellingMethods = classToRefactor.getSmellingMethods();
+				try {
+					for(MethodObject target : _smellingMethods) {
+						ParameterMethodRefactoring _refactor = new ParameterMethodRefactoring(classToRefactor, target);
+						_refactor.setUnusedParameterList();
+						_refactor.setUsedParameterList();
+						_refactor.resolveUnnecessaryParameters();
+						_refactor.processRefactoring();
+						//changeMethodsInProject(activeProject, target, _refactor.getUnusedParameterIndex());
+					}
+				}catch(Exception e){
+				}
+			}
+
+			// Re-detection
+			identifyBadSmellsAction.run();
+			
+			/*SGRefactorWizard wizard = new SGRefactorWizard(targetClass, _classObjectToBeExamined, identifyBadSmellsAction, activeProject);
+			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); 
+			dialog.open();*/
 		}
 	}
 
@@ -591,7 +586,7 @@ public class SpeculativeGenerality extends ViewPart {
 		//identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		identifyBadSmellsAction.setImageDescriptor(refactoringButtonImage);
 		identifyBadSmellsAction.setEnabled(false);
-/*
+
 		applyRefactoringAction = new Action() {
 			public void run() {
 				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
@@ -606,7 +601,7 @@ public class SpeculativeGenerality extends ViewPart {
 		applyRefactoringAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 				getImageDescriptor(ISharedImages.IMG_DEF_VIEW));
 		applyRefactoringAction.setEnabled(false);
-*/		
+		
 		doubleClickAction = new Action() {
 			public void run() {
 				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
@@ -638,7 +633,6 @@ public class SpeculativeGenerality extends ViewPart {
 						int offset = firstPosition.getOffset();
 						int length = lastPosition.getOffset() + lastPosition.getLength() - firstPosition.getOffset();
 						sourceEditor.setHighlightRange(offset, length, true);
-						
 					} catch (PartInitException e) {
 						e.printStackTrace();
 					} catch (JavaModelException e) {

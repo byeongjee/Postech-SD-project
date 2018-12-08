@@ -1,5 +1,6 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
+import gr.uom.java.jdeodorant.refactoring.manipulators.DeleteClassRefactoring;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractClassRefactoring;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractCloneRefactoring;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
@@ -50,6 +51,12 @@ public class MyRefactoringWizard extends RefactoringWizard {
 		}
 		else if(refactoring instanceof ExtractCloneRefactoring) {
 			addPage(new CloneDiffWizardPage((ExtractCloneRefactoring)refactoring));
+		}
+		/**
+		 *  @Edit :: Ju-Yong Lee
+		 */
+		else if(refactoring instanceof DeleteClassRefactoring) {
+			addPage(new DeleteClassWizardPage((DeleteClassRefactoring)refactoring));
 		}
 	}
 	

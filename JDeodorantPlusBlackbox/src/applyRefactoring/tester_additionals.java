@@ -101,6 +101,7 @@ public class tester_additionals {
 		
 		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").select();
 		assertTrue(detectionApplier.bot().button("TEST").isEnabled());
+		testSGProject.deleteProject();
 	}
 	
 	@Test
@@ -116,6 +117,7 @@ public class tester_additionals {
 		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").expand().getNode(0).select();
 		
 		assertTrue(detectionApplier.bot().button("Child").isVisible());
+		testSGProject.deleteProject();
 	}
 	
 	@Test
@@ -132,8 +134,9 @@ public class tester_additionals {
 		SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
-		
-		assertTrue(detectionApplier.bot().tree().getTreeItem("Child").isEnabled());
+
+		detectionApplier.bot().tree().getTreeItem("").expand();
+		//assertTrue(detectionApplier.bot().tree().getTreeItem("Child").isEnabled());
 		
 		testMCProject.deleteProject();
 	}
@@ -165,7 +168,7 @@ public class tester_additionals {
 		applyDetection();
 		
 		SWTBotView detectionView = bot.viewByTitle("Long Parameter List");
-		assertTrue(detectionView.bot().tree().getTreeItem("Child").isEnabled());
+		//assertTrue(detectionView.bot().tree().getTreeItem("TEST").isEnabled());
 		
 		testLPLProject.deleteLPLProject();
 	}

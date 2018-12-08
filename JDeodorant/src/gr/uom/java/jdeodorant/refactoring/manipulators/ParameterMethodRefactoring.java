@@ -114,7 +114,7 @@ import org.eclipse.jdt.core.dom.Statement;
  * Resolve Unnecessary Parameter, and Progress Refactoring 
  * 
  * @Test : BlackBoxTest/SpeculatvieGenerality
- * @author юлаж©К
+ * @author JuYong Lee
  */
 public class ParameterMethodRefactoring extends Refactoring {
 	private ClassObjectCandidate targetClass;
@@ -123,7 +123,7 @@ public class ParameterMethodRefactoring extends Refactoring {
     private Integer numUnusedParameter;
 	private List<String> unusedParameterList;
 	private List<String> usedParameterList;
-	
+	private List<Integer> unusedParameterIndex;
 	private String originalContent;
 	private String refactoredContent;
 	
@@ -131,6 +131,7 @@ public class ParameterMethodRefactoring extends Refactoring {
         this.numUnusedParameter = 0;
         this.unusedParameterList = new ArrayList<String>();
         this.usedParameterList = new ArrayList<String>();
+        this.unusedParameterIndex = new ArrayList<Integer>();
 	}
 	
 	public ParameterMethodRefactoring(ClassObjectCandidate _class, MethodObject _method) {
@@ -140,6 +141,7 @@ public class ParameterMethodRefactoring extends Refactoring {
         this.numUnusedParameter = 0;
         this.unusedParameterList = new ArrayList<String>();
         this.usedParameterList = new ArrayList<String>();
+        this.unusedParameterIndex = new ArrayList<Integer>();
         
         // Set Original Content
 		MethodBodyObject _methodBody = targetMethod.getMethodBody();
@@ -161,7 +163,7 @@ public class ParameterMethodRefactoring extends Refactoring {
         this.numUnusedParameter = 0;
         this.unusedParameterList = new ArrayList<String>();
         this.usedParameterList = new ArrayList<String>();
-        
+        this.unusedParameterIndex = new ArrayList<Integer>();
 		MethodBodyObject _methodBody = targetMethod.getMethodBody();
 		if (_methodBody != null) {
 			CompositeStatementObject _compositeStatement = _methodBody.getCompositeStatement();
@@ -177,7 +179,7 @@ public class ParameterMethodRefactoring extends Refactoring {
 	public void setUnusedParameterList() {
 		int unusedPNum = 0;
 		List<String> unusedPList = new ArrayList<String>();
-		
+		List<Integer> unusedPIndex = new ArrayList<Integer>();
 		if (this.originalContent != null) {
 			// Get Parameters
 			int pNum = targetMethod.getParameterList().size();
@@ -187,8 +189,8 @@ public class ParameterMethodRefactoring extends Refactoring {
 				String pTarget = targetMethod.getParameter(p).getName();
 
 				if (!checkContainance(originalContent, pTarget)) {
-					System.out.println(pTarget + " is not in " + originalContent);
 					unusedPList.add(pTarget);
+					unusedPIndex.add(p);
 					unusedPNum++;
 				}
 			}
@@ -196,6 +198,7 @@ public class ParameterMethodRefactoring extends Refactoring {
 		
 		this.numUnusedParameter = unusedPNum ;
 		this.unusedParameterList = unusedPList;
+		this.unusedParameterIndex = unusedPIndex;
 	}
 	
 	public List<String> getUnusedParameterList() {
@@ -214,7 +217,6 @@ public class ParameterMethodRefactoring extends Refactoring {
 			String param = pList.get(i);
 
 			if (this.checkContainance(originalContent, param)) {
-				System.out.println(param + " is in " + this.originalContent);
 				
 				flagUsed = true;
 			}
@@ -246,10 +248,6 @@ public class ParameterMethodRefactoring extends Refactoring {
 		List<String> orgContent = this.targetClass.getContent();
 		List<String> newContent = new ArrayList<String>();
 		
-		
-		System.out.println(targetMethod.getName());
-		System.out.println(this.dotParser(targetMethod.getAccess().toString()));
-		System.out.println(this.dotParser(targetMethod.getReturnType().toString()));
 		
 		// Find the target Method Poisition
 		int declarationIdx = -1;
@@ -301,7 +299,6 @@ public class ParameterMethodRefactoring extends Refactoring {
 			refactoredContent += c + "\r\n";
 		};
 		
-		System.out.println(this.refactoredContent);
 		return;
 	}
 	
@@ -388,5 +385,9 @@ public class ParameterMethodRefactoring extends Refactoring {
 	@Override
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		return null;
+	}
+
+	public List<Integer> getUnusedParameterIndex() {
+		return unusedParameterIndex;
 	}
 }

@@ -1,4 +1,4 @@
-package progressRefactor2_MC;
+package highlightCodeSmell;
 
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
 import static org.junit.Assert.assertEquals;

@@ -412,6 +412,7 @@ public class ExtractMethodRefactoring extends ExtractMethodFragmentRefactoring {
 			pm.beginTask("Creating change...", 1);
 			final Collection<TextFileChange> changes = new ArrayList<TextFileChange>();
 			changes.add(compilationUnitChange);
+			
 			CompositeChange change = new CompositeChange(getName(), changes.toArray(new Change[changes.size()])) {
 				@Override
 				public ChangeDescriptor getDescriptor() {

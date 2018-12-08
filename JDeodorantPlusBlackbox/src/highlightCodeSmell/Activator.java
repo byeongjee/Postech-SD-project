@@ -1,4 +1,4 @@
-package progressRefactor2_MC;
+package highlightCodeSmell;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;

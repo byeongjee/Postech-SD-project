@@ -128,6 +128,7 @@ public class messageChainBasic {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void testButtonClick() {
 		try {
@@ -148,7 +149,6 @@ public class messageChainBasic {
 			bot.shell("Refactoring").activate();
 			bot.textWithLabel("New Method name :").setText("refactorMethod");
 			bot.button("Finish").click();
-			bot.sleep(1000000);
 		} catch (Exception e) {
 
 		}

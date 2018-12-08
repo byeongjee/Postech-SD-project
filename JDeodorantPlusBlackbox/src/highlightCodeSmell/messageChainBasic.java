@@ -1,4 +1,4 @@
-package progressRefactor2_MC;
+package highlightCodeSmell;
 
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
@@ -54,6 +54,12 @@ public class messageChainBasic {
 		bot.tree().getTreeItem("Java").expand().getNode("Package Explorer").doubleClick();
 	}
 
+	public static void testOpenMessageChainTab() {
+		bot.menu("JDe5dorant").menu("Message Chain").click();
+		bot.viewByTitle("Message Chain");
+		assertTrue(bot.viewByTitle("Message Chain").isActive());
+	}
+
 	@BeforeClass
 	public static void initBot() throws CoreException {
 		bot = new SWTWorkbenchBot();
@@ -61,6 +67,7 @@ public class messageChainBasic {
 
 		testProject.buildProject();
 		openPackageExplorer();
+		testOpenMessageChainTab();
 	}
 
 	@AfterClass
@@ -69,44 +76,6 @@ public class messageChainBasic {
 		bot.resetWorkbench();
 	}
 
-	@Test
-	public void testOpenMessageChainTab() {
-		bot.menu("JDe5dorant").menu("Message Chain").click();
-		bot.viewByTitle("Message Chain");
-		assertTrue(bot.viewByTitle("Message Chain").isActive());
-	}
-
-	@Test
-	public void testApplyingMCDetection() {
-		bot.menu("JDe5dorant").menu("Message Chain").click();
-		bot.viewByTitle("Message Chain");
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-
-		SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-		assertTrue(detectionApplier.bot().tree().getTreeItem("").isEnabled());
-	}
-
-	@Test
-	public void testExpand() {
-		bot.menu("JDe5dorant").menu("Message Chain").click();
-		bot.viewByTitle("Message Chain");
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-
-		SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-		detectionApplier.bot().tree().getTreeItem("").select();
-		detectionApplier.bot().tree().getTreeItem("").expand();
-		assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode(1).isEnabled());
-	}
-
-	// Add in Iteration 3
 	@Test
 	public void testDoubleClickToSeeHighlight() {
 		try {
@@ -145,9 +114,6 @@ public class messageChainBasic {
 			detectionApplier.bot().tree().getTreeItem("").getNode(1).select();
 			detectionApplier.bot().tree().getTreeItem("").getNode(1).doubleClick();
 			detectionApplier.bot().button(2).click();
-			bot.shell("Refactoring").activate();
-			bot.textWithLabel("New Method name :").setText("refactorMethod");
-			bot.button("Finish").click();
 		} catch (Exception e) {
 
 		}
