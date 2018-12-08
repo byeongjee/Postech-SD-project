@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 import gr.uom.java.ast.ConstructorObject;
 import gr.uom.java.ast.LPLMethodObject;
+import gr.uom.java.ast.LPLSmellContent;
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.TypeObject;
 import gr.uom.java.jdeodorant.refactoring.views.LPLRefactorWizard;
@@ -98,17 +99,6 @@ public class LongParameterListTest {
 	}
 	
 	
-	@Test
-	public void testLPLRefactoringEditParameterFromBuffer() {
-		IBuffer buffer = createMockIBuffer();
-		IMethod method = createMockIMethod();
-		String parameterString = "int x, int y";
-		ArrayList<Integer> parameterIndexList = new ArrayList<Integer>();
-		parameterIndexList.add(1);
-		parameterIndexList.add(2);
-
-	}
-
 	private static LPLMethodObject createMockLPLMethodObject1() {
 		MethodObject mockMethodObject = createMockMethodObject1();
 		return LPLMethodObject.createLPLMethodObjectFrom(mockMethodObject);
