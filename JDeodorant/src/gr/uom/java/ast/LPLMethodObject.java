@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
@@ -135,11 +136,12 @@ public class LPLMethodObject extends MethodObject {
 		}
 	}
 	
-	public static void editParameterFromBuffer(IBuffer buffer, IMethod method, ArrayList<Integer> parameterIndexList, LPLSmellContent smellContent) {
+	public static void editParameterFromBuffer(IBuffer buffer, IMethod method, ArrayList<Integer> parameterIndexList, 
+			LPLSmellContent smellContent, String tempVarInitializeCode) {
 		try {
 			IMethod convertedIMethod = method;
-			
 			int startPosition = convertedIMethod.getSourceRange().getOffset();
+			
 			while (true) {
 				if (buffer.getChar(startPosition) != '(') {
 					startPosition += 1;
@@ -178,10 +180,40 @@ public class LPLMethodObject extends MethodObject {
 			replaceSignature += refactoredArgumentString;
 			replaceSignature += smellContent.getNewClassName() + " " + smellContent.getNewParameterName();
 			replaceSignature += ")";
+			
+			int defPosition = endPosition;
+			while (buffer.getChar(defPosition) != '{') {
+				defPosition += 1;
+			}
+			defPosition += 1;
+			
+			
+			buffer.replace(defPosition, 0, tempVarInitializeCode);
 			buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
 		} catch (Exception e) {
 				e.printStackTrace();
 		}
+	}
+	
+	public static String codeForInitializingTempVars(IMethod method, List<String>parameterTypes, List<String>parameterNames, String parameterObjName) {
+		StringBuilder codeBuilder = new  StringBuilder();
+		codeBuilder.append("\n");
+		int parameterSize = parameterTypes.size();
+		for (int i = 0; i < parameterSize; ++i) {
+			codeBuilder.append("\t\t");
+			codeBuilder.append(parameterTypes.get(i));
+			codeBuilder.append(" ");
+			codeBuilder.append(parameterNames.get(i));
+			codeBuilder.append(" = ");
+			codeBuilder.append(parameterObjName);
+			codeBuilder.append(".get");
+			String name = parameterNames.get(i);
+			String nameWithUpperCase = name.substring(0, 1).toUpperCase() + name.substring(1);
+			codeBuilder.append(nameWithUpperCase);
+			codeBuilder.append("()");
+			codeBuilder.append(";\n");
+		}
+		return codeBuilder.toString();
 	}
 
 	private String codeSmellType;
