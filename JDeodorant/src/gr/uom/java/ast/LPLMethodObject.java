@@ -164,6 +164,7 @@ public class LPLMethodObject extends MethodObject {
 			String argumentString = buffer.getContents().substring(startPosition + 1, endPosition);
 			String argumentParts[] = argumentString.split(",");
 			for(int it : parameterIndexList) {
+				
 				argumentParts[it] = null;
 			}
 			String refactoredArgumentString = "";
@@ -177,7 +178,6 @@ public class LPLMethodObject extends MethodObject {
 			replaceSignature += refactoredArgumentString;
 			replaceSignature += smellContent.getNewClassName() + " " + smellContent.getNewParameterName();
 			replaceSignature += ")";
-			
 			buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
 		} catch (Exception e) {
 				e.printStackTrace();

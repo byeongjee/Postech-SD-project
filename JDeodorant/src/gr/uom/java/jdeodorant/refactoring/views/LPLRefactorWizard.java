@@ -83,7 +83,8 @@ public class LPLRefactorWizard extends Wizard {
 			workingCopy.discardWorkingCopy();
 			workingCopy.discardWorkingCopy();
 			
-			
+			System.out.println("signatures!!");
+			findMethodsWithSameSignatures(javaProject, smellContent);
 			
 		} catch (Exception e) {
 		}
@@ -152,6 +153,12 @@ public class LPLRefactorWizard extends Wizard {
 		return null;
 	}
 	
+	/**
+	 * Changes all methods called in javaProject to matched the refactored method 
+	 * @param javaProject Project to search in
+	 * @param smellContent contains information for changing method
+	 * @throws JavaModelException
+	 */
 	static public void changeMethodsInProject(IJavaProject javaProject, final LPLSmellContent smellContent) throws JavaModelException {
 		IPackageFragment[] allPkg = javaProject.getPackageFragments();
 		List<IPackageFragment> srcPkgs = new ArrayList<IPackageFragment>();
@@ -198,6 +205,85 @@ public class LPLRefactorWizard extends Wizard {
 		}
 	}
 	
+	static public void findMethodsWithSameSignatures(IJavaProject javaProject, LPLSmellContent smellContent) throws JavaModelException {
+		IPackageFragment[] allPkg = javaProject.getPackageFragments();
+		List<IPackageFragment> srcPkgs = new ArrayList<IPackageFragment>();
+		for(IPackageFragment myPackage : allPkg) {
+			if(myPackage.getKind() == IPackageFragmentRoot.K_SOURCE && myPackage.getCompilationUnits().length != 0) {
+				srcPkgs.add(myPackage);
+			}
+		}
+		
+		ArrayList<ICompilationUnit> srcCompilationUnits;
+		srcCompilationUnits = new ArrayList<ICompilationUnit>();
+		for(IPackageFragment srcPkg : srcPkgs) {
+			srcCompilationUnits.addAll(Arrays.asList(srcPkg.getCompilationUnits()));
+		}
+		
+		for(ICompilationUnit foundCu : srcCompilationUnits) {
+			IType[] allTypes = foundCu.getTypes();
+			ArrayList<IMethod> foundMethods = new ArrayList<IMethod>();
+			for(IType t : allTypes) {
+				foundMethods.addAll(Arrays.asList(t.getMethods()));
+			}
+			for(IMethod candidateMethod : foundMethods) {
+				//System.out.println(candidateMethod.getElementName());
+				/*ArrayList<String> p = new ArrayList<String>();
+				p.add("int x");
+				p.add("int y");*/
+				
+				/* Not working yet!! */
+				if(hasExtractedParameters(candidateMethod, foundCu, null)) {
+					System.out.println(candidateMethod.getElementName());
+				}
+			}
+		}
+	}
+	
+	protected static boolean hasExtractedParameters(IMethod candidateMethod, ICompilationUnit foundCu, ArrayList<String> extractedParameters) {
+		try {
+			IBuffer buffer = ((IOpenable) foundCu).getBuffer();
+			int startPosition = candidateMethod.getSourceRange().getOffset();
+			while (true) {
+				if (buffer.getChar(startPosition) != '(') {
+					startPosition += 1;
+					continue;
+				}
+				break;
+			}
+			int numOfLeftPar = 0;
+			int endPosition = startPosition;
+			while (true) {
+				if (buffer.getChar(endPosition) == '(') {
+					numOfLeftPar += 1;
+				} 
+				else if (buffer.getChar(endPosition) == ')') {
+					if (numOfLeftPar == 1)
+						break;
+					else
+						numOfLeftPar -= 1;
+				}
+				endPosition += 1;
+			}
+			String argumentString = buffer.getContents().substring(startPosition + 1, endPosition);
+			String argumentParts[] = argumentString.split(",");
+			ArrayList<String> argumentPartList = new ArrayList<String>(Arrays.asList(argumentParts));
+			for(int i = 0; i < argumentParts.length; i++) {
+				argumentParts[i] = argumentParts[i].trim();
+			}
+			for(String s : extractedParameters) {
+				if(!Arrays.asList(argumentParts).contains(s)) {
+					return false;
+				}
+			}
+			foundCu.discardWorkingCopy();
+			return true;
+		} catch (Exception e) {
+				e.printStackTrace();
+		}
+		return false;
+	}
+	
 
 	protected static void changeMethodCall(ICompilationUnit iCu, int startPosition, LPLSmellContent smellContent) {
 		try {
@@ -205,9 +291,6 @@ public class LPLRefactorWizard extends Wizard {
 					.getWorkingCopy(new WorkingCopyOwner() {
 					}, null);
 			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
-			/*for(int i = 0; i < 10; i++) {
-				System.out.print(buffer.getChar(startPosition + i));
-			}*/
 			System.out.print("\n");
 			while (true) {
 				if (buffer.getChar(startPosition) != '(') {
@@ -256,8 +339,6 @@ public class LPLRefactorWizard extends Wizard {
 			replaceSignature += refactoredArgumentString;
 			replaceSignature += "new " + smellContent.getNewClassName() + "(" + extractedArgumentString + ")";
 			replaceSignature += ")";
-			
-			//System.out.println(refactoredArgumentString);
 			
 			buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
 			
