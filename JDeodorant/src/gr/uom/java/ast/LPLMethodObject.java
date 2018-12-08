@@ -75,12 +75,54 @@ public class LPLMethodObject extends MethodObject {
 			}
 			constructorBuilder.append("\n\t}\n");
 			String constructor = constructorBuilder.toString();
+			
+			StringBuilder getterBuilder = new StringBuilder();
+			for (int i = 0; i < parameterTypeAndNames.size(); ++i) {
+				StringBuilder aGetterBuilder = new StringBuilder();
+				aGetterBuilder.append("\t public ");
+				aGetterBuilder.append(parameterTypes.get(i) + " ");
+				String parameterName = parameterNames.get(i);
+				aGetterBuilder.append("get");
+				aGetterBuilder.append(parameterName.substring(0, 1).toUpperCase() + parameterName.substring(1));
+				aGetterBuilder.append("()");
+				aGetterBuilder.append(" {\n");
+				aGetterBuilder.append("\t\t return ");
+				aGetterBuilder.append(parameterName);
+				aGetterBuilder.append(";\n\t}\n");
+				String aGetter = aGetterBuilder.toString();
+				getterBuilder.append(aGetter);
+			}
+			String getter = getterBuilder.toString();
+			
+			StringBuilder setterBuilder = new StringBuilder();
+			for (int i = 0; i < parameterTypeAndNames.size(); ++i) {
+				StringBuilder aSetterBuilder = new StringBuilder();
+				aSetterBuilder.append("\t public void ");
+				String parameterName = parameterNames.get(i);
+				aSetterBuilder.append("set");
+				aSetterBuilder.append(parameterName.substring(0, 1).toUpperCase() + parameterName.substring(1));
+				aSetterBuilder.append("(");
+				aSetterBuilder.append(parameterTypeAndNames.get(i));
+				aSetterBuilder.append(")");
+				aSetterBuilder.append(" {\n");
+				aSetterBuilder.append("\t\t this.");
+				aSetterBuilder.append(parameterName);
+				aSetterBuilder.append(" = ");
+				aSetterBuilder.append(parameterName);
+				aSetterBuilder.append(";\n\t}\n");
+				String aSetter = aSetterBuilder.toString();
+				setterBuilder.append(aSetter);
+			}
+			String setter = setterBuilder.toString();
+			
 			StringBuilder classDeclarationBuilder = new StringBuilder();
 			classDeclarationBuilder.append("public class ");
 			classDeclarationBuilder.append(className);
 			classDeclarationBuilder.append("{ \n");
 			classDeclarationBuilder.append(parameterDeclaration);
 			classDeclarationBuilder.append(constructor);
+			classDeclarationBuilder.append(getter);
+			classDeclarationBuilder.append(setter);
 			classDeclarationBuilder.append("}");
 			
 			String classDeclaration = classDeclarationBuilder.toString();
@@ -131,13 +173,10 @@ public class LPLMethodObject extends MethodObject {
 					refactoredArgumentString += ", ";
 				}
 			}
-			//refactoredArgumentString = refactoredArgumentString.substring(0, refactoredArgumentString.length() - 2);
 			String replaceSignature = "(";
 			replaceSignature += refactoredArgumentString;
 			replaceSignature += smellContent.getNewClassName() + " " + smellContent.getNewParameterName();
 			replaceSignature += ")";
-			
-			System.out.println(refactoredArgumentString);
 			
 			buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
 		} catch (Exception e) {
