@@ -20,9 +20,11 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IVMInstall;
@@ -45,6 +47,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 
@@ -229,7 +235,7 @@ public class LongParameterListTest {
 	}
 
 	@Test
-	public void testLPLRefactoringSuccessScenario1() {
+	public void testLPLRefactoringSuccessScenario() {
 		try {
 			//testLPLProject.buildLPLProject();
 			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testLPLProject");
@@ -248,20 +254,27 @@ public class LongParameterListTest {
 			refactoringWizard.bot().table().getTableItem(1).check();
 			refactoringWizard.bot().button("Next >").click();
 			// now in class name page
-			refactoringWizard.bot().text().selectAll().typeText("TestClass");
+			refactoringWizard.bot().text(0).selectAll().typeText("TestClass");
+			refactoringWizard.bot().text(1).selectAll().typeText("testParameter");
 			refactoringWizard.bot().button("Next >").click();
 			// now in package selection page
 			refactoringWizard.bot().table().getTableItem(0).check();
 			refactoringWizard.bot().button("Finish").click();
 
-			IProject projectUpdated = ResourcesPlugin.getWorkspace().getRoot().getProject("testLPLProject");
 			IJavaProject javaProjectUpdated = JavaCore.create(project);
 
-			assertTrue(javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").getSource()
-					.length() < originalSource.length());
+			assertTrue(javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").exists());
+			assertFalse(javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").getSource().equals(originalSource));
+			ICompilationUnit newCompilationUnit = javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestClass.java");
+			List<IField> fields = new ArrayList<IField>();
+			for (IType type: newCompilationUnit.getTypes()) {
+				for (IField field: type.getFields()) {
+					fields.add(field);
+				}
+			}
+			assertTrue(newCompilationUnit.exists() && fields.size() == 2);
 		} catch (Exception e) {
-			e.printStackTrace();
-			fail();
+			fail("fail with Exception " + e);
 		} finally {
 			try {
 		closeRefactoringPopUp();
@@ -270,45 +283,6 @@ public class LongParameterListTest {
 		deleteTestProject();
 			} catch (Exception e) {
 				
-			}
-
-		}
-
-	}
-
-	@Ignore
-	@Test // assert that refactoring through PopUp UI works correctly
-	public void testLPLRefactoringSuccessScenario2() {
-		try {
-			detectCodeSmellAndOpenRefactoringPopUp();
-			SWTBotShell refactoringWizard = bot.shell("Refactoring");
-			refactoringWizard.bot().table().getTableItem(0).check();
-			refactoringWizard.bot().table().getTableItem(1).check();
-			refactoringWizard.bot().button("Next >").click();
-			// now in class name page
-			refactoringWizard.bot().text().selectAll().typeText("TestClass");
-			refactoringWizard.bot().button("Next >").click();
-			// now in package selection page
-			refactoringWizard.bot().text().selectAll().typeText("NewClass");
-			refactoringWizard.bot().button("Finish").click();
-			closeRefactoringPopUp();
-			closeLPLTab();
-
-			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testLPLProject");
-			IJavaProject javaProject = JavaCore.create(project);
-			assertTrue(javaProject.getPackageFragments()[0].getCompilationUnit("NewClass").exists());
-		} catch (Exception e) {
-			fail();
-		} 
-		finally {
-
-			try {
-				deleteTestProject();
-				testLPLProject.buildLPLProject();
-				closeRefactoringPopUp();
-				closeLPLTab();
-			} catch (CoreException e) {
-				e.printStackTrace();
 			}
 
 		}
