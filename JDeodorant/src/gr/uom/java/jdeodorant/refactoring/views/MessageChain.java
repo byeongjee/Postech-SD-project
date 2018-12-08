@@ -46,6 +46,7 @@ import gr.uom.java.jdeodorant.refactoring.Activator;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSlice;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSliceGroup;
 import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
+import gr.uom.java.jdeodorant.refactoring.manipulators.MessageChainRefactoring;
 import gr.uom.java.jdeodorant.refactoring.manipulators.MoveMethodRefactoring;
 
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
@@ -123,6 +124,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -138,7 +140,6 @@ public class MessageChain extends ViewPart {
 	private Action applyRefactoringAction;
 	private Action doubleClickAction;
 	private Action saveResultsAction;
-	// private Action evolutionAnalysisAction;
 	private IJavaProject selectedProject;
 	private IJavaProject activeProject;
 	private IPackageFragmentRoot selectedPackageFragmentRoot;
@@ -147,39 +148,41 @@ public class MessageChain extends ViewPart {
 	private IType selectedType;
 	private IMethod selectedMethod;
 	private ASTSliceGroup[] sliceGroupTable;
-	// private MethodEvolution methodEvolution;
-	/* Mine */
 	
 	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
 	
 	public MessageChainStructure[] targets;
 	private Map<String, Map<Integer, List<MethodInvocationObject>>> originCodeSmells; // for storing origin map
 	public List<String> newRefactoringMethod;//store method's name and class name of refactoring code. We will add new method name whenever we do refactoring
-	
-	// Do it in Iteration 4
+
 	public String newMethodName;
-	   
-	//private IJavaProject 
+
 	private class MessageChainRefactoringButtonUI extends RefactoringButtonUI{
-	   public void pressRefactoringButton(int index) {	         
-	   }
-	   // Edit it in Iteration 4
+		 /**
+		* New function for detecting User's reaction that he or she press rafatoring
+			       * button
+			       * 
+			       * <Arguments> int parentIndex: Number that index of parent int childIndex:
+			       * Number that index of child
+			       **/
 	   public void pressChildRefactorButton(int parentIndex, int childIndex) {
-	      //System.out.println("Success");
 	      MCRefactorWizard wizard = new MCRefactorWizard(selectedProject);
 	         
 	      WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); dialog.open();
 	         
 	      newMethodName = wizard.getNewMethodName();
-	      //System.out.println("New Method Name is: " + newMethodName);
 	         
-	      if(newMethodName != null)   
+	      if(newMethodName != null)   {
+	    	  
 	    	  messageChainRefactoring(parentIndex, childIndex);
+	      }
 	  }
 	}
 
 	private MessageChainRefactoringButtonUI refactorButtonMaker;
-	
+	/**
+	    * Provide information about tree that contains Message Chain Code Smell
+	**/
 	public class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}
@@ -220,7 +223,9 @@ public class MessageChain extends ViewPart {
 
 		
 	}
-
+	/**
+	    * Provide text or image about tree for showing information to User
+	    **/
 	public class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
 		public String getColumnText(Object obj, int index) {
 
@@ -234,11 +239,6 @@ public class MessageChain extends ViewPart {
 					return entry.getStart().toString();
 				case 1:
 					return entry.getName();
-				case 2:
-					if(entry.getLength() == -1) {
-						return "";
-					}
-					return String.valueOf(entry.getLength());
 				default:
 					return "";
 				}
@@ -258,6 +258,10 @@ public class MessageChain extends ViewPart {
 
 
 	private ISelectionListener selectionListener = new ISelectionListener() {
+		/**
+	       * New function for detecting User's selection and adjusting new information
+	       * using User's selection
+	       **/
 		public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
 			if (selection instanceof IStructuredSelection) {
 				IStructuredSelection structuredSelection = (IStructuredSelection) selection;
@@ -330,15 +334,12 @@ public class MessageChain extends ViewPart {
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
-		//treeViewer.setSorter(new NameSorter());
 		treeViewer.setInput(getViewSite());
 		TableLayout layout = new TableLayout();
 		layout.addColumnData(new ColumnWeightData(30, true));
 		layout.addColumnData(new ColumnWeightData(60, true));
 		layout.addColumnData(new ColumnWeightData(40, true));
 		layout.addColumnData(new ColumnWeightData(20, true));
-		/*layout.addColumnData(new ColumnWeightData(20, true));
-		layout.addColumnData(new ColumnWeightData(20, true));*/
 		treeViewer.getTree().setLayout(layout);
 		treeViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
 		treeViewer.getTree().setLinesVisible(true);
@@ -352,21 +353,17 @@ public class MessageChain extends ViewPart {
 		column1.setResizable(true);
 		column1.pack();
 		TreeColumn column2 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
-		column2.setText("Length");
+		column2.setText("Refactoring");
 		column2.setResizable(true);
 		column2.pack();
-		TreeColumn column3 = new TreeColumn(treeViewer.getTree(), SWT.LEFT);
-		column3.setText("Refactoring");
-		column3.setResizable(true);
-		column3.pack();
 
 		treeViewer.expandAll();
 
 		treeViewer.setColumnProperties(
-				new String[] { "Start Position", "Name", "Length", "Refactoring" });
+				new String[] { "Start Position", "Name", "Refactoring" });
 		treeViewer.setCellEditors(new CellEditor[] { new TextCellEditor(), new TextCellEditor(), new TextCellEditor(),
 				new TextCellEditor(), new TextCellEditor(), new MyComboBoxCellEditor(treeViewer.getTree(),
-						new String[] { "0", "1", "2", "3" }, SWT.READ_ONLY) });
+						new String[] { "0", "1", "2"}, SWT.READ_ONLY) });
 
 
 		makeActions();
@@ -374,19 +371,6 @@ public class MessageChain extends ViewPart {
 		contributeToActionBars();
 		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(selectionListener);
 		JavaCore.addElementChangedListener(ElementChangedListener.getInstance());
-		/*getSite().getWorkbenchWindow().getWorkbench().getOperationSupport().getOperationHistory()
-				.addOperationHistoryListener(new IOperationHistoryListener() {
-					public void historyNotification(OperationHistoryEvent event) {
-						int eventType = event.getEventType();
-						if (eventType == OperationHistoryEvent.UNDONE || eventType == OperationHistoryEvent.REDONE
-								|| eventType == OperationHistoryEvent.OPERATION_ADDED
-								|| eventType == OperationHistoryEvent.OPERATION_REMOVED) {
-							if (activeProject != null && CompilationUnitCache.getInstance().getAffectedProjects()
-									.contains(activeProject)) {
-							}
-						}
-					}
-				});*/
 	}
 
 	private void contributeToActionBars() {
@@ -397,81 +381,7 @@ public class MessageChain extends ViewPart {
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
 	}
- 	
-	/**
-	 * New function for making codes about new method after user decides to Refactoring
-	 * 
-	 * <Arguments>
-	 * String newMethodName: Name of new Method
-	 * String returnType: Return type of new Method
-	 * List<String> stringOfArgumentType: String List that contains whole of argument types in original methods
-	 * List<Integer> numOfArgumentOfEachMethod: Integer List that contains number of arguments for each methods
-	 * List<String> stringOfMethodInvocation: String List that contain whole of method invocations
-	 * **/
-	public String makeNewMethodCode (String newMethodName, String returnType, List<String> stringOfArgumentType, List<Integer> numOfArgumentOfEachMethod, List<String> stringOfMethodInvocation) {
-		String strOfMethod = "";
-		strOfMethod += "public ";
-		strOfMethod += returnType;
-		strOfMethod += " ";
-		strOfMethod += newMethodName;
-		strOfMethod += "(";
-		for(int i = 0; i<stringOfArgumentType.size(); i++) {
-			strOfMethod += stringOfArgumentType.get(i);
-			strOfMethod += " ";
-			strOfMethod += "x";
-			strOfMethod += Integer.toString(i);
-			strOfMethod += ", ";
-		}
-		if(stringOfArgumentType.size() > 0) {
-			strOfMethod = strOfMethod.substring(0,strOfMethod.length()-2);
-		}				
-		strOfMethod += ")";
-		strOfMethod += " {\r\n";
-		strOfMethod += "\treturn ";
-		int numOfArg = 0;
-		int numOfMethod = 0;
-		for(String method : stringOfMethodInvocation) {
-			strOfMethod += method;
-			strOfMethod += "(";
-			for(int i = 0; i< numOfArgumentOfEachMethod.get(numOfMethod); i++, numOfArg++) {
-				strOfMethod += "x";
-				strOfMethod += Integer.toString(numOfArg);
-				strOfMethod += ", ";
-			}
-			if(numOfArgumentOfEachMethod.get(numOfMethod)>0) {
-				strOfMethod = strOfMethod.substring(0,strOfMethod.length()-2);
-			}					
-			strOfMethod += ")";
-			strOfMethod += ".";
-			numOfMethod++;
-		}
-		strOfMethod = strOfMethod.substring(0,strOfMethod.length()-1);
-		strOfMethod += ";\r\n";
-		strOfMethod += "}\r\n";
-		return strOfMethod;
-	}
-	
-	/**
-	 * New function for modify code that contains new method after user decides to Refactoring
-	 * 
-	 * <Arguments>
-	 * String newMethodName: Name of new method
-	 * List<String> stringOfArgument: String List that contains whole of arguments
-	 * **/
-	public String makeNewRefactorCode(String newMethodName, List<String> stringOfArgument) {
-		String strOfRefact = "";
-		strOfRefact += newMethodName;
-		strOfRefact += "(";
-		for (String arg : stringOfArgument) {
-			strOfRefact += arg;
-			strOfRefact += ", ";
-		}
-		if(stringOfArgument.size() > 0) {
-			strOfRefact = strOfRefact.substring(0, strOfRefact.length() - 2);
-		}				
-		strOfRefact += ")";
-		return strOfRefact;
-	}
+
 	 
 	//Impossible to make junit test because we don't have permission of making MethodInvocationObject mock object
 	/**
@@ -496,14 +406,12 @@ public class MessageChain extends ViewPart {
 				String targetSmellName = targetSmell.getName();
 				String classNameOfMethodInvocation = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getOriginClassName();
 
-				ICompilationUnit compUnitWithCodeSmell = getCompUnit (systemObject, targetSmell.getParent().getName());
-				ICompilationUnit compUnitOfMethodInvocation = getCompUnit (systemObject, classNameOfMethodInvocation);
-				
-//				String newMethodName = "myMethod";//TODO : we have to get methodName from user
+				ICompilationUnit compUnitWithCodeSmell = MessageChainRefactoring.getCompUnit (systemObject, targetSmell.getParent().getName());
+				ICompilationUnit compUnitOfMethodInvocation = MessageChainRefactoring.getCompUnit (systemObject, classNameOfMethodInvocation);
 				
 				int sizeOfMethodInvocation = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).size();
 				String stringOfMethod = originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(sizeOfMethodInvocation-1).getReturnType().toString();
-	            String returnType = getClassName(sizeOfMethodInvocation, stringOfMethod);
+	            String returnType = MessageChainRefactoring.getClassName(sizeOfMethodInvocation, stringOfMethod);
 	            
 				List<String> stringOfMethodInvocation = new ArrayList<String> ();
 				List<String> stringOfArgumentType = new ArrayList<String> ();
@@ -519,10 +427,10 @@ public class MessageChain extends ViewPart {
 					numOfArgumentOfEachMethod.add(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(i).getParameterList().size());
 				}			
 				
-				String strOfRefact = makeNewRefactorCode(newMethodName, stringOfArgument);
-				String strOfMethod = makeNewMethodCode(newMethodName, returnType, stringOfArgumentType, numOfArgumentOfEachMethod, stringOfMethodInvocation);
+				String strOfRefact = MessageChainRefactoring.makeNewRefactorCode(newMethodName, stringOfArgument);
+				String strOfMethod = MessageChainRefactoring.makeNewMethodCode(newMethodName, returnType, stringOfArgumentType, numOfArgumentOfEachMethod, stringOfMethodInvocation);
 
-				modifyMethodInvocationFile (compUnitOfMethodInvocation, strOfMethod);
+				MessageChainRefactoring.modifyMethodInvocationFile (compUnitOfMethodInvocation, strOfMethod);
 				modifyCodeSmellFile (compUnitWithCodeSmell, strOfRefact, targetSmell);
 				
 				newRefactoringMethod.add(classNameOfMethodInvocation+"/"+newMethodName);//add new method name to notify that this code should not be detected.
@@ -530,7 +438,7 @@ public class MessageChain extends ViewPart {
 				
 				MessageChainStructure nextTargetSmell = findMCSwithGivenName(targetSmellName);
 				while(nextTargetSmell != null) {
-					ICompilationUnit compUnitWithNextCodeSmell = getCompUnit (systemObject, nextTargetSmell.getParent().getName());
+					ICompilationUnit compUnitWithNextCodeSmell = MessageChainRefactoring.getCompUnit (systemObject, nextTargetSmell.getParent().getName());
 					
 					List<String> stringOfNextArgument = new ArrayList<String> ();
 					for(int i = 0; i<sizeOfMethodInvocation;i++) {
@@ -539,7 +447,7 @@ public class MessageChain extends ViewPart {
 						}
 					}
 					
-					String strOfNextRefact = makeNewRefactorCode(newMethodName, stringOfNextArgument);
+					String strOfNextRefact = MessageChainRefactoring.makeNewRefactorCode(newMethodName, stringOfNextArgument);
 					
 					modifyCodeSmellFile (compUnitWithNextCodeSmell, strOfNextRefact, nextTargetSmell);
 					
@@ -550,13 +458,15 @@ public class MessageChain extends ViewPart {
 		}
 	}
 	
-	public ICompilationUnit getCompUnit (SystemObject systemObject, String className) {
-		ClassObject classWithCodeSmell = systemObject.getClassObject(className);
-		IFile fileWithCodeSmell = classWithCodeSmell.getIFile();	
-		ICompilationUnit compUnitWithCodeSmell = (ICompilationUnit) JavaCore.create(fileWithCodeSmell);
-		return compUnitWithCodeSmell;
-	}
 	
+	/**
+	    * New function for replacing code from original codes to refactoring codes
+	    *
+	    * <Arguments> ICompilationUnit compUnitWithCodeSmell: Information that java
+	    * file (or class) that program add codes String stringForChange: String
+	    * replaced codes after Refactoring MessageChainStructure targetSmell:
+	    * Information of targetSemll
+	    **/
 	public void modifyCodeSmellFile (ICompilationUnit compUnitWithCodeSmell, String stringForChange, MessageChainStructure targetSmell) {
 		try {
 			ICompilationUnit workingCopyWithCodeSmell = compUnitWithCodeSmell.getWorkingCopy(new WorkingCopyOwner() {}, null);
@@ -565,36 +475,18 @@ public class MessageChain extends ViewPart {
 		    String temp = bufferWithCodeSmell.getText(targetSmell.getStart(), targetSmell.getLength());
 		    int startPos = temp.indexOf(originCodeSmells.get(targetSmell.getParent().getName()).get(targetSmell.getStart()).get(0).getMethodName());
 			
-		    modifyCompUnit(workingCopyWithCodeSmell, bufferWithCodeSmell, targetSmell.getStart() + startPos, targetSmell.getLength()-startPos, stringForChange);
+		    MessageChainRefactoring.modifyCompUnit(workingCopyWithCodeSmell, bufferWithCodeSmell, targetSmell.getStart() + startPos, targetSmell.getLength()-startPos, stringForChange);
 		} catch (JavaModelException e) {
 		}
-	}
-	
-	public void modifyMethodInvocationFile (ICompilationUnit compUnitOfMethodInvocation, String strOfMethod) {
-		try {
-			ICompilationUnit workingCopyOfMethodInvocation = compUnitOfMethodInvocation.getWorkingCopy(new WorkingCopyOwner() {}, null);
-			IBuffer bufferOfMethodInvocation = ((IOpenable)workingCopyOfMethodInvocation).getBuffer();
-		    
-			   
-		    int modifyPosition = getModifyPosition(bufferOfMethodInvocation);
-		    
-		    modifyCompUnit(workingCopyOfMethodInvocation, bufferOfMethodInvocation, modifyPosition,0,strOfMethod);
-		} catch (JavaModelException e) {
-		}
-	    
-	}
-	
-	public void modifyCompUnit (ICompilationUnit workingCopy, IBuffer buffer, int startPos, int len, String stringForChange) {
-		try {					
-			buffer.replace(startPos, len, stringForChange);
-			workingCopy.reconcile(ICompilationUnit.NO_AST,false,null,null);
-			workingCopy.commitWorkingCopy(false,null);
-			workingCopy.discardWorkingCopy();
-		} catch (JavaModelException e) {
-		}
-		
-	}
-	
+	}	
+
+	/**
+	    * New function for finding and returning MessageChainStructure that children is
+	    * same to String
+	    *
+	    * <Arguments> String name: String that name of children of
+	    * MessageChainStructure
+	    **/
 	public MessageChainStructure findMCSwithGivenName(String name) {
 		for(MessageChainStructure mcs : targets) {
 			for(MessageChainStructure child :mcs.getChildren()) {
@@ -606,44 +498,7 @@ public class MessageChain extends ViewPart {
 		return null;
 	}
 	
-	/**
-	 * New function for getting only class name if the string contains path of class
-	 * 
-	 * <Arguments>
-	 * int sizeOfMethodInvocation: Length of string that is path of class
-	 * String stringOfMethodInvocation: String that is path of class
-	 * **/
-	public String getClassName(int sizeOfMethodInvocation, String stringOfMethodInvocation)
-	   {
-	      int count = 0;
-	      for(int i = stringOfMethodInvocation.length()-1; i >= 0; i--)
-	      {
-	         if(stringOfMethodInvocation.charAt(i) == '.')
-	         {
-	            count = i + 1;
-	            break;
-	         }
-	      }
-	      return stringOfMethodInvocation.substring(count, stringOfMethodInvocation.length());
-	   }
-	   
-	/**
-	 * New function for modifying position to modify original code properly
-	 * 
-	 * <Arguments>
-	 * IBuffer bufferOfMethodInvocation: Buffer that contains whole codes about selected Java File
-	 * **/
-	 public int getModifyPosition(IBuffer bufferOfMethodInvocation)
-	   {   
-	       int length = bufferOfMethodInvocation.getLength();
-	        int count = 0;
-	        for(int i=length - 1;i>=0;i--, count++)
-	        {
-	           if(bufferOfMethodInvocation.getChar(i) == '}')
-	              break;
-	        }
-	        return length - (count + 1);
-	   }
+
 
 	 private void findCodeSmell() {
 			CompilationUnitCache.getInstance().clearCache();
@@ -655,11 +510,11 @@ public class MessageChain extends ViewPart {
 			
 			Tree tree = treeViewer.getTree();
 			refactorButtonMaker.setTree(tree);
-			refactorButtonMaker.makeRefactoringButtons(3);
+			refactorButtonMaker.makeRefactoringButtons(2);
 
 			tree.addListener(SWT.Expand, new Listener() {
 				public void handleEvent(Event e) {
-					refactorButtonMaker.makeChildrenRefactoringButtons(3);
+					refactorButtonMaker.makeChildrenRefactoringButtons(2);
 				}
 			});
 	 }
@@ -669,12 +524,14 @@ public class MessageChain extends ViewPart {
 		identifyBadSmellsAction = new Action() {
 			public void run() {
 				activeProject = selectedProject;
+				try {
 				findCodeSmell();
+				} catch (Exception e) {
+				}
 			}
 		};
 		ImageDescriptor refactoringButtonImage = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/search_button.png");
         identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
-        //identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
         identifyBadSmellsAction.setImageDescriptor(refactoringButtonImage);
         identifyBadSmellsAction.setEnabled(false);
 
@@ -700,6 +557,7 @@ public class MessageChain extends ViewPart {
 
 								annotationModel.removeAnnotation(currentAnnotation);
 							}
+
 							Position position = new Position(targetSmell.getStart(), (targetSmell.getLength() + 1));
 							SliceAnnotation annotation = null;
 							annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, "Message Chain : We detect Method Invocation Chain consisting of "+targetSmell.getName()+".\r\n "
@@ -709,9 +567,8 @@ public class MessageChain extends ViewPart {
 									+ " The name of the new wrapper method can be specified by the user. ");
 
 							annotationModel.addAnnotation(annotation, position);
-					
+							
 							sourceEditor.setHighlightRange(position.getOffset(), position.getLength(), true);
-
 						} catch (PartInitException e) {
 							e.printStackTrace();
 						} catch (JavaModelException e) {
@@ -862,6 +719,7 @@ public class MessageChain extends ViewPart {
 				List<MethodInvocationObject> test = methodObject.getMethodInvocations();
 				
 				for(MethodInvocationObject methodInvo : test) {
+					try {
 					MethodInvocation methodInvocation = methodInvo.getMethodInvocation();
 					int startPos = methodInvocation.getStartPosition();
 					String cls = methodObject.getClassName();
@@ -883,6 +741,8 @@ public class MessageChain extends ViewPart {
 						Map<Integer, List<MethodInvocationObject>> tmp = new HashMap<Integer, List<MethodInvocationObject>>();
 						tmp.put(startPos, temp);
 						store.put(cls, tmp);
+					}
+					} catch (Exception e) {
 					}
 				}
 				
