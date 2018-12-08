@@ -196,7 +196,7 @@ public class LongParameterList extends ViewPart {
 		
 		
 		public void pressRefactorButton(int index) {
-			LPLMethodObject methodToRefactor = methodObjectTable[methodObjectTable.length - index - 1];
+			LPLMethodObject methodToRefactor = methodObjectTable[index];
 			LPLRefactorWizard wizard = new LPLRefactorWizard(selectedProject, methodToRefactor);
 			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); dialog.open();
 		}
