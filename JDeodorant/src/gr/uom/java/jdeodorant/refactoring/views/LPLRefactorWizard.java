@@ -98,6 +98,7 @@ public class LPLRefactorWizard extends Wizard {
 					return false;
 				}
 				else {
+					packagePage.setExistingWarningLabel(false);
 					return true;
 				}
 			}
