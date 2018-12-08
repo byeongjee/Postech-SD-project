@@ -42,6 +42,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.*;
 
+import static org.eclipse.swtbot.swt.finder.SWTBotAssert.assertVisible;
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -210,30 +211,6 @@ public class LongParameterListTest {
 		}
 	}
 
-	@Ignore
-	@Test
-	public void testRefactoringPopUpPackageSelectionPageExceptionScenario() {
-		try {
-		detectCodeSmellAndOpenRefactoringPopUp();
-		SWTBotShell refactoringWizard = bot.shell("Refactoring");
-		refactoringWizard.bot().table().getTableItem(0).check();
-		refactoringWizard.bot().table().getTableItem(1).check();
-		refactoringWizard.bot().button("Next >").click();
-		// now in class name page
-		refactoringWizard.bot().text().selectAll().typeText("TestClass");
-		refactoringWizard.bot().button("Next >").click();
-		// now in package selection page
-		assertFalse(refactoringWizard.bot().button("Finish").isEnabled());
-		} finally {
-			try {
-		closeRefactoringPopUp();
-		closeLPLTab();
-			} catch (Exception e) {
-				
-			}
-		}
-	}
-
 	@Test
 	public void testLPLRefactoringSuccessScenario() {
 		try {
@@ -284,9 +261,65 @@ public class LongParameterListTest {
 			} catch (Exception e) {
 				
 			}
+		}
+	}
+	
+
+	@Test
+	public void testClassNameWarning() {
+		try {
+			detectCodeSmellAndOpenRefactoringPopUp();
+			SWTBotShell refactoringWizard = bot.shell("Refactoring");
+			refactoringWizard.bot().table().getTableItem(0).check();
+			refactoringWizard.bot().table().getTableItem(1).check();
+			refactoringWizard.bot().button("Next >").click();
+			// now in class name page
+			refactoringWizard.bot().text(0).selectAll().typeText("testClass");
+			assertVisible(refactoringWizard.bot().label("* Class name does not start with capital letter"));
 
 		}
+		catch (Exception e) {
+			fail("fail with Exception " + e);
+		} finally {
+			try {
+		closeRefactoringPopUp();
+		closeLPLTab();
+		testLPLProject.buildLPLProject();
+		deleteTestProject();
+			} catch (Exception e) {
+				
+			}
+		}
+	}
 
+	@Test
+	public void testSameClassWarning() {
+		try {
+			detectCodeSmellAndOpenRefactoringPopUp();
+			SWTBotShell refactoringWizard = bot.shell("Refactoring");
+			refactoringWizard.bot().table().getTableItem(0).check();
+			refactoringWizard.bot().table().getTableItem(1).check();
+			refactoringWizard.bot().button("Next >").click();
+			// now in class name page
+			refactoringWizard.bot().text(0).selectAll().typeText("TestLPL");
+			refactoringWizard.bot().text(1).selectAll().typeText("testParameter");
+			refactoringWizard.bot().button("Next >").click();
+			// now in package selection page
+			refactoringWizard.bot().table().getTableItem(0).check();
+			assertVisible(refactoringWizard.bot().label("* Class with same name already exists!"));
+			assertFalse(refactoringWizard.bot().button("Finish").isEnabled());
+		}		catch (Exception e) {
+			fail("fail with Exception " + e);
+		} finally {
+			try {
+		closeRefactoringPopUp();
+		closeLPLTab();
+		testLPLProject.buildLPLProject();
+		deleteTestProject();
+			} catch (Exception e) {
+				
+			}
+		}
 	}
 	
 	public static void deleteTestProject() {
