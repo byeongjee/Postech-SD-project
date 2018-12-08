@@ -33,13 +33,9 @@ import org.eclipse.jdt.launching.LibraryLocation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.runner.*;
 
 import static org.eclipse.swtbot.swt.finder.SWTBotAssert.assertVisible;
@@ -153,6 +149,18 @@ public class LongParameterListTest {
 		} finally {
 		closeLPLTab();
 		}
+	}
+	
+	@Test
+	public void testSmellHighlight() {
+		openLPLTab();
+		selectTargetPackage();
+		applyDetection();
+		SWTBotView detectionView = bot.viewByTitle("Long Parameter List");
+		detectionView.show();
+		detectionView.bot().tree().getTreeItem("Long Parameter List").doubleClick();
+		SWTBotEditor editor = bot.editorByTitle("TestLPL.java");
+    	SWTBotEclipseEditor eclipseEditor = editor.toTextEditor();
 	}
 
 	@Test
