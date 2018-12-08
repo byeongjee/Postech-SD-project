@@ -100,8 +100,8 @@ public class MessageChainUnitTest {
 
 		
 		MethodObject testmo = new MethodObject(new ConstructorObject());
-		testmo.setstart(6);
-		testmo.setlength(12);
+		testmo.setSmellStart(6);
+		testmo.setSmellLength(12);
 		Object testMethodObjectList[]=testmo.getHighlightPositions();
 		annotationMaps = (Map<Position,String>)testMethodObjectList[0];
 		annotationIterator = annotationMaps.keySet().iterator();

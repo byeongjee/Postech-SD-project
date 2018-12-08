@@ -25,6 +25,8 @@ import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.ClassObjectCandidate;
 import gr.uom.java.ast.CompilationErrorDetectedException;
 import gr.uom.java.ast.CompilationUnitCache;
+import gr.uom.java.ast.LiteralObject;
+import gr.uom.java.ast.MethodInvocationObject;
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.SystemObject;
 import gr.uom.java.ast.TypeObject;
@@ -102,6 +104,8 @@ import java.util.HashSet;
 import gr.uom.java.ast.ClassObjectCandidate;
 import gr.uom.java.ast.decomposition.CompositeStatementObject;
 import gr.uom.java.ast.decomposition.MethodBodyObject;
+
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Statement;
 
 /**
@@ -818,7 +822,6 @@ public class SpeculativeGenerality extends ViewPart {
 						ListIterator<TypeObject> parentClasses = targetClass.getInterfaceIterator();
 						while (parentClasses.hasNext()) {
 							TypeObject superClass = parentClasses.next();
-														
 							for(ClassObject parentCandidate : this._classObjectToBeExamined) {
 								if (superClass != null && superClass.getClassType().equals(parentCandidate.getName())) {
 									for (Iterator<MethodObject> itr = parentCandidate.getMethodIterator(); itr.hasNext();) {
@@ -831,9 +834,10 @@ public class SpeculativeGenerality extends ViewPart {
 							}
 						}
 
-						
 						if(!flag_overriding) {
-						target.addSmellingMethod(targetMethod);
+							targetMethod.setSmellStart(targetMethod.getMethodDeclaration().getStartPosition());
+							targetMethod.setSmellLength(targetMethod.getMethodDeclaration().getLength());
+							target.addSmellingMethod(targetMethod);
 						}
 						
 					}
