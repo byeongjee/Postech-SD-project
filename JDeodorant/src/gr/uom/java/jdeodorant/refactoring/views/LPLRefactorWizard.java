@@ -62,6 +62,15 @@ public class LPLRefactorWizard extends Wizard {
 		System.out.println(packagePage.getPackageName());
 		try {
 			LPLSmellContent smellContent = new LPLSmellContent(methodToRefactor, initialPage.getParameterIndexList(), namePage.getClassName(), namePage.getParameterName());
+			
+			IPackageFragment pf = getIPackageFragment(packagePage.getPackageName());
+			String className = namePage.getClassName();
+			List<String> parameterTypes = initialPage.getExtractParameterTypes();
+			List<String> parameterNames = initialPage.getExtractParameterNames();	
+			
+			LPLMethodObject.createNewParameterClass(pf, className, parameterTypes, parameterNames);
+			changeMethodsInProject(javaProject, smellContent);
+			
 			IMethod convertedIMethod = methodToRefactor.toIMethod(javaProject);
 			ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit()
 					.getWorkingCopy(new WorkingCopyOwner() {
@@ -74,13 +83,6 @@ public class LPLRefactorWizard extends Wizard {
 			workingCopy.discardWorkingCopy();
 			workingCopy.discardWorkingCopy();
 			
-			IPackageFragment pf = getIPackageFragment(packagePage.getPackageName());
-			String className = namePage.getClassName();
-			List<String> parameterTypes = initialPage.getExtractParameterTypes();
-			List<String> parameterNames = initialPage.getExtractParameterNames();
-			
-			LPLMethodObject.createNewParameterClass(pf, className, parameterTypes, parameterNames);
-			changeMethodsInProject(javaProject, smellContent);
 			
 			
 		} catch (Exception e) {
@@ -98,6 +100,7 @@ public class LPLRefactorWizard extends Wizard {
 					return false;
 				}
 				else {
+					packagePage.setExistingWarningLabel(false);
 					return true;
 				}
 			}
@@ -166,9 +169,9 @@ public class LPLRefactorWizard extends Wizard {
 		int i = 0;
 		
 		for(final ICompilationUnit iCu : srcCompilationUnits) {
-			System.out.println(i);
+			/*System.out.println(i);
 			System.out.println("cu name: " + iCu.getElementName());
-			i++;
+			i++;*/
 			if(iCu.getUnderlyingResource() instanceof IFile) {
 				ASTParser parser = ASTParser.newParser(AST.JLS8);
 				parser.setResolveBindings(true);
@@ -176,16 +179,21 @@ public class LPLRefactorWizard extends Wizard {
 				parser.setBindingsRecovery(true);
 				parser.setSource(iCu);
 				CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-				//System.out.println(iCu.getElementName());
+				final ArrayList<Integer> methodInvocationIndexes = new ArrayList<Integer>();
 				ASTVisitor visitor = new ASTVisitor() {
 					public boolean visit(MethodInvocation node) {
-						System.out.println(node.getName().toString());
-						if(node.getName().toString().equals(smellContent.getLPLMethodObject().getName()))
-							changeMethodCall(iCu, node.getStartPosition(), smellContent);
+						if(node.getName().toString().equals(smellContent.getLPLMethodObject().getName())) {
+							methodInvocationIndexes.add(node.getStartPosition());
+							//changeMethodCall(iCu, node.getStartPosition(), smellContent);
+						}
 						return true;
 					}
 				};
 				cu.accept(visitor);
+				System.out.println(methodInvocationIndexes);
+				for(int j = methodInvocationIndexes.size() - 1; j >= 0; j--) {
+					changeMethodCall(iCu, methodInvocationIndexes.get(j), smellContent);
+				}
 			}
 		}
 	}
@@ -197,7 +205,10 @@ public class LPLRefactorWizard extends Wizard {
 					.getWorkingCopy(new WorkingCopyOwner() {
 					}, null);
 			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
-			
+			/*for(int i = 0; i < 10; i++) {
+				System.out.print(buffer.getChar(startPosition + i));
+			}*/
+			System.out.print("\n");
 			while (true) {
 				if (buffer.getChar(startPosition) != '(') {
 					startPosition += 1;
