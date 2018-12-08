@@ -543,16 +543,12 @@ public class LongParameterList extends ViewPart {
 				final Set<ClassObject> classObjectsToBeExamined = new LinkedHashSet<ClassObject>();
 				final Set<LPLMethodObject> methodObjectsToBeExamined = new LinkedHashSet<LPLMethodObject>();
 				if (selectedPackageFragmentRoot != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Prj");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragmentRoot));
 				} else if (selectedPackageFragment != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Pac");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragment));
 				} else if (selectedCompilationUnit != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Compi");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedCompilationUnit));
 				} else {
-					System.out.println("In GetTable : classObjectsToBeExamined else");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
 				}
 

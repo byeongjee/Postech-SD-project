@@ -106,13 +106,7 @@ public class LongParameterListTest {
 		ArrayList<Integer> parameterIndexList = new ArrayList<Integer>();
 		parameterIndexList.add(1);
 		parameterIndexList.add(2);
-		LPLMethodObject.editParameterFromBuffer(buffer, method, parameterIndexList, null);
-		assertEquals(buffer.getContents(), "class HighInterest{\n" + 
-				"public int getAccountNumber(int a, int d, int e) {\n" + 
-				"return accountNumber;\n" + 
-				"}\n" + 
-				"}\n" + 
-				"");
+
 	}
 
 	private static LPLMethodObject createMockLPLMethodObject1() {

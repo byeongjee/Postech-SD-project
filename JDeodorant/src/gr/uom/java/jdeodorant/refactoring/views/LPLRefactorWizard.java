@@ -65,6 +65,7 @@ public class LPLRefactorWizard extends Wizard {
 			
 			IPackageFragment pf = getIPackageFragment(packagePage.getPackageName());
 			String className = namePage.getClassName();
+			String parameterName = namePage.getParameterName();
 			List<String> parameterTypes = initialPage.getExtractParameterTypes();
 			List<String> parameterNames = initialPage.getExtractParameterNames();	
 			
@@ -76,8 +77,9 @@ public class LPLRefactorWizard extends Wizard {
 					.getWorkingCopy(new WorkingCopyOwner() {
 					}, null);
 			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
-			LPLMethodObject.editParameterFromBuffer(buffer, convertedIMethod, initialPage.getParameterIndexList(), smellContent);
-			
+			String tempVarInitializeCode = LPLMethodObject.codeForInitializingTempVars(convertedIMethod, parameterTypes, parameterNames, parameterName);
+			LPLMethodObject.editParameterFromBuffer(buffer, convertedIMethod, initialPage.getParameterIndexList(), smellContent, tempVarInitializeCode);
+
 			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
 			workingCopy.commitWorkingCopy(false, null);
 			workingCopy.discardWorkingCopy();
