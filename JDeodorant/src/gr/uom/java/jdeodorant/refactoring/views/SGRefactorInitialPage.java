@@ -18,7 +18,7 @@ import gr.uom.java.ast.ClassObjectCandidate;
  *
  */
 public class SGRefactorInitialPage extends WizardPage {
-	private Text text1;
+	private Text text;
     private Composite container;
 
     public SGRefactorInitialPage(ClassObjectCandidate classToRefactor) {
@@ -29,19 +29,20 @@ public class SGRefactorInitialPage extends WizardPage {
     //@Override
     public void createControl(Composite parent) {
         container = new Composite(parent, SWT.NONE);
+        
         GridLayout layout = new GridLayout();
         container.setLayout(layout);
-        layout.numColumns = 2;
-        Label label1 = new Label(container, SWT.NONE);
-        label1.setText("Press Finish button to refactor the speculative generality code smell.");
+        
+        Label label = new Label(container, SWT.NONE);
+        label.setText("Press Finish button to refactor the speculative generality code smell.");
+        
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         setControl(container);
         setPageComplete(true);
-
     }
 
-    public String getText1() {
-        return text1.getText();
+    public String getText() {
+        return text.getText();
     }
 
 }

@@ -418,6 +418,11 @@ public class MergeClassRefactoring extends Refactoring {
 		}
 	}
 	
+	public void processRefactoring() {
+		processRefactoringParent();
+		processRefactoringChild();
+	}
+	
 	public void processRefactoringParent() {
 		SystemObject systemObject = ASTReader.getSystemObject();
 		if (systemObject != null) {
@@ -535,5 +540,13 @@ public class MergeClassRefactoring extends Refactoring {
 	@Override
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		return null;
+	}
+
+	public String getOriginalContent() {
+		return this.childOriginalContent;
+	}
+	
+	public String getRefactoredContent() {
+		return this.childRefactoredContent;
 	}
 }

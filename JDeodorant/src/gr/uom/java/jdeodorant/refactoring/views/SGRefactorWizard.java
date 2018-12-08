@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 
 import gr.uom.java.ast.ClassObject;
@@ -40,12 +41,16 @@ import gr.uom.java.jdeodorant.refactoring.manipulators.ParameterMethodRefactorin
  * 
  */
 public class SGRefactorWizard extends Wizard {
-
 	private ClassObjectCandidate classToRefactor;
 	private SGRefactorInitialPage initialPage;
+	private SGRefactorPreviewPage previewPage;
 	private Set<ClassObject> _classObjectToBeExamined;
 	private Action identifyBadSmellsAction;	
 	private IJavaProject activeProject;
+	
+	private Refactoring refactoring;
+	private String origin;
+	private String refactor;
 	
 	public SGRefactorWizard(ClassObjectCandidate classToRefactor, Set<ClassObject> _classObjectToBeExamined, Action identifyBadSmellsAction, IJavaProject activeProject) {
 		super();
@@ -55,7 +60,7 @@ public class SGRefactorWizard extends Wizard {
 		this.identifyBadSmellsAction = identifyBadSmellsAction;
 		this.activeProject = activeProject;
 	}
-
+	
 	@Override
 	public String getWindowTitle() {
 		return "Refactoring";
@@ -63,56 +68,48 @@ public class SGRefactorWizard extends Wizard {
 	
 	@Override
 	public void addPages() {
-		initialPage = new SGRefactorInitialPage(classToRefactor);
-		addPage(initialPage);
-	}
-	@Override
-	public boolean performFinish() {
 		// Switch w.r.t smell type and Details
-		if(classToRefactor.getCodeSmellType().equals("Abstract Class")) {
-			if(classToRefactor.getNumChild() == 0) {
+		if (classToRefactor.getCodeSmellType().equals("Abstract Class")) {
+			if (classToRefactor.getNumChild() == 0) {
 				DeleteClassRefactoring _refactor = new DeleteClassRefactoring(classToRefactor);
 				_refactor.commentizeWholeContent();
-				_refactor.processRefactoring();
+				
+				this.origin = _refactor.getOriginalContent();
+				this.refactor = _refactor.getRefactoredContent();
+				//_refactor.processRefactoring();
 			} else {
 				// Integrate Child and Parent
 				ClassObjectCandidate childClass;
-				for(ClassObject examiningClass : _classObjectToBeExamined) {
-					if(examiningClass.getName().equals(classToRefactor.getName())) continue;
-					
+				for (ClassObject examiningClass : _classObjectToBeExamined) {
+					if (examiningClass.getName().equals(classToRefactor.getName()))
+						continue;
+
 					TypeObject superClass = examiningClass.getSuperclass();
-					if(superClass != null) {
+					if (superClass != null) {
 						if (superClass.getClassType().equals(classToRefactor.getName())) {
 							childClass = new ClassObjectCandidate(examiningClass);
-							
+
 							MergeClassRefactoring _refactor = new MergeClassRefactoring(classToRefactor, childClass);
 							_refactor.mergeIntoChild();
 							_refactor.buildContentInOneString();
-							_refactor.processRefactoringParent();
-							_refactor.processRefactoringChild();
-							
+
+							this.origin = _refactor.getOriginalContent();
+							this.refactor = _refactor.getRefactoredContent();
+							//_refactor.processRefactoring();
+
 							break;
 						}
 					}
 				}
 			}
 		} else if (classToRefactor.getCodeSmellType().equals("Interface Class")) {
-			if(classToRefactor.getNumChild() == 0) {
+			if (classToRefactor.getNumChild() == 0) {
 				DeleteClassRefactoring _refactor = new DeleteClassRefactoring(classToRefactor);
 				_refactor.commentizeWholeContent();
+				
+				this.origin = _refactor.getOriginalContent();
+				this.refactor = _refactor.getRefactoredContent();
 				//_refactor.processRefactoring();
-				
-				
-				MyRefactoringWizard wizard = new MyRefactoringWizard(_refactor, null);
-				RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
-				try { 
-					String titleForFailedChecks = ""; //$NON-NLS-1$ 
-					op.run(getShell(), titleForFailedChecks); 
-				} catch(InterruptedException e) {
-					e.printStackTrace();
-				}
-				
-				
 			} else {
 				ClassObjectCandidate childClass;
 				for (ClassObject examiningClass : _classObjectToBeExamined) {
@@ -120,7 +117,7 @@ public class SGRefactorWizard extends Wizard {
 						continue;
 
 					ListIterator<TypeObject> parentClasses = examiningClass.getInterfaceIterator();
-					while(parentClasses.hasNext()) {
+					while (parentClasses.hasNext()) {
 						TypeObject parentClass = parentClasses.next();
 						if (parentClass.getClassType().equals(classToRefactor.getName())) {
 							childClass = new ClassObjectCandidate(examiningClass);
@@ -128,8 +125,10 @@ public class SGRefactorWizard extends Wizard {
 							MergeClassRefactoring _refactor = new MergeClassRefactoring(classToRefactor, childClass);
 							_refactor.mergeIntoChild();
 							_refactor.buildContentInOneString();
-							_refactor.processRefactoringParent();
-							_refactor.processRefactoringChild();
+
+							this.origin = _refactor.getOriginalContent();
+							this.refactor = _refactor.getRefactoredContent();
+							//_refactor.processRefactoring();
 
 							break;
 						}
@@ -139,18 +138,99 @@ public class SGRefactorWizard extends Wizard {
 		} else if (classToRefactor.getCodeSmellType().equals("Unnecessary Parameters")) {
 			List<MethodObject> _smellingMethods = classToRefactor.getSmellingMethods();
 			try {
-				for(MethodObject target : _smellingMethods) {
+				for (MethodObject target : _smellingMethods) {
 					ParameterMethodRefactoring _refactor = new ParameterMethodRefactoring(classToRefactor, target);
 					_refactor.setUnusedParameterList();
 					_refactor.setUsedParameterList();
 					_refactor.resolveUnnecessaryParameters();
+					
+					this.origin = _refactor.getOriginalContent();
+					this.refactor = _refactor.getRefactoredContent();
+					//_refactor.processRefactoring();
+					//changeMethodsInProject(activeProject, target, _refactor.getUnusedParameterIndex());
+				}
+			} catch (Exception e) {
+			}
+		}
+		
+		previewPage = new SGRefactorPreviewPage(classToRefactor, origin, refactor);
+		addPage(previewPage);
+	}
+	@Override
+	public boolean performFinish() {
+		// Switch w.r.t smell type and Details
+		if (classToRefactor.getCodeSmellType().equals("Abstract Class")) {
+			if (classToRefactor.getNumChild() == 0) {
+				DeleteClassRefactoring _refactor = new DeleteClassRefactoring(classToRefactor);
+				_refactor.commentizeWholeContent();
+				_refactor.processRefactoring();
+			} else {
+				// Integrate Child and Parent
+				ClassObjectCandidate childClass;
+				for (ClassObject examiningClass : _classObjectToBeExamined) {
+					if (examiningClass.getName().equals(classToRefactor.getName()))
+						continue;
+
+					TypeObject superClass = examiningClass.getSuperclass();
+					if (superClass != null) {
+						if (superClass.getClassType().equals(classToRefactor.getName())) {
+							childClass = new ClassObjectCandidate(examiningClass);
+
+							MergeClassRefactoring _refactor = new MergeClassRefactoring(classToRefactor, childClass);
+							_refactor.mergeIntoChild();
+							_refactor.buildContentInOneString();
+							_refactor.processRefactoring();
+
+							break;
+						}
+					}
+				}
+			}
+		} else if (classToRefactor.getCodeSmellType().equals("Interface Class")) {
+			if (classToRefactor.getNumChild() == 0) {
+				DeleteClassRefactoring _refactor = new DeleteClassRefactoring(classToRefactor);
+				_refactor.commentizeWholeContent();
+				_refactor.processRefactoring();
+			} else {
+				ClassObjectCandidate childClass;
+				for (ClassObject examiningClass : _classObjectToBeExamined) {
+					if (examiningClass.getName().equals(classToRefactor.getName()))
+						continue;
+
+					ListIterator<TypeObject> parentClasses = examiningClass.getInterfaceIterator();
+					while (parentClasses.hasNext()) {
+						TypeObject parentClass = parentClasses.next();
+						if (parentClass.getClassType().equals(classToRefactor.getName())) {
+							childClass = new ClassObjectCandidate(examiningClass);
+
+							MergeClassRefactoring _refactor = new MergeClassRefactoring(classToRefactor, childClass);
+							_refactor.mergeIntoChild();
+							_refactor.buildContentInOneString();
+							_refactor.processRefactoring();
+
+							break;
+						}
+					}
+				}
+			}
+		} else if (classToRefactor.getCodeSmellType().equals("Unnecessary Parameters")) {
+			List<MethodObject> _smellingMethods = classToRefactor.getSmellingMethods();
+			try {
+				for (MethodObject target : _smellingMethods) {
+					ParameterMethodRefactoring _refactor = new ParameterMethodRefactoring(classToRefactor, target);
+					_refactor.setUnusedParameterList();
+					_refactor.setUsedParameterList();
+					_refactor.resolveUnnecessaryParameters();
+
+					this.origin = _refactor.getOriginalContent();
+					this.refactor = _refactor.getRefactoredContent();
 					_refactor.processRefactoring();
 					changeMethodsInProject(activeProject, target, _refactor.getUnusedParameterIndex());
 				}
-			}catch(Exception e){
+			} catch (Exception e) {
 			}
 		}
-
+				
 		// Re-detection
 		identifyBadSmellsAction.run();
 		

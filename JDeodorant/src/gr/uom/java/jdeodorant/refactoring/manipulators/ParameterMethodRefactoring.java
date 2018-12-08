@@ -326,8 +326,19 @@ public class ParameterMethodRefactoring extends Refactoring {
 		}
 	}
 
+
+	public String getOriginalContent() {
+		String res = "";
+		
+		for(String c : this.targetClass.getContent()) {
+			res += c + "\r\n";
+		}
+		
+		return res;
+	}
+	
 	public String getRefactoredContent() {
-		return refactoredContent;
+		return this.refactoredContent;
 	}
 	
     /**

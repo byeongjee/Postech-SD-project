@@ -145,95 +145,11 @@ public class SpeculativeGenerality extends ViewPart {
 		 * @author 손태영, 이주용 
 		 */
 		public void pressRefactorButton(int index) {
-			ClassObjectCandidate classToRefactor = _smellingClassEntries[index];
+			ClassObjectCandidate targetClass = _smellingClassEntries[index];
 			
-			if(classToRefactor.getCodeSmellType().equals("Abstract Class")) {
-				if(classToRefactor.getNumChild() == 0) {
-					DeleteClassRefactoring _refactor = new DeleteClassRefactoring(classToRefactor);
-					_refactor.commentizeWholeContent();
-					_refactor.processRefactoring();
-				} else {
-					// Integrate Child and Parent
-					ClassObjectCandidate childClass;
-					for(ClassObject examiningClass : _classObjectToBeExamined) {
-						if(examiningClass.getName().equals(classToRefactor.getName())) continue;
-						
-						TypeObject superClass = examiningClass.getSuperclass();
-						if(superClass != null) {
-							if (superClass.getClassType().equals(classToRefactor.getName())) {
-								childClass = new ClassObjectCandidate(examiningClass);
-								
-								MergeClassRefactoring _refactor = new MergeClassRefactoring(classToRefactor, childClass);
-								_refactor.mergeIntoChild();
-								_refactor.buildContentInOneString();
-								_refactor.processRefactoringParent();
-								_refactor.processRefactoringChild();
-								
-								break;
-							}
-						}
-					}
-				}
-			} else if (classToRefactor.getCodeSmellType().equals("Interface Class")) {
-				if(classToRefactor.getNumChild() == 0) {
-					DeleteClassRefactoring _refactor = new DeleteClassRefactoring(classToRefactor);
-					
-					// Preview Tab
-					MyRefactoringWizard wizard = new MyRefactoringWizard(_refactor, null);
-					RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
-					try { 
-						String titleForFailedChecks = ""; //$NON-NLS-1$ 
-						op.run(getSite().getShell(), titleForFailedChecks); 
-					} catch(InterruptedException e) {
-						e.printStackTrace();
-					}
-					
-					System.out.println("After Wizard");
-					
-				} else {
-					ClassObjectCandidate childClass;
-					for (ClassObject examiningClass : _classObjectToBeExamined) {
-						if (examiningClass.getName().equals(classToRefactor.getName()))
-							continue;
-
-						ListIterator<TypeObject> parentClasses = examiningClass.getInterfaceIterator();
-						while(parentClasses.hasNext()) {
-							TypeObject parentClass = parentClasses.next();
-							if (parentClass.getClassType().equals(classToRefactor.getName())) {
-								childClass = new ClassObjectCandidate(examiningClass);
-
-								MergeClassRefactoring _refactor = new MergeClassRefactoring(classToRefactor, childClass);
-								_refactor.mergeIntoChild();
-								_refactor.buildContentInOneString();
-								_refactor.processRefactoringParent();
-								_refactor.processRefactoringChild();
-
-								break;
-							}
-						}
-					}
-				}
-			} else if (classToRefactor.getCodeSmellType().equals("Unnecessary Parameters")) {
-				List<MethodObject> _smellingMethods = classToRefactor.getSmellingMethods();
-				try {
-					for(MethodObject target : _smellingMethods) {
-						ParameterMethodRefactoring _refactor = new ParameterMethodRefactoring(classToRefactor, target);
-						_refactor.setUnusedParameterList();
-						_refactor.setUsedParameterList();
-						_refactor.resolveUnnecessaryParameters();
-						_refactor.processRefactoring();
-						//changeMethodsInProject(activeProject, target, _refactor.getUnusedParameterIndex());
-					}
-				}catch(Exception e){
-				}
-			}
-
-			// Re-detection
-			identifyBadSmellsAction.run();
-			
-			/*SGRefactorWizard wizard = new SGRefactorWizard(targetClass, _classObjectToBeExamined, identifyBadSmellsAction, activeProject);
+			SGRefactorWizard wizard = new SGRefactorWizard(targetClass, _classObjectToBeExamined, identifyBadSmellsAction, activeProject);
 			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); 
-			dialog.open();*/
+			dialog.open();
 		}
 	}
 

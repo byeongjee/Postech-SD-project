@@ -198,6 +198,20 @@ public class DeleteClassRefactoring extends Refactoring {
 			pm.done();
 		}
 	}
+
+	
+	public String getOriginalContent() {
+		String res = "";
+		
+		for(String c : this.originalContentList) {
+			res += c + "\r\n";
+		}
+		
+		return res;
+	}
+	public String getRefactoredContent() {
+		return this.refactoredContent;
+	}
 	
 	
 }
