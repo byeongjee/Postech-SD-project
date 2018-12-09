@@ -161,19 +161,18 @@ public class MessageChain extends ViewPart {
 	   
 	//private IJavaProject 
 	private class MessageChainRefactoringButtonUI extends RefactoringButtonUI{
-	   public void pressRefactoringButton(int index) {	         
+	   public void pressRefactoringButton(int index) {
 	   }
 	   // Edit it in Iteration 4
 	   public void pressChildRefactorButton(int parentIndex, int childIndex) {
 	      //System.out.println("Success");
 	      MCRefactorWizard wizard = new MCRefactorWizard(selectedProject);
-	         
 	      WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); dialog.open();
 	         
 	      newMethodName = wizard.getNewMethodName();
 	      //System.out.println("New Method Name is: " + newMethodName);
 	         
-	      if(newMethodName != null)   
+	      if(newMethodName != null)
 	    	  messageChainRefactoring(parentIndex, childIndex);
 	  }
 	}
@@ -574,7 +573,6 @@ public class MessageChain extends ViewPart {
 		try {
 			ICompilationUnit workingCopyOfMethodInvocation = compUnitOfMethodInvocation.getWorkingCopy(new WorkingCopyOwner() {}, null);
 			IBuffer bufferOfMethodInvocation = ((IOpenable)workingCopyOfMethodInvocation).getBuffer();
-		    
 			   
 		    int modifyPosition = getModifyPosition(bufferOfMethodInvocation);
 		    
@@ -585,13 +583,13 @@ public class MessageChain extends ViewPart {
 	}
 	
 	public void modifyCompUnit (ICompilationUnit workingCopy, IBuffer buffer, int startPos, int len, String stringForChange) {
-		try {					
-			buffer.replace(startPos, len, stringForChange);
-			workingCopy.reconcile(ICompilationUnit.NO_AST,false,null,null);
-			workingCopy.commitWorkingCopy(false,null);
-			workingCopy.discardWorkingCopy();
-		} catch (JavaModelException e) {
-		}
+		String origin = buffer.getContents();
+		buffer.replace(startPos, len, stringForChange);
+		String refactor = buffer.getContents();
+		
+		// Preview
+		MCPreviewWizard wizard = new MCPreviewWizard(selectedProject, workingCopy, origin, refactor);
+		WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); dialog.open();
 		
 	}
 	
