@@ -67,17 +67,17 @@ public class LPLRefactorWizard extends Wizard {
 			String className = namePage.getClassName();
 			String parameterName = namePage.getParameterName();
 			List<String> parameterTypes = initialPage.getExtractParameterTypes();
-			List<String> parameterNames = initialPage.getExtractParameterNames();	
+			List<String> parameterNames = initialPage.getExtractParameterNames();
+			IMethod convertedIMethod = methodToRefactor.toIMethod(javaProject);
+			String tempVarInitializeCode = LPLMethodObject.codeForInitializingTempVars(convertedIMethod, parameterTypes, parameterNames, parameterName);
 			
 			LPLMethodObject.createNewParameterClass(pf, className, parameterTypes, parameterNames);
-			changeMethodsInProject(javaProject, smellContent);
-			
-			IMethod convertedIMethod = methodToRefactor.toIMethod(javaProject);
+			changeMethodsInProject(javaProject, smellContent);		
+
 			ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit()
 					.getWorkingCopy(new WorkingCopyOwner() {
 					}, null);
 			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
-			String tempVarInitializeCode = LPLMethodObject.codeForInitializingTempVars(convertedIMethod, parameterTypes, parameterNames, parameterName);
 			LPLMethodObject.editParameterFromBuffer(buffer, convertedIMethod, initialPage.getParameterIndexList(), smellContent, tempVarInitializeCode);
 
 			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
@@ -90,7 +90,7 @@ public class LPLRefactorWizard extends Wizard {
 				parameterStringList.add(parameterTypes.get(i) + " " + parameterNames.get(i));
 			}
 			System.out.println("signatures!!");
-			findMethodsWithSameSignatures(javaProject, smellContent, parameterStringList);
+			findMethodsWithSameSignatures(javaProject, smellContent, parameterStringList, tempVarInitializeCode);
 			
 		} catch (Exception e) {
 		}
@@ -101,7 +101,6 @@ public class LPLRefactorWizard extends Wizard {
 	public boolean canFinish() {
 		if(getContainer().getCurrentPage() == packagePage) {
 			if(packagePage.getCanFinishPage()) {
-				//if(getIPackageFragment(packagePage.getPackageName()).getCompilationUnit(namePage.getClassName() + ".java") != null) {
 				if(classExists(packagePage.getPackageName(), namePage.getClassName())) {
 					packagePage.setExistingWarningLabel(true);
 					return false;
@@ -182,9 +181,6 @@ public class LPLRefactorWizard extends Wizard {
 		int i = 0;
 		
 		for(final ICompilationUnit iCu : srcCompilationUnits) {
-			/*System.out.println(i);
-			System.out.println("cu name: " + iCu.getElementName());
-			i++;*/
 			if(iCu.getUnderlyingResource() instanceof IFile) {
 				ASTParser parser = ASTParser.newParser(AST.JLS8);
 				parser.setResolveBindings(true);
@@ -197,7 +193,6 @@ public class LPLRefactorWizard extends Wizard {
 					public boolean visit(MethodInvocation node) {
 						if(node.getName().toString().equals(smellContent.getLPLMethodObject().getName())) {
 							methodInvocationIndexes.add(node.getStartPosition());
-							//changeMethodCall(iCu, node.getStartPosition(), smellContent);
 						}
 						return true;
 					}
@@ -211,7 +206,16 @@ public class LPLRefactorWizard extends Wizard {
 		}
 	}
 	
-	static public void findMethodsWithSameSignatures(IJavaProject javaProject, LPLSmellContent smellContent, ArrayList<String> parameterStringList) throws JavaModelException {
+	/**
+	 * Finds methods in the project that have the same extacted parameters, and extractes them too.
+	 * @param javaProject project to search
+	 * @param smellContent contains information about new class
+	 * @param parameterStringList list of parameters that are extracted
+	 * @param tempVarInitializeCode string to insert in method body after parameters are extracted
+	 * @throws JavaModelException
+	 */
+	static public void findMethodsWithSameSignatures(IJavaProject javaProject, LPLSmellContent smellContent, 
+			ArrayList<String> parameterStringList, String tempVarInitializeCode) throws JavaModelException {
 		IPackageFragment[] allPkg = javaProject.getPackageFragments();
 		List<IPackageFragment> srcPkgs = new ArrayList<IPackageFragment>();
 		for(IPackageFragment myPackage : allPkg) {
@@ -227,22 +231,85 @@ public class LPLRefactorWizard extends Wizard {
 		}
 		
 		for(ICompilationUnit foundCu : srcCompilationUnits) {
+			if(foundCu.getElementName().equals(smellContent.getNewClassName() + ".java"))
+				continue;
 			IType[] allTypes = foundCu.getTypes();
 			ArrayList<IMethod> foundMethods = new ArrayList<IMethod>();
 			for(IType t : allTypes) {
 				foundMethods.addAll(Arrays.asList(t.getMethods()));
 			}
 			for(IMethod candidateMethod : foundMethods) {
-				//System.out.println(candidateMethod.getElementName());
-				/*ArrayList<String> p = new ArrayList<String>();
-				p.add("int x");
-				p.add("int y");*/
-				
-				/* Not working yet!! */
 				if(hasExtractedParameters(candidateMethod, foundCu, parameterStringList)) {
-					System.out.println(candidateMethod.getElementName());
+					changeMethodWithSameParameters(candidateMethod, parameterStringList, smellContent, tempVarInitializeCode);
 				}
 			}
+		}
+	}
+	
+	protected static void changeMethodWithSameParameters(IMethod method, ArrayList<String> parameterList, 
+			LPLSmellContent smellContent, String tempVarInitializeCode) {
+		try {
+			IMethod convertedIMethod = method;
+			int startPosition = convertedIMethod.getSourceRange().getOffset();
+			ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit().getWorkingCopy(new WorkingCopyOwner() {}, null);
+			IBuffer buffer = workingCopy.getBuffer();
+			
+			while (true) {
+				if (buffer.getChar(startPosition) != '(') {
+					startPosition += 1;
+					continue;
+				}
+				break;
+			}
+			int numOfLeftPar = 0;
+			int endPosition = startPosition;
+			while (true) {
+				if (buffer.getChar(endPosition) == '(') {
+					numOfLeftPar += 1;
+				} 
+				else if (buffer.getChar(endPosition) == ')') {
+					if (numOfLeftPar == 1)
+						break;
+					else
+						numOfLeftPar -= 1;
+				}
+				endPosition += 1;
+			}
+			String argumentString = buffer.getContents().substring(startPosition + 1, endPosition);
+			String argumentParts[] = argumentString.split(",");
+			for(int i = 0; i < argumentParts.length; i++) {
+				argumentParts[i] = argumentParts[i].trim();
+				if(parameterList.contains(argumentParts[i])) {
+					argumentParts[i] = null;
+				}
+			}
+			String refactoredArgumentString = "";
+			for(String s : argumentParts) {
+				if(s != null) {
+					refactoredArgumentString += s;
+					refactoredArgumentString += ", ";
+				}
+			}
+			String replaceSignature = "(";
+			replaceSignature += refactoredArgumentString;
+			replaceSignature += smellContent.getNewClassName() + " " + smellContent.getNewParameterName();
+			replaceSignature += ")";
+			
+			int defPosition = endPosition;
+			while (buffer.getChar(defPosition) != '{') {
+				defPosition += 1;
+			}
+			defPosition += 1;
+			
+			
+			buffer.replace(defPosition, 0, tempVarInitializeCode);
+			buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
+			
+			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
+			workingCopy.commitWorkingCopy(false, null);
+			workingCopy.discardWorkingCopy();
+		} catch (Exception e) {
+				e.printStackTrace();
 		}
 	}
 	
@@ -273,7 +340,6 @@ public class LPLRefactorWizard extends Wizard {
 			}
 			String argumentString = buffer.getContents().substring(startPosition + 1, endPosition);
 			String argumentParts[] = argumentString.split(",");
-			ArrayList<String> argumentPartList = new ArrayList<String>(Arrays.asList(argumentParts));
 			for(int i = 0; i < argumentParts.length; i++) {
 				argumentParts[i] = argumentParts[i].trim();
 			}
