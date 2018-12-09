@@ -47,7 +47,7 @@ public class LPLRefactorWizard extends Wizard {
 	
 	@Override
 	public void addPages() {
-		initialPage = new LPLRefactorInitialPage(methodToRefactor);
+		initialPage = new LPLRefactorInitialPage(methodToRefactor, javaProject);
 		namePage = new LPLRefactorClassNamePage();
 		packagePage = new LPLRefactorSelectPackagePage(javaProject);
 		addPage(initialPage);
@@ -86,7 +86,7 @@ public class LPLRefactorWizard extends Wizard {
 			workingCopy.discardWorkingCopy();
 			
 			System.out.println("signatures!!");
-			findMethodsWithSameSignatures(javaProject, smellContent);
+			//findMethodsWithSameSignatures(javaProject, smellContent);
 			
 		} catch (Exception e) {
 		}
@@ -293,7 +293,6 @@ public class LPLRefactorWizard extends Wizard {
 					.getWorkingCopy(new WorkingCopyOwner() {
 					}, null);
 			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
-			System.out.print("\n");
 			while (true) {
 				if (buffer.getChar(startPosition) != '(') {
 					startPosition += 1;
