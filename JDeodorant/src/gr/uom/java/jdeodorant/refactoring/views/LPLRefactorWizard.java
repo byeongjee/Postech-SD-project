@@ -85,8 +85,12 @@ public class LPLRefactorWizard extends Wizard {
 			workingCopy.discardWorkingCopy();
 			workingCopy.discardWorkingCopy();
 			
+			ArrayList<String> parameterStringList = new ArrayList<String>();
+			for(int i = 0; i < parameterTypes.size(); i++) {
+				parameterStringList.add(parameterTypes.get(i) + " " + parameterNames.get(i));
+			}
 			System.out.println("signatures!!");
-			//findMethodsWithSameSignatures(javaProject, smellContent);
+			findMethodsWithSameSignatures(javaProject, smellContent, parameterStringList);
 			
 		} catch (Exception e) {
 		}
@@ -207,7 +211,7 @@ public class LPLRefactorWizard extends Wizard {
 		}
 	}
 	
-	static public void findMethodsWithSameSignatures(IJavaProject javaProject, LPLSmellContent smellContent) throws JavaModelException {
+	static public void findMethodsWithSameSignatures(IJavaProject javaProject, LPLSmellContent smellContent, ArrayList<String> parameterStringList) throws JavaModelException {
 		IPackageFragment[] allPkg = javaProject.getPackageFragments();
 		List<IPackageFragment> srcPkgs = new ArrayList<IPackageFragment>();
 		for(IPackageFragment myPackage : allPkg) {
@@ -235,7 +239,7 @@ public class LPLRefactorWizard extends Wizard {
 				p.add("int y");*/
 				
 				/* Not working yet!! */
-				if(hasExtractedParameters(candidateMethod, foundCu, null)) {
+				if(hasExtractedParameters(candidateMethod, foundCu, parameterStringList)) {
 					System.out.println(candidateMethod.getElementName());
 				}
 			}
