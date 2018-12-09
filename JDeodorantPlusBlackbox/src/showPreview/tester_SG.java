@@ -46,7 +46,7 @@ import static org.junit.Assert.assertTrue;
 import org.eclipse.core.runtime.CoreException;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
-public class tester {
+public class tester_SG {
 	private static SWTWorkbenchBot bot;
 	private static boolean flagProjectOn = false;
 	
@@ -83,11 +83,11 @@ public class tester {
 	
 	private void turnOnProject(int arg) throws CoreException {
 		if(!flagProjectOn) {
-			testProject.buildProject(arg);
+			testSGProject.buildProject(arg);
 			flagProjectOn = true;
 		} else {
-			testProject.deleteProject();
-			testProject.buildProject(arg);
+			testSGProject.deleteProject();
+			testSGProject.buildProject(arg);
 		}
 	}
 	
@@ -103,10 +103,49 @@ public class tester {
 		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").select();
 		detectionApplier.bot().button("TEST").click();
     	
-		SWTBotShell refactoringWizard = bot.shell("Delete Class");
+		SWTBotShell refactoringWizard = bot.shell("Refactoring");
 		assertTrue(refactoringWizard.isVisible());
 		
-    	testProject.deleteProject();
+    	testSGProject.deleteProject();
+	}
+	
+	@Test
+	public void previewTabClosing() throws CoreException {
+		turnOnProject(0);
+		selectSGTarget();
+		
+		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
+		detectionApplier.show();
+		detectionApplier.getToolbarButtons().get(0).click();
+		
+		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").select();
+		detectionApplier.bot().button("TEST").click();
+    	
+		SWTBotShell refactoringWizard = bot.shell("Refactoring");		
+		assertEquals(refactoringWizard.bot().button(1).getText(), "Cancel");
+		refactoringWizard.bot().button(1).click();
+		
+    	testSGProject.deleteProject();
+	}
+	
+	@Test
+	public void previewTabAssertion() throws CoreException {
+		turnOnProject(0);
+		selectSGTarget();
+		
+		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
+		detectionApplier.show();
+		detectionApplier.getToolbarButtons().get(0).click();
+		
+		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").select();
+		detectionApplier.bot().button("TEST").click();
+    	
+		SWTBotShell refactoringWizard = bot.shell("Refactoring");
+		refactoringWizard.bot().button(1).click();
+		
+		assertTrue(detectionApplier.isActive());
+		
+    	testSGProject.deleteProject();
 	}
 	
 }

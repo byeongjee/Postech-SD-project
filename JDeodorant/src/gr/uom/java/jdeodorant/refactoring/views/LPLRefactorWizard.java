@@ -32,6 +32,7 @@ public class LPLRefactorWizard extends Wizard {
 	private LPLRefactorInitialPage initialPage;
 	private LPLRefactorClassNamePage namePage;
 	private LPLRefactorSelectPackagePage packagePage;
+	private LPLRefactorPreviewPage previewPage;
 	
 	public LPLRefactorWizard(IJavaProject javaProject, LPLMethodObject methodToRefactor) {
 		super();
@@ -50,6 +51,7 @@ public class LPLRefactorWizard extends Wizard {
 		initialPage = new LPLRefactorInitialPage(methodToRefactor);
 		namePage = new LPLRefactorClassNamePage();
 		packagePage = new LPLRefactorSelectPackagePage(javaProject);
+		
 		addPage(initialPage);
 		addPage(namePage);
 		addPage(packagePage);
@@ -81,8 +83,6 @@ public class LPLRefactorWizard extends Wizard {
 			
 			LPLMethodObject.createNewParameterClass(pf, className, parameterTypes, parameterNames);
 			changeMethodsInProject(javaProject, smellContent);
-			
-			
 		} catch (Exception e) {
 		}
 		return true;
@@ -98,6 +98,24 @@ public class LPLRefactorWizard extends Wizard {
 					return false;
 				}
 				else {
+					// Preview Contents
+					try {
+						LPLSmellContent smellContent = new LPLSmellContent(methodToRefactor, initialPage.getParameterIndexList(), namePage.getClassName(), namePage.getParameterName());
+						IMethod convertedIMethod = methodToRefactor.toIMethod(javaProject);
+						ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit()
+								.getWorkingCopy(new WorkingCopyOwner() {
+								}, null);
+						IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
+						String originalContent = buffer.getContents();
+						
+						LPLMethodObject.editParameterFromBuffer(buffer, convertedIMethod, initialPage.getParameterIndexList(), smellContent);
+						String refactoredContent = buffer.getContents();
+						
+						previewPage = new LPLRefactorPreviewPage(methodToRefactor, originalContent, refactoredContent);
+						addPage(previewPage);
+					} catch (Exception e) {
+					}
+					
 					return true;
 				}
 			}
@@ -257,8 +275,4 @@ public class LPLRefactorWizard extends Wizard {
 		} catch (Exception e) {
 		}
 	}
-	
-	
-	
-	
 }

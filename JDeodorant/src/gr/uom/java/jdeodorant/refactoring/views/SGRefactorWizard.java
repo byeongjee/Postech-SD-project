@@ -42,7 +42,6 @@ import gr.uom.java.jdeodorant.refactoring.manipulators.ParameterMethodRefactorin
  */
 public class SGRefactorWizard extends Wizard {
 	private ClassObjectCandidate classToRefactor;
-	private SGRefactorInitialPage initialPage;
 	private SGRefactorPreviewPage previewPage;
 	private Set<ClassObject> _classObjectToBeExamined;
 	private Action identifyBadSmellsAction;	

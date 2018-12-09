@@ -35,7 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.*;
 
-public class testProject {
+public class testSGProject {
 	private static String strNoChildInterface;
 	private static String strOneChildInterface;
 	private static String strOneChild_Interface;

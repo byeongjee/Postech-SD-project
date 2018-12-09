@@ -45,9 +45,8 @@ public class MCNewMethodPage extends WizardPage {
 
     public void createControl(Composite parent) {
         container = new Composite(parent, SWT.NONE);
-        GridLayout layout = new GridLayout();
-        container.setLayout(layout);
-        layout.numColumns = 1;
+    	container.setLayout(new FillLayout());
+    	
         Label label1 = new Label(container, SWT.NONE);
         label1.setText("New Method name :");
 

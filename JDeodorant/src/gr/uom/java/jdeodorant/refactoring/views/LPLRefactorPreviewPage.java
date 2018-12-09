@@ -1,11 +1,7 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
+import javax.lang.model.SourceVersion;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -14,30 +10,30 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+
 import gr.uom.java.ast.ClassObjectCandidate;
+import gr.uom.java.ast.LPLMethodObject;
 
 /**
- * Preview page of refactoring pop up wizard for speculative generality
- * @author Jaeyeop Lee, Taeyoung Son(referred from LPL Team)
+ * Preview page of refactoring pop up wizard for Long Parameter List
+ * @author iju-yong
  *
  */
-public class SGRefactorPreviewPage extends WizardPage {
+public class LPLRefactorPreviewPage extends WizardPage {
 	private Text text;
     private Composite container;
     
-    private String originalSource = "<Original Source>";
-    private String refactoredSource = "<Refactored Source>";
-
-    public SGRefactorPreviewPage(ClassObjectCandidate classToRefactor, String origin, String refactor) {
+    private String originalSource;
+    private String refactoredSource;
+    
+    public LPLRefactorPreviewPage(LPLMethodObject classToRefactor, String origin, String refactor) {
         super("Preview Page");
-        setTitle("Speculative Generality");
+        setTitle("Long Parameter List");
         
         originalSource = origin;
         refactoredSource = refactor;
@@ -69,3 +65,4 @@ public class SGRefactorPreviewPage extends WizardPage {
         return text.getText();
     }
 }
+

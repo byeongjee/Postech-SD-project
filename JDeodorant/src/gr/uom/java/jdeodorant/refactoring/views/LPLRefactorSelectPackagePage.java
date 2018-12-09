@@ -88,8 +88,7 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
 					if(isChecked) {
 						canFinishPage = true;
 						setPageComplete(true);
-					}
-					else {
+					} else {
 						currentCheckedIndex = -1;
 						canFinishPage = false;
 		                setPageComplete(false);
