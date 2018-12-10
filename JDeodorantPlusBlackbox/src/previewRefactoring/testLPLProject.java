@@ -1,4 +1,4 @@
-package showPreview;
+package previewRefactoring;
 
 import java.util.ArrayList;
 import java.util.List;

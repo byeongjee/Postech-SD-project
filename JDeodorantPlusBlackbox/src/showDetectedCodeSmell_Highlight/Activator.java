@@ -1,4 +1,4 @@
-package highlightCodeSmell;
+package showDetectedCodeSmell_Highlight;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;

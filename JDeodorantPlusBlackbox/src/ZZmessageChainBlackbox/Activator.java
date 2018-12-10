@@ -1,4 +1,4 @@
-package messageChainBlackbox;
+package ZZmessageChainBlackbox;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;

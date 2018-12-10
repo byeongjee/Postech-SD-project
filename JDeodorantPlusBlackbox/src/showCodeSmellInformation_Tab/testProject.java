@@ -1,4 +1,4 @@
-package showPreview;
+package showCodeSmellInformation_Tab;
 
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
 import static org.junit.Assert.assertEquals;
@@ -35,7 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.*;
 
-public class testSGProject {
+public class testProject {
 	private static String strNoChildInterface;
 	private static String strOneChildInterface;
 	private static String strOneChild_Interface;

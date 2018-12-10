@@ -9,12 +9,17 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.WorkingCopyOwner;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
@@ -38,11 +43,11 @@ public class testLPLProject {
 	    	
 	    	// Creating Folder
 	    	IFolder binFolder = project.getFolder("bin");
-	    	binFolder.create(false, true, null);
+	    	binFolder.create(true, true, null);
 	    	javaProject.setOutputLocation(binFolder.getFullPath(), null);
 	    	
 	    	IFolder sourceFolder = project.getFolder("src");
-	    	sourceFolder.create(false, true, null);
+	    	sourceFolder.create(true, true, null);
 	    	
 	    	// Creating Class-Path
 	    	List<IClasspathEntry> entries = new ArrayList<IClasspathEntry>();
@@ -63,7 +68,7 @@ public class testLPLProject {
 	    	
 	    	// Creating Package 
 	    	IPackageFragment _package = 
-	    			javaProject.getPackageFragmentRoot(sourceFolder).createPackageFragment("LongParameterList", false, null);
+	    			javaProject.getPackageFragmentRoot(sourceFolder).createPackageFragment("LongParameterList", true, null);
 	    	StringBuffer source;
 	    	
 	    	source = new StringBuffer();
@@ -95,8 +100,13 @@ public class testLPLProject {
 	    				"	 		}\r\n" + 
 	    				"	 	}";
 	    	source.append(strSimple);
-			_package.createCompilationUnit("TestLPL.java", source.toString(), false, null);
-			
+			_package.createCompilationUnit("TestLPL.java", source.toString(), true, null);
+			ICompilationUnit workingCopy = _package.getCompilationUnit("TestLPL.java").getWorkingCopy(new WorkingCopyOwner() {}, null);
+			IBuffer buffer = workingCopy.getBuffer();
+			buffer.replace(0, buffer.getLength(), "package " + _package.getElementName() + ";\n" + strSimple);
+			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
+			workingCopy.commitWorkingCopy(false, null);
+			workingCopy.discardWorkingCopy();
 	    }
 	    
 	    public static void deleteLPLProject() throws CoreException {

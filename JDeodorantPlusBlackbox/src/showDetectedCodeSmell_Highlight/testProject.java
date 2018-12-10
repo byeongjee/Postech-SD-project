@@ -1,4 +1,4 @@
-package highlightCodeSmell;
+package showDetectedCodeSmell_Highlight;
 
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
 import static org.junit.Assert.assertEquals;

@@ -1,4 +1,4 @@
-package speculativeGeneralityBlackbox;
+package navigateToDetectedCode_Scrollbar;
 
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
 import static org.junit.Assert.assertEquals;

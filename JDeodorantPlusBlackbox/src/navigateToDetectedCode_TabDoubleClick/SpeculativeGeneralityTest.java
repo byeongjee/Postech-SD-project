@@ -1,4 +1,4 @@
-package speculativeGeneralityBlackbox;
+package navigateToDetectedCode_TabDoubleClick;
 
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;

@@ -1,4 +1,4 @@
-package showPreview;
+package previewRefactoring;
 
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
