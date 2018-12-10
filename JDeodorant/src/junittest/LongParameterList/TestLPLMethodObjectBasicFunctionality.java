@@ -1,6 +1,8 @@
-package junittest;
+package junittest.LongParameterList;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,20 +29,13 @@ import org.eclipse.jdt.core.ITypeParameter;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.junit.BeforeClass;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-//import org.junit.jupiter.api.Test;
-
 import org.junit.Test;
+
 import gr.uom.java.ast.ConstructorObject;
 import gr.uom.java.ast.LPLMethodObject;
-import gr.uom.java.ast.LPLSmellContent;
 import gr.uom.java.ast.MethodObject;
-import gr.uom.java.ast.TypeObject;
-import gr.uom.java.jdeodorant.refactoring.views.LPLRefactorWizard;
-import gr.uom.java.jdeodorant.refactoring.views.LongParameterList;
 
-public class LongParameterListTest {
+public class TestLPLMethodObjectBasicFunctionality {
 	private static MethodObject createMockMethodObject1() {
 		ConstructorObject co = new ConstructorObject() {
 			@Override
@@ -97,7 +92,13 @@ public class LongParameterListTest {
 		assertFalse(mockLPLMethodObject1.isLongParamterListMethod());
 		assertTrue(mockLPLMethodObject2.isLongParamterListMethod());
 	}
-	
+
+	@Test
+	public void testCreateLPLMethodObjectFrom() {
+		MethodObject methodObject = createMockMethodObject1();
+		LPLMethodObject lplMethodOBject = LPLMethodObject.createLPLMethodObjectFrom(methodObject);
+		assertEquals("testMethod1", lplMethodOBject.getName());
+	}
 	
 	private static LPLMethodObject createMockLPLMethodObject1() {
 		MethodObject mockMethodObject = createMockMethodObject1();
@@ -139,98 +140,6 @@ public class LongParameterListTest {
 	private static LPLMethodObject createMockLPLMethodObject2() {
 		MethodObject mockMethodObject = createMockMethodObject2();
 		return LPLMethodObject.createLPLMethodObjectFrom(mockMethodObject);
-	}
-
-	private static IBuffer createMockIBuffer() {
-		return new IBuffer() {
-			private String content = "class HighInterest{\n" + 
-					"public int getAccountNumber(int a, int b, int c, int d, int e) {\n" + 
-					"return accountNumber;\n" + 
-					"}\n" + 
-					"}\n" + 
-					"";
-
-			public void addBufferChangedListener(IBufferChangedListener arg0) {
-			}
-
-			public void append(char[] arg0) {	
-			}
-
-			public void append(String arg0) {		
-			}
-
-			public void close() {		
-			}
-
-			public char getChar(int i) {
-
-				return content.charAt(i);
-			}
-
-			public char[] getCharacters() {
-				return null;
-			}
-
-			public String getContents() {
-				return content;
-			}
-
-			public int getLength() {
-				return 0;
-			}
-
-			public IOpenable getOwner() {
-				return null;
-			}
-
-			public String getText(int arg0, int arg1) throws IndexOutOfBoundsException {
-				return null;
-			}
-
-			public IResource getUnderlyingResource() {
-				return null;
-			}
-
-			public boolean hasUnsavedChanges() {
-				return false;
-			}
-
-			public boolean isClosed() {
-				return false;
-			}
-
-			public boolean isReadOnly() {
-				
-				return false;
-			}
-
-			public void removeBufferChangedListener(IBufferChangedListener arg0) {
-				
-				
-			}
-
-			public void replace(int arg0, int arg1, char[] arg2) {
-				
-			}
-
-			public void replace(int startIdx, int length, String replacement) {
-				content = content.substring(0, startIdx) + replacement + content.substring(startIdx + length);
-			}
-
-			public void save(IProgressMonitor arg0, boolean arg1) throws JavaModelException {
-				
-				
-			}
-
-			public void setContents(char[] arg0) {
-				
-				
-			}
-
-			public void setContents(String arg0) {
-								
-			}
-		};
 	}
 	
 	private static IMethod createMockIMethod() {
