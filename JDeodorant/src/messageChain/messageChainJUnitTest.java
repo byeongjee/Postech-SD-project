@@ -168,10 +168,8 @@ public class messageChainJUnitTest {
          stringOfMethodInvocation.add("method1");
          stringOfMethodInvocation.add("method2");
          
-         //String result = msgChain.makeNewMethodCode ("newMethod", "int", stringofArgumentType, numOfArgumentOfEachMethod, stringOfMethodInvocation);
          String result = MessageChainRefactoring.makeNewMethodCode ("newMethod", "int", stringofArgumentType, numOfArgumentOfEachMethod, stringOfMethodInvocation);
 
-         System.out.println(result);
          assertTrue(result.equals("\r\n\tpublic int newMethod(int x0, double x1, int x2) {\r\n" + 
                "\t\treturn method1(x0, x1).method2(x2);\r\n" + 
                "\t}\r\n"));
