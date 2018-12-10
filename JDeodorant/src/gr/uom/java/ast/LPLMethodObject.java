@@ -23,12 +23,13 @@ public class LPLMethodObject extends MethodObject {
 	static int NumParameterLimit = 3;
 	
 	
-	public static void fillNewParameterClass(IBuffer buffer, IPackageFragment pf, String className, List<String> parameterTypes, List<String> parameterNames) {
+	public static void fillNewParameterClass(IBuffer buffer, IPackageFragment pf, String className, List<String> extractedParameterTypes, List<String> extractedParameterNames) {
 		try {
-			assert(parameterTypes.size() == parameterNames.size());
+			assert(extractedParameterTypes.size() == extractedParameterNames.size());
+			
 			List<String> parameterTypeAndNames = new ArrayList<String>();
-			for (int i = 0; i < parameterTypes.size(); ++i) {
-				parameterTypeAndNames.add(parameterTypes.get(i) + " " + parameterNames.get(i));
+			for (int i = 0; i < extractedParameterTypes.size(); ++i) {
+				parameterTypeAndNames.add(extractedParameterTypes.get(i) + " " + extractedParameterNames.get(i));
 			}
 			
 			String packageName = pf.getElementName();
@@ -51,7 +52,7 @@ public class LPLMethodObject extends MethodObject {
 			constructorBuilder.append(parameterTypeAndNames.get(parameterTypeAndNames.size() - 1));
 			constructorBuilder.append(") ");
 			constructorBuilder.append("{ \n");
-			for (String parameterName: parameterNames) {
+			for (String parameterName: extractedParameterNames) {
 				constructorBuilder.append("\t\tthis."+parameterName+" = " +parameterName + ";\n");
 			}
 			constructorBuilder.append("\n\t}\n");
@@ -61,8 +62,8 @@ public class LPLMethodObject extends MethodObject {
 			for (int i = 0; i < parameterTypeAndNames.size(); ++i) {
 				StringBuilder aGetterBuilder = new StringBuilder();
 				aGetterBuilder.append("\t public ");
-				aGetterBuilder.append(parameterTypes.get(i) + " ");
-				String parameterName = parameterNames.get(i);
+				aGetterBuilder.append(extractedParameterTypes.get(i) + " ");
+				String parameterName = extractedParameterNames.get(i);
 				aGetterBuilder.append("get");
 				aGetterBuilder.append(parameterName.substring(0, 1).toUpperCase() + parameterName.substring(1));
 				aGetterBuilder.append("()");
@@ -79,7 +80,7 @@ public class LPLMethodObject extends MethodObject {
 			for (int i = 0; i < parameterTypeAndNames.size(); ++i) {
 				StringBuilder aSetterBuilder = new StringBuilder();
 				aSetterBuilder.append("\t public void ");
-				String parameterName = parameterNames.get(i);
+				String parameterName = extractedParameterNames.get(i);
 				aSetterBuilder.append("set");
 				aSetterBuilder.append(parameterName.substring(0, 1).toUpperCase() + parameterName.substring(1));
 				aSetterBuilder.append("(");
@@ -116,7 +117,7 @@ public class LPLMethodObject extends MethodObject {
 		}
 	}
 	
-	public static void editParameterFromBuffer(IBuffer buffer, IMethod method, ArrayList<Integer> parameterIndexList, 
+	public static void editParameterFromBuffer(IBuffer buffer, IMethod method, List<Integer> parameterToExtractIndexList, 
 			LPLSmellContent smellContent, String tempVarInitializeCode) {
 		try {
 			IMethod convertedIMethod = method;
@@ -145,7 +146,7 @@ public class LPLMethodObject extends MethodObject {
 			}
 			String argumentString = buffer.getContents().substring(startPosition + 1, endPosition);
 			String argumentParts[] = argumentString.split(",");
-			for(int it : parameterIndexList) {
+			for(int it : parameterToExtractIndexList) {
 				
 				argumentParts[it] = null;
 			}
@@ -175,19 +176,19 @@ public class LPLMethodObject extends MethodObject {
 		}
 	}
 	
-	public static String codeForInitializingTempVars(IMethod method, List<String>parameterTypes, List<String>parameterNames, String parameterObjName) {
+	public static String codeForInitializingTempVars(List<String> extractedParameterTypes, List<String> extractedParameterNames, String parameterObjName) {
 		StringBuilder codeBuilder = new  StringBuilder();
 		codeBuilder.append("\n");
-		int parameterSize = parameterTypes.size();
+		int parameterSize = extractedParameterTypes.size();
 		for (int i = 0; i < parameterSize; ++i) {
 			codeBuilder.append("\t\t");
-			codeBuilder.append(parameterTypes.get(i));
+			codeBuilder.append(extractedParameterTypes.get(i));
 			codeBuilder.append(" ");
-			codeBuilder.append(parameterNames.get(i));
+			codeBuilder.append(extractedParameterNames.get(i));
 			codeBuilder.append(" = ");
 			codeBuilder.append(parameterObjName);
 			codeBuilder.append(".get");
-			String name = parameterNames.get(i);
+			String name = extractedParameterNames.get(i);
 			String nameWithUpperCase = name.substring(0, 1).toUpperCase() + name.substring(1);
 			codeBuilder.append(nameWithUpperCase);
 			codeBuilder.append("()");

@@ -67,7 +67,7 @@ public class LPLRefactorWizard extends Wizard {
 			List<String> parameterTypes = initialPage.getExtractParameterTypes();
 			List<String> parameterNames = initialPage.getExtractParameterNames();
 			IMethod convertedIMethod = methodToRefactor.toIMethod(javaProject);
-			String tempVarInitializeCode = LPLMethodObject.codeForInitializingTempVars(convertedIMethod, parameterTypes, parameterNames, parameterName);
+			String tempVarInitializeCode = LPLMethodObject.codeForInitializingTempVars(parameterTypes, parameterNames, parameterName);
 
 			createNewParameterClass(pf, className, parameterTypes, parameterNames);
 
