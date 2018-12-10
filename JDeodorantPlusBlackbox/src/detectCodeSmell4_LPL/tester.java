@@ -20,9 +20,11 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IVMInstall;
@@ -31,20 +33,21 @@ import org.eclipse.jdt.launching.LibraryLocation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.runner.*;
 
+import static org.eclipse.swtbot.swt.finder.SWTBotAssert.assertVisible;
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 
@@ -59,24 +62,25 @@ public class tester {
 		bot.tree().getTreeItem("Java").expand().getNode("Package Explorer").doubleClick();
 	}
 
-	private static void openLPLTab() {
-		bot.menu("JDe5dorant").menu("Long Parameter List").click();
-	}
-
 	@BeforeClass
 	public static void initBot() throws CoreException {
 		bot = new SWTWorkbenchBot();
+		// bot.viewByTitle("Welcome").close();
 
 		testLPLProject.buildLPLProject();
 		openPackageExplorer();
-		openLPLTab();
 		SWTBotPreferences.KEYBOARD_LAYOUT = "EN_US";
 	}
 
 	@AfterClass
 	public static void afterClass() throws CoreException {
+		//bot.sleep(100000);
 		deleteTestProject();
 		bot.resetWorkbench();
+	}
+
+	private void openLPLTab() {
+		bot.menu("JDe5dorant").menu("Long Parameter List").click();
 	}
 
 	private void closeLPLTab() {
@@ -90,26 +94,29 @@ public class tester {
 		packageExplorer.bot().tree().getTreeItem("testLPLProject").getNode("src").doubleClick();
 		packageExplorer.bot().tree().getTreeItem("testLPLProject").getNode("src").getNode("LongParameterList").click();
 	}
-
 	private void applyDetection() {
 		SWTBotView detectionView = bot.viewByTitle("Long Parameter List");
 		detectionView.show();
 		detectionView.getToolbarButtons().get(0).click();
 	}
 
-	@Test
-	public void testApplyingLPLDetection() {
-		try {
-		selectTargetPackage();
-		applyDetection();
-		
+	private void openRefactoringPopUpFromDetectedSmell() {
 		SWTBotView detectionView = bot.viewByTitle("Long Parameter List");
-    	assertTrue(detectionView.bot().tree().getTreeItem("Long Parameter List").isEnabled());
-		} finally {
-		closeLPLTab();
-		}
+		detectionView.show();
+		detectionView.bot().button("TEST").click();
 	}
 
+	private void detectCodeSmellAndOpenRefactoringPopUp() {
+		openLPLTab();
+		selectTargetPackage();
+		applyDetection();
+		openRefactoringPopUpFromDetectedSmell();
+	}
+
+	private void closeRefactoringPopUp() {
+		bot.shell("Refactoring").close();
+	}
+	
 	public static void deleteTestProject() {
     	bot.resetActivePerspective();
     	SWTBotView view = bot.viewByTitle("Project Explorer");
@@ -119,4 +126,34 @@ public class tester {
     	bot.checkBox("Delete project contents on disk (cannot be undone)").click();
     	bot.button("OK").click();
     }
+	
+
+	@Test
+	public void testApplyingLPLDetection() {
+		try {
+			openLPLTab();
+			selectTargetPackage();
+			applyDetection();
+		} catch (Exception e) {
+			fail("test fail with exception " + e);
+		} finally {
+			closeLPLTab();
+		}
+	}
+
+	@Test
+	public void testLPLRefactoringItemShownScenario() {
+		try {
+			openLPLTab();
+			openPackageExplorer();
+			selectTargetPackage();
+			applyDetection();
+			// bot.sleep(200000);
+			bot.viewByTitle("Long Parameter List").bot().tree().getTreeItem("Long Parameter List").getItems();
+		} catch (Exception e) {
+			fail("test fail with exception " + e);
+		} finally {
+			closeLPLTab();
+		}
+	}
 }

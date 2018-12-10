@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
@@ -21,33 +22,14 @@ public class LPLMethodObject extends MethodObject {
 
 	static int NumParameterLimit = 3;
 	
-	public static void createNewParameterClass(IPackageFragment pf, String className, List<String> parameterTypes, List<String> parameterNames) {
-		try {
-			assert(pf != null);
-			ICompilationUnit cu = pf.createCompilationUnit(className + ".java", "", false, null);
-			ICompilationUnit workingCopy = cu
-					.getWorkingCopy(new WorkingCopyOwner() {
-					}, null);
-			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
-			
-			fillNewParameterClass(buffer, pf, className, parameterTypes, parameterNames);
-			
-			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
-			workingCopy.commitWorkingCopy(false, null);
-			workingCopy.discardWorkingCopy();
-			workingCopy.discardWorkingCopy();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 	
-	private static void fillNewParameterClass(IBuffer buffer, IPackageFragment pf, String className, List<String> parameterTypes, List<String> parameterNames) {
+	public static void fillNewParameterClass(IBuffer buffer, IPackageFragment pf, String className, List<String> extractedParameterTypes, List<String> extractedParameterNames) {
 		try {
-			assert(parameterTypes.size() == parameterNames.size());
+			assert(extractedParameterTypes.size() == extractedParameterNames.size());
+			
 			List<String> parameterTypeAndNames = new ArrayList<String>();
-			for (int i = 0; i < parameterTypes.size(); ++i) {
-				parameterTypeAndNames.add(parameterTypes.get(i) + " " + parameterNames.get(i));
+			for (int i = 0; i < extractedParameterTypes.size(); ++i) {
+				parameterTypeAndNames.add(extractedParameterTypes.get(i) + " " + extractedParameterNames.get(i));
 			}
 			
 			String packageName = pf.getElementName();
@@ -70,17 +52,59 @@ public class LPLMethodObject extends MethodObject {
 			constructorBuilder.append(parameterTypeAndNames.get(parameterTypeAndNames.size() - 1));
 			constructorBuilder.append(") ");
 			constructorBuilder.append("{ \n");
-			for (String parameterName: parameterNames) {
+			for (String parameterName: extractedParameterNames) {
 				constructorBuilder.append("\t\tthis."+parameterName+" = " +parameterName + ";\n");
 			}
 			constructorBuilder.append("\n\t}\n");
 			String constructor = constructorBuilder.toString();
+			
+			StringBuilder getterBuilder = new StringBuilder();
+			for (int i = 0; i < parameterTypeAndNames.size(); ++i) {
+				StringBuilder aGetterBuilder = new StringBuilder();
+				aGetterBuilder.append("\t public ");
+				aGetterBuilder.append(extractedParameterTypes.get(i) + " ");
+				String parameterName = extractedParameterNames.get(i);
+				aGetterBuilder.append("get");
+				aGetterBuilder.append(parameterName.substring(0, 1).toUpperCase() + parameterName.substring(1));
+				aGetterBuilder.append("()");
+				aGetterBuilder.append(" {\n");
+				aGetterBuilder.append("\t\t return ");
+				aGetterBuilder.append(parameterName);
+				aGetterBuilder.append(";\n\t}\n");
+				String aGetter = aGetterBuilder.toString();
+				getterBuilder.append(aGetter);
+			}
+			String getter = getterBuilder.toString();
+			
+			StringBuilder setterBuilder = new StringBuilder();
+			for (int i = 0; i < parameterTypeAndNames.size(); ++i) {
+				StringBuilder aSetterBuilder = new StringBuilder();
+				aSetterBuilder.append("\t public void ");
+				String parameterName = extractedParameterNames.get(i);
+				aSetterBuilder.append("set");
+				aSetterBuilder.append(parameterName.substring(0, 1).toUpperCase() + parameterName.substring(1));
+				aSetterBuilder.append("(");
+				aSetterBuilder.append(parameterTypeAndNames.get(i));
+				aSetterBuilder.append(")");
+				aSetterBuilder.append(" {\n");
+				aSetterBuilder.append("\t\t this.");
+				aSetterBuilder.append(parameterName);
+				aSetterBuilder.append(" = ");
+				aSetterBuilder.append(parameterName);
+				aSetterBuilder.append(";\n\t}\n");
+				String aSetter = aSetterBuilder.toString();
+				setterBuilder.append(aSetter);
+			}
+			String setter = setterBuilder.toString();
+			
 			StringBuilder classDeclarationBuilder = new StringBuilder();
 			classDeclarationBuilder.append("public class ");
 			classDeclarationBuilder.append(className);
 			classDeclarationBuilder.append("{ \n");
 			classDeclarationBuilder.append(parameterDeclaration);
 			classDeclarationBuilder.append(constructor);
+			classDeclarationBuilder.append(getter);
+			classDeclarationBuilder.append(setter);
 			classDeclarationBuilder.append("}");
 			
 			String classDeclaration = classDeclarationBuilder.toString();
@@ -93,11 +117,12 @@ public class LPLMethodObject extends MethodObject {
 		}
 	}
 	
-	public static void editParameterFromBuffer(IBuffer buffer, IMethod method, ArrayList<Integer> parameterIndexList, LPLSmellContent smellContent) {
+	public static void editParameterFromBuffer(IBuffer buffer, IMethod method, List<Integer> parameterToExtractIndexList, 
+			LPLSmellContent smellContent, String tempVarInitializeCode) {
 		try {
 			IMethod convertedIMethod = method;
-			
 			int startPosition = convertedIMethod.getSourceRange().getOffset();
+			
 			while (true) {
 				if (buffer.getChar(startPosition) != '(') {
 					startPosition += 1;
@@ -121,7 +146,8 @@ public class LPLMethodObject extends MethodObject {
 			}
 			String argumentString = buffer.getContents().substring(startPosition + 1, endPosition);
 			String argumentParts[] = argumentString.split(",");
-			for(int it : parameterIndexList) {
+			for(int it : parameterToExtractIndexList) {
+				
 				argumentParts[it] = null;
 			}
 			String refactoredArgumentString = "";
@@ -131,18 +157,44 @@ public class LPLMethodObject extends MethodObject {
 					refactoredArgumentString += ", ";
 				}
 			}
-			//refactoredArgumentString = refactoredArgumentString.substring(0, refactoredArgumentString.length() - 2);
 			String replaceSignature = "(";
 			replaceSignature += refactoredArgumentString;
 			replaceSignature += smellContent.getNewClassName() + " " + smellContent.getNewParameterName();
 			replaceSignature += ")";
 			
-			System.out.println(refactoredArgumentString);
+			int defPosition = endPosition;
+			while (buffer.getChar(defPosition) != '{') {
+				defPosition += 1;
+			}
+			defPosition += 1;
 			
+			
+			buffer.replace(defPosition, 0, tempVarInitializeCode);
 			buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
 		} catch (Exception e) {
 				e.printStackTrace();
 		}
+	}
+	
+	public static String codeForInitializingTempVars(List<String> extractedParameterTypes, List<String> extractedParameterNames, String parameterObjName) {
+		StringBuilder codeBuilder = new  StringBuilder();
+		codeBuilder.append("\n");
+		int parameterSize = extractedParameterTypes.size();
+		for (int i = 0; i < parameterSize; ++i) {
+			codeBuilder.append("\t\t");
+			codeBuilder.append(extractedParameterTypes.get(i));
+			codeBuilder.append(" ");
+			codeBuilder.append(extractedParameterNames.get(i));
+			codeBuilder.append(" = ");
+			codeBuilder.append(parameterObjName);
+			codeBuilder.append(".get");
+			String name = extractedParameterNames.get(i);
+			String nameWithUpperCase = name.substring(0, 1).toUpperCase() + name.substring(1);
+			codeBuilder.append(nameWithUpperCase);
+			codeBuilder.append("()");
+			codeBuilder.append(";\n");
+		}
+		return codeBuilder.toString();
 	}
 
 	private String codeSmellType;

@@ -1,4 +1,4 @@
-package junittest;
+package junittest.speculatviveGenerality;
 
 import static org.junit.jupiter.api.Assertions.*;
 

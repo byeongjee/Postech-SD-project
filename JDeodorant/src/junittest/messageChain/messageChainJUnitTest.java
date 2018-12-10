@@ -1,4 +1,4 @@
-package messageChain;
+package junittest.messageChain;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.eclipse.core.resources.IContainer;
