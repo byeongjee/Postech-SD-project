@@ -121,36 +121,44 @@ public class LongParameterListTest {
 	@Test
 	public void testOpenLPLTab() {
 		try {
-		openLPLTab();
-		assertTrue(bot.viewByTitle("Long Parameter List").isActive());
+			openLPLTab();
+			assertTrue(bot.viewByTitle("Long Parameter List").isActive());
+		} catch (Exception e) {
+			fail("test fail with exception " + e);
 		} finally {
-		closeLPLTab();
+			closeLPLTab();
 		}
 	}
 
 	@Test
 	public void testApplyingLPLDetection() {
 		try {
-		openLPLTab();
-		selectTargetPackage();
-		applyDetection();
+			openLPLTab();
+			selectTargetPackage();
+			applyDetection();
+		} catch (Exception e) {
+			fail("test fail with exception " + e);
 		} finally {
-		closeLPLTab();
+			closeLPLTab();
 		}
 	}
 
 	@Test
 	public void testLPLRefactoringItemShownScenario() {
 		try {
-		openLPLTab();
-		selectTargetPackage();
-		applyDetection();
-		bot.viewByTitle("Long Parameter List").bot().tree().getTreeItem("Long Parameter List").getItems();
+			openLPLTab();
+			openPackageExplorer();
+			selectTargetPackage();
+			applyDetection();
+			// bot.sleep(200000);
+			bot.viewByTitle("Long Parameter List").bot().tree().getTreeItem("Long Parameter List").getItems();
+		} catch (Exception e) {
+			fail("test fail with exception " + e);
 		} finally {
-		closeLPLTab();
+			closeLPLTab();
 		}
 	}
-	
+
 	@Test
 	public void testSmellHighlight() {
 		openLPLTab();
@@ -160,21 +168,23 @@ public class LongParameterListTest {
 		detectionView.show();
 		detectionView.bot().tree().getTreeItem("Long Parameter List").doubleClick();
 		SWTBotEditor editor = bot.editorByTitle("TestLPL.java");
-    	SWTBotEclipseEditor eclipseEditor = editor.toTextEditor();
+		SWTBotEclipseEditor eclipseEditor = editor.toTextEditor();
 	}
 
 	@Test
 	public void testOpenRefactoringPopUp() {
 		try {
-		detectCodeSmellAndOpenRefactoringPopUp();
-		SWTBotShell refactoringWizard = bot.shell("Refactoring");
-		assertTrue(refactoringWizard.isVisible());
+			detectCodeSmellAndOpenRefactoringPopUp();
+			SWTBotShell refactoringWizard = bot.shell("Refactoring");
+			assertTrue(refactoringWizard.isVisible());
+		}		catch (Exception e) {
+			fail("test fail with exception "+e);
 		} finally {
 			try {
-		closeRefactoringPopUp();
-		closeLPLTab();
+				closeRefactoringPopUp();
+				closeLPLTab();
 			} catch (Exception e) {
-				
+
 			}
 		}
 	}
@@ -184,15 +194,17 @@ public class LongParameterListTest {
 	// to extract.
 	public void testRefactoringPopUpInitialPageExceptionScenario() {
 		try {
-		detectCodeSmellAndOpenRefactoringPopUp();
-		SWTBotShell refactoringWizard = bot.shell("Refactoring");
-		assertFalse(refactoringWizard.bot().button("Next >").isEnabled());
+			detectCodeSmellAndOpenRefactoringPopUp();
+			SWTBotShell refactoringWizard = bot.shell("Refactoring");
+			assertFalse(refactoringWizard.bot().button("Next >").isEnabled());
+		}		catch (Exception e) {
+			fail("test fail with exception "+e);
 		} finally {
 			try {
-		closeRefactoringPopUp();
-		closeLPLTab();
+				closeRefactoringPopUp();
+				closeLPLTab();
 			} catch (Exception e) {
-				
+
 			}
 		}
 	}
@@ -202,37 +214,39 @@ public class LongParameterListTest {
 	// new class name
 	public void testRefactoringPopUpUIClassNamePageExceptionScenario() {
 		try {
-		detectCodeSmellAndOpenRefactoringPopUp();
-		SWTBotShell refactoringWizard = bot.shell("Refactoring");
-		refactoringWizard.bot().table().getTableItem(0).check();
-		refactoringWizard.bot().table().getTableItem(1).check();
-		// now in class name page
-		refactoringWizard.bot().button("Next >").click();
-		assertFalse(refactoringWizard.bot().button("Next >").isEnabled());
+			detectCodeSmellAndOpenRefactoringPopUp();
+			SWTBotShell refactoringWizard = bot.shell("Refactoring");
+			refactoringWizard.bot().table().getTableItem(0).check();
+			refactoringWizard.bot().table().getTableItem(1).check();
+			// now in class name page
+			refactoringWizard.bot().button("Next >").click();
+			assertFalse(refactoringWizard.bot().button("Next >").isEnabled());
+		}		catch (Exception e) {
+			fail("test fail with exception "+e);
 		} finally {
 			try {
-		closeRefactoringPopUp();
-		closeLPLTab();
+				closeRefactoringPopUp();
+				closeLPLTab();
 			} catch (Exception e) {
-				
+
 			}
 		}
 	}
-
 	@Test
 	public void testLPLRefactoringSuccessScenario() {
 		try {
-			//testLPLProject.buildLPLProject();
+			// testLPLProject.buildLPLProject();
 			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testLPLProject");
 			IJavaProject javaProject = JavaCore.create(project);
 			String originalSource = "";
 			int LPLPkgIndex = 0;
-			for(LPLPkgIndex = 0; LPLPkgIndex < javaProject.getPackageFragments().length; LPLPkgIndex++) {
-				if(javaProject.getPackageFragments()[LPLPkgIndex].getElementName() == "LongParameterList")
+			for (LPLPkgIndex = 0; LPLPkgIndex < javaProject.getPackageFragments().length; LPLPkgIndex++) {
+				if (javaProject.getPackageFragments()[LPLPkgIndex].getElementName() == "LongParameterList")
 					break;
 			}
 			LPLPkgIndex--;
-			originalSource = javaProject.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").getSource();
+			originalSource = javaProject.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java")
+					.getSource();
 			detectCodeSmellAndOpenRefactoringPopUp();
 			SWTBotShell refactoringWizard = bot.shell("Refactoring");
 			refactoringWizard.bot().table().getTableItem(0).check();
@@ -248,12 +262,15 @@ public class LongParameterListTest {
 
 			IJavaProject javaProjectUpdated = JavaCore.create(project);
 
-			assertTrue(javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").exists());
-			assertFalse(javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").getSource().equals(originalSource));
-			ICompilationUnit newCompilationUnit = javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestClass.java");
+			assertTrue(
+					javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").exists());
+			assertFalse(javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java")
+					.getSource().equals(originalSource));
+			ICompilationUnit newCompilationUnit = javaProjectUpdated.getPackageFragments()[LPLPkgIndex]
+					.getCompilationUnit("TestClass.java");
 			List<IField> fields = new ArrayList<IField>();
-			for (IType type: newCompilationUnit.getTypes()) {
-				for (IField field: type.getFields()) {
+			for (IType type : newCompilationUnit.getTypes()) {
+				for (IField field : type.getFields()) {
 					fields.add(field);
 				}
 			}
@@ -262,16 +279,17 @@ public class LongParameterListTest {
 			fail("fail with Exception " + e);
 		} finally {
 			try {
-		closeRefactoringPopUp();
-		closeLPLTab();
-		testLPLProject.buildLPLProject();
-		deleteTestProject();
+				closeLPLTab();
+				deleteTestProject();
+				// bot.sleep(4000);
+				//testLPLProject.buildLPLProject();
+				//bot.sleep(100000);
+				createDemoEmptySample();
+				// bot.sleep(200000);
 			} catch (Exception e) {
-				
 			}
 		}
 	}
-	
 
 	@Test
 	public void testClassNameWarning() {
@@ -285,17 +303,16 @@ public class LongParameterListTest {
 			refactoringWizard.bot().text(0).selectAll().typeText("testClass");
 			assertVisible(refactoringWizard.bot().label("* Class name does not start with capital letter"));
 
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			fail("fail with Exception " + e);
 		} finally {
 			try {
-		closeRefactoringPopUp();
-		closeLPLTab();
-		testLPLProject.buildLPLProject();
-		deleteTestProject();
+				closeRefactoringPopUp();
+				closeLPLTab();
+				testLPLProject.buildLPLProject();
+				deleteTestProject();
 			} catch (Exception e) {
-				
+
 			}
 		}
 	}
@@ -316,28 +333,72 @@ public class LongParameterListTest {
 			refactoringWizard.bot().table().getTableItem(0).check();
 			assertVisible(refactoringWizard.bot().label("* Class with same name already exists!"));
 			assertFalse(refactoringWizard.bot().button("Finish").isEnabled());
-		}		catch (Exception e) {
+		} catch (Exception e) {
 			fail("fail with Exception " + e);
 		} finally {
 			try {
-		closeRefactoringPopUp();
-		closeLPLTab();
-		testLPLProject.buildLPLProject();
-		deleteTestProject();
+				closeRefactoringPopUp();
+				closeLPLTab();
 			} catch (Exception e) {
-				
+
 			}
 		}
 	}
-	
+
+	public static void createDemoEmptySample() {
+		bot.resetActivePerspective();
+		bot.menu("File").menu("New").menu("Project...").click();
+		SWTBotShell shell = bot.shell("New Project");
+		shell.activate();
+		bot.tree().expandNode("Java");
+		bot.tree().getTreeItem("Java").select("Java Project");
+		bot.button("Next >").click();
+
+		bot.textWithLabel("Project name:").setText("testLPLProject");
+		bot.button("Finish").click();
+
+		SWTBotShell perShell = bot.shell("Open Associated Perspective?");
+		perShell.activate();
+		bot.button("No").click();
+
+		SWTBotView view = bot.viewByTitle("Project Explorer");
+		view.bot().tree().getTreeItem("testLPLProject").expand();
+		view.bot().tree().getTreeItem("testLPLProject").select("src").contextMenu("New").menu("Class").click();
+
+		SWTBotShell classShell = bot.shell("New Java Class");
+		classShell.activate();
+		bot.textWithLabel("Package:").setText("LongParamterList");
+		bot.textWithLabel("Name:").setText("TestLPL");
+		bot.button("Finish").click();
+		sampleInputFields();
+	}
+
+	public static void sampleInputFields() {
+		bot.resetActivePerspective();
+		SWTBotEditor editor = bot.editorByTitle("TestLPL.java");
+		SWTBotEclipseEditor eclipseEditor = editor.toTextEditor();
+		eclipseEditor.insertText(3, 0, "	 		public int a;\r\n" + "	 		public int b;\r\n"
+				+ "	 		public char c;\r\n" + "	 		\r\n" + "	 		public TestLPL() {\r\n"
+				+ "	 			a = 1;\r\n" + "	 			b = 2;\r\n" + "	 			c = 'a';\r\n"
+				+ "	 		}\r\n" + "	 		public int getVal1 (int x) {\r\n" + "	 			return a + x;\r\n"
+				+ "	 		}\r\n" + "	 		public int getVal2 (int x, int y) {\r\n"
+				+ "	 			return b + x + y;\r\n" + "	 		}\r\n"
+				+ "	 		public int getVal3 (int x, int y, int z) {\r\n" + "	 			return x + y + z;\r\n"
+				+ "	 		}\r\n" + "	 		public int getVal4 (int x, int y, int z, int w) {\r\n"
+				+ "	 			return x + y + z + w;\r\n" + "	 		}\r\n"
+				+ "	 		public int getVal4_2 (int x, int y, char u, char v) {\r\n"
+				+ "	 			return u + v;\r\n" + "	 		}\r\n" + "	 	}");
+		eclipseEditor.save();
+	}
+
 	public static void deleteTestProject() {
-    	bot.resetActivePerspective();
-    	SWTBotView view = bot.viewByTitle("Project Explorer");
-    	view.bot().tree().getTreeItem("testLPLProject").contextMenu("Delete").click();
-    	SWTBotShell deleteShell = bot.shell("Delete Resources");
-    	deleteShell.activate();
-    	bot.checkBox("Delete project contents on disk (cannot be undone)").click();
-    	bot.button("OK").click();
-    }
+		bot.resetActivePerspective();
+		SWTBotView view = bot.viewByTitle("Project Explorer");
+		view.bot().tree().getTreeItem("testLPLProject").contextMenu("Delete").click();
+		SWTBotShell deleteShell = bot.shell("Delete Resources");
+		deleteShell.activate();
+		bot.checkBox("Delete project contents on disk (cannot be undone)").click();
+		bot.button("OK").click();
+	}
 
 }
