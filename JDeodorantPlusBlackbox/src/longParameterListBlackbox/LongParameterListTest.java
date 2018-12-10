@@ -281,11 +281,7 @@ public class LongParameterListTest {
 			try {
 				closeLPLTab();
 				deleteTestProject();
-				// bot.sleep(4000);
-				//testLPLProject.buildLPLProject();
-				//bot.sleep(100000);
-				createDemoEmptySample();
-				// bot.sleep(200000);
+				testLPLProject.buildLPLProject();
 			} catch (Exception e) {
 			}
 		}
@@ -345,54 +341,7 @@ public class LongParameterListTest {
 		}
 	}
 
-	public static void createDemoEmptySample() {
-		bot.resetActivePerspective();
-		bot.menu("File").menu("New").menu("Project...").click();
-		SWTBotShell shell = bot.shell("New Project");
-		shell.activate();
-		bot.tree().expandNode("Java");
-		bot.tree().getTreeItem("Java").select("Java Project");
-		bot.button("Next >").click();
-
-		bot.textWithLabel("Project name:").setText("testLPLProject");
-		bot.button("Finish").click();
-
-		SWTBotShell perShell = bot.shell("Open Associated Perspective?");
-		perShell.activate();
-		bot.button("No").click();
-
-		SWTBotView view = bot.viewByTitle("Project Explorer");
-		view.bot().tree().getTreeItem("testLPLProject").expand();
-		view.bot().tree().getTreeItem("testLPLProject").select("src").contextMenu("New").menu("Class").click();
-
-		SWTBotShell classShell = bot.shell("New Java Class");
-		classShell.activate();
-		bot.textWithLabel("Package:").setText("LongParamterList");
-		bot.textWithLabel("Name:").setText("TestLPL");
-		bot.button("Finish").click();
-		sampleInputFields();
-	}
-
-	public static void sampleInputFields() {
-		bot.resetActivePerspective();
-		SWTBotEditor editor = bot.editorByTitle("TestLPL.java");
-		SWTBotEclipseEditor eclipseEditor = editor.toTextEditor();
-		eclipseEditor.insertText(3, 0, "	 		public int a;\r\n" + "	 		public int b;\r\n"
-				+ "	 		public char c;\r\n" + "	 		\r\n" + "	 		public TestLPL() {\r\n"
-				+ "	 			a = 1;\r\n" + "	 			b = 2;\r\n" + "	 			c = 'a';\r\n"
-				+ "	 		}\r\n" + "	 		public int getVal1 (int x) {\r\n" + "	 			return a + x;\r\n"
-				+ "	 		}\r\n" + "	 		public int getVal2 (int x, int y) {\r\n"
-				+ "	 			return b + x + y;\r\n" + "	 		}\r\n"
-				+ "	 		public int getVal3 (int x, int y, int z) {\r\n" + "	 			return x + y + z;\r\n"
-				+ "	 		}\r\n" + "	 		public int getVal4 (int x, int y, int z, int w) {\r\n"
-				+ "	 			return x + y + z + w;\r\n" + "	 		}\r\n"
-				+ "	 		public int getVal4_2 (int x, int y, char u, char v) {\r\n"
-				+ "	 			return u + v;\r\n" + "	 		}\r\n" + "	 	}");
-		eclipseEditor.save();
-	}
-
 	public static void deleteTestProject() {
-		bot.resetActivePerspective();
 		SWTBotView view = bot.viewByTitle("Project Explorer");
 		view.bot().tree().getTreeItem("testLPLProject").contextMenu("Delete").click();
 		SWTBotShell deleteShell = bot.shell("Delete Resources");
