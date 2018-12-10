@@ -53,6 +53,7 @@ import java.util.Map;
 
 import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.SystemObject;
+import gr.uom.java.jdeodorant.refactoring.manipulators.MessageChainRefactoring;
 import gr.uom.java.jdeodorant.refactoring.views.MessageChain;
 import gr.uom.java.jdeodorant.refactoring.views.MessageChain.ViewContentProvider;
 import gr.uom.java.jdeodorant.refactoring.views.MessageChain.ViewLabelProvider;
@@ -148,13 +149,12 @@ public class messageChainJUnitTest {
 	   assertTrue(labelProvider.getColumnText(child2, 1).equals("A().B().C()"));
 	   assertTrue(labelProvider.getColumnText(child2, 4).equals(""));
 	   assertTrue(labelProvider.getColumnText(child, 0).equals("15"));
-	   assertTrue(labelProvider.getColumnText(child, 2).equals("3"));
 	   assertTrue(labelProvider.getColumnText("ff", 1).equals(""));
    }
    
    @Test
       public void testmakeNewMethodCode () {
-        MessageChain msgChain = new MessageChain();
+        //MessageChain msgChain = new MessageChain();
          List<String> stringofArgumentType = new ArrayList<String>();
          stringofArgumentType.add("int");
          stringofArgumentType.add("double");
@@ -168,16 +168,15 @@ public class messageChainJUnitTest {
          stringOfMethodInvocation.add("method1");
          stringOfMethodInvocation.add("method2");
          
-         String result = msgChain.makeNewMethodCode ("newMethod", "int", stringofArgumentType, numOfArgumentOfEachMethod, stringOfMethodInvocation);
-         System.out.println(result);
-         assertTrue(result.equals("public int newMethod(int x0, double x1, int x2) {\r\n" + 
-               "\treturn method1(x0, x1).method2(x2);\r\n" + 
-               "}\r\n"));
+         String result = MessageChainRefactoring.makeNewMethodCode ("newMethod", "int", stringofArgumentType, numOfArgumentOfEachMethod, stringOfMethodInvocation);
+
+         assertTrue(result.equals("\r\n\tpublic int newMethod(int x0, double x1, int x2) {\r\n" + 
+               "\t\treturn method1(x0, x1).method2(x2);\r\n" + 
+               "\t}\r\n"));
       }
    
    @Test
       public void testgetClassName () {
-        MessageChain msgChain = new MessageChain();
          String str1 = "homework5.simple";
          String str2 = "int";
          String str3 = "csed.homwork5.simple";
@@ -186,9 +185,9 @@ public class messageChainJUnitTest {
          int length2 = str2.length();
          int length3 = str3.length();
          
-         String result1 = msgChain.getClassName(length1, str1);
-         String result2 = msgChain.getClassName(length2, str2);
-         String result3 = msgChain.getClassName(length3, str3);
+         String result1 = MessageChainRefactoring.getClassName(length1, str1);
+         String result2 = MessageChainRefactoring.getClassName(length2, str2);
+         String result3 = MessageChainRefactoring.getClassName(length3, str3);
          
          assertTrue(result1.equals("simple"));
          assertTrue(result2.equals("int"));
@@ -197,19 +196,17 @@ public class messageChainJUnitTest {
    
    @Test
    public void testmakeNewRefactorCode () {
-      MessageChain msgChain = new MessageChain();
          List<String> stringofArgument = new ArrayList<String>();
          stringofArgument.add("x0");
          stringofArgument.add("x1");
          stringofArgument.add("x2");
          
-         String result = msgChain.makeNewRefactorCode ("newMethod", stringofArgument);
+         String result = MessageChainRefactoring.makeNewRefactorCode ("newMethod", stringofArgument);
          assertTrue(result.equals("newMethod(x0, x1, x2)"));
       }
    
    @Test
    public void testgetModifyPosition() {
-      MessageChain msgChain = new MessageChain();
       IBuffer buffer = new IBuffer() {
 
          public void addBufferChangedListener(IBufferChangedListener arg0) {
@@ -314,7 +311,7 @@ public class messageChainJUnitTest {
             
          }};
 
-         int pos = msgChain.getModifyPosition(buffer);
+         int pos = MessageChainRefactoring.getModifyPosition(buffer);
          assertTrue(pos==2);
    }
    
@@ -331,7 +328,7 @@ public class messageChainJUnitTest {
    
    @Test
    public void testmodifyCodeSmellFile() {
-	   MessageChain msgChain = new MessageChain();
+	   //MessageChain msgChain = new MessageChain();
 	   IFile file = new IFile() {
 
 		public void accept(IResourceProxyVisitor visitor, int memberFlags) throws CoreException {
@@ -826,7 +823,7 @@ public class messageChainJUnitTest {
 	   cls.setName("messageChain");
 	   cls.setIFile(file);
 	   sys.addClass(cls);
-	   assertTrue(msgChain.getCompUnit(sys, "messageChain")==null);
+	   assertTrue(MessageChainRefactoring.getCompUnit(sys, "messageChain")==null);
    }
    
    @Test
@@ -1851,8 +1848,7 @@ public class messageChainJUnitTest {
 			
 		}};
 		
-		MessageChain msgChain = new MessageChain();
-		msgChain.modifyMethodInvocationFile(compUnit,"void newMethod() {}");
+		MessageChainRefactoring.modifyMethodInvocationFile(compUnit,"void newMethod() {}");
    
    }
    

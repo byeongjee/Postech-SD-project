@@ -58,7 +58,6 @@ public class MCNewMethodPage extends WizardPage {
 
 			public void modifyText(ModifyEvent e) {
 				if(text1.getText().length() > 0) {
-					System.out.println("modify1!!");
 					setPageComplete(true);
 				}
 				else {

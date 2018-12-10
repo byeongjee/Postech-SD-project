@@ -37,9 +37,7 @@ public class MCRefactorWizard extends Wizard {
    
    @Override
    public boolean performFinish() {
-      System.out.println("Finish");
       newMethodName = initialPage.getText1();
-      System.out.println(newMethodName);
       return true;
    }
    

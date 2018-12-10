@@ -58,8 +58,6 @@ public class messageChainBasic {
 	public static void initBot() throws CoreException {
 		bot = new SWTWorkbenchBot();
 		// bot.viewByTitle("Welcome").close();
-
-		testProject.buildProject();
 		openPackageExplorer();
 	}
 
@@ -70,14 +68,17 @@ public class messageChainBasic {
 	}
 
 	@Test
-	public void testOpenMessageChainTab() {
+	public void testOpenMessageChainTab() throws CoreException {
+		testProject.buildProject();
 		bot.menu("JDe5dorant").menu("Message Chain").click();
 		bot.viewByTitle("Message Chain");
 		assertTrue(bot.viewByTitle("Message Chain").isActive());
+		testProject.deleteProject();
 	}
 
 	@Test
-	public void testApplyingMCDetection() {
+	public void testApplyingMCDetection() throws CoreException {
+		testProject.buildProject();
 		bot.menu("JDe5dorant").menu("Message Chain").click();
 		bot.viewByTitle("Message Chain");
 		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
@@ -88,10 +89,12 @@ public class messageChainBasic {
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
 		assertTrue(detectionApplier.bot().tree().getTreeItem("").isEnabled());
+		testProject.deleteProject();
 	}
 
 	@Test
-	public void testExpand() {
+	public void testExpand() throws CoreException {
+		testProject.buildProject();
 		bot.menu("JDe5dorant").menu("Message Chain").click();
 		bot.viewByTitle("Message Chain");
 		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
@@ -104,33 +107,15 @@ public class messageChainBasic {
 		detectionApplier.bot().tree().getTreeItem("").select();
 		detectionApplier.bot().tree().getTreeItem("").expand();
 		assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode(1).isEnabled());
+		testProject.deleteProject();
 	}
 
 	// Add in Iteration 3
+
+	//@Ignore
 	@Test
-	public void testDoubleClickToSeeHighlight() {
-		try {
-			bot.menu("JDe5dorant").menu("Message Chain").click();
-			bot.viewByTitle("Message Chain");
-			SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-			packageExplorer.show();
-			packageExplorer.bot().tree().getTreeItem("testProject").click();
-
-			SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
-			detectionApplier.show();
-			detectionApplier.getToolbarButtons().get(0).click();
-			detectionApplier.bot().tree().getTreeItem("").select();
-			detectionApplier.bot().tree().getTreeItem("").expand();
-			detectionApplier.bot().tree().getTreeItem("").getNode(0).select();
-			detectionApplier.bot().tree().getTreeItem("").getNode(0).doubleClick();
-		} catch (Exception e) {
-
-		}
-	}
-
-	@Ignore
-	@Test
-	public void testButtonClick() {
+	public void testButtonClick() throws CoreException {
+		testProject.buildProject();
 		try {
 			bot.menu("JDe5dorant").menu("Message Chain").click();
 			bot.viewByTitle("Message Chain");
@@ -144,18 +129,24 @@ public class messageChainBasic {
 			detectionApplier.bot().tree().getTreeItem("").select();
 			detectionApplier.bot().tree().getTreeItem("").expand();
 			detectionApplier.bot().tree().getTreeItem("").getNode(1).select();
-			detectionApplier.bot().tree().getTreeItem("").getNode(1).doubleClick();
+			
 			detectionApplier.bot().button(2).click();
+			
 			bot.shell("Refactoring").activate();
 			bot.textWithLabel("New Method name :").setText("refactorMethod");
+			bot.button("Finish").click();
+			
+			bot.shell("Refactoring").activate();
 			bot.button("Finish").click();
 		} catch (Exception e) {
 
 		}
+		testProject.deleteProject();
 	}
 
 	@Test
-	public void testRefactorClickCancelWithoutAnyTyping() {
+	public void testRefactorClickCancelWithoutAnyTyping() throws CoreException {
+		testProject.buildProject();
 		try {
 			bot.menu("JDe5dorant").menu("Message Chain").click();
 			bot.viewByTitle("Message Chain");
@@ -169,17 +160,20 @@ public class messageChainBasic {
 			detectionApplier.bot().tree().getTreeItem("").select();
 			detectionApplier.bot().tree().getTreeItem("").expand();
 			detectionApplier.bot().tree().getTreeItem("").getNode(1).select();
-			detectionApplier.bot().tree().getTreeItem("").getNode(1).doubleClick();
 			detectionApplier.bot().button(2).click();
 			bot.shell("Refactoring").activate();
 			bot.button("Cancel").click();
+			bot.shell("Refactoring").activate();
+			bot.button("Finish").click();
 		} catch (Exception e) {
 
 		}
+		testProject.deleteProject();
 	}
 
 	@Test
-	public void testRefactorClickCancelWithTyping() {
+	public void testRefactorClickCancelWithTyping() throws CoreException {
+		testProject.buildProject();
 		try {
 			bot.menu("JDe5dorant").menu("Message Chain").click();
 			bot.viewByTitle("Message Chain");
@@ -201,5 +195,6 @@ public class messageChainBasic {
 		} catch (Exception e) {
 
 		}
+		testProject.deleteProject();
 	}
 }

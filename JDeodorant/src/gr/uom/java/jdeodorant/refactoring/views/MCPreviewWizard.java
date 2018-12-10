@@ -21,10 +21,11 @@ public class MCPreviewWizard extends Wizard {
    private String origin;
    private String refactor;
    
-   public MCPreviewWizard(IJavaProject javaProject, ICompilationUnit workingCopy, String origin, String refactor) {
+   private boolean flagCancel;
+   
+   public MCPreviewWizard(ICompilationUnit workingCopy, String origin, String refactor) {
 		super();
 		setNeedsProgressMonitor(true);
-		this.javaProject = javaProject;
 		this.workingCompilationUnit = workingCopy;
 		
 		this.origin = origin;
@@ -44,11 +45,11 @@ public class MCPreviewWizard extends Wizard {
    
    @Override
    public boolean performFinish() {
-      System.out.println("Modify Working Copy");
       try {
 			workingCompilationUnit.reconcile(ICompilationUnit.NO_AST, false, null, null);
 			workingCompilationUnit.commitWorkingCopy(false, null);
 			workingCompilationUnit.discardWorkingCopy();
+			flagCancel = false;
       } catch (JavaModelException e) {
 			e.printStackTrace();
 	}
@@ -57,7 +58,12 @@ public class MCPreviewWizard extends Wizard {
    
    @Override
 	public boolean performCancel() {
+	  this.flagCancel = true;
       return true;
   }
+
+   public boolean getFlagCancel() {
+	return flagCancel;
+}
    
 }
