@@ -1,16 +1,17 @@
 package gr.uom.java.ast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class LPLSmellContent {
 	private LPLMethodObject methodObject;
-	private ArrayList<Integer> indexList;
+	private List<Integer> extractedParameterIndicesList;
 	private String newClassName;
 	private String newParameterName;
 	
-	public LPLSmellContent(LPLMethodObject methodObject, ArrayList<Integer> indexList, String newClassName, String newParamterName) {
+	public LPLSmellContent(LPLMethodObject methodObject, List<Integer> extractedParameterIndicesList, String newClassName, String newParamterName) {
 		this.methodObject = methodObject;
-		this.indexList = indexList;
+		this.extractedParameterIndicesList = extractedParameterIndicesList;
 		this.newClassName = newClassName;
 		this.newParameterName = newParamterName;
 	}
@@ -19,8 +20,8 @@ public class LPLSmellContent {
 		return this.methodObject;
 	}
 	
-	public ArrayList<Integer> getIndexList(){
-		return this.indexList;
+	public List<Integer> getExtractedParameterIndicesList(){
+		return this.extractedParameterIndicesList;
 	}
 	
 	public String getNewClassName() {

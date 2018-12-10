@@ -12,8 +12,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jdt.core.IAnnotation;
-import org.eclipse.jdt.core.IBuffer;
-import org.eclipse.jdt.core.IBufferChangedListener;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -100,7 +98,7 @@ public class TestLPLMethodObjectBasicFunctionality {
 		assertEquals("testMethod1", lplMethodOBject.getName());
 	}
 	
-	private static LPLMethodObject createMockLPLMethodObject1() {
+	public static LPLMethodObject createMockLPLMethodObject1() {
 		MethodObject mockMethodObject = createMockMethodObject1();
 		return LPLMethodObject.createLPLMethodObjectFrom(mockMethodObject);
 	}

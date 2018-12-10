@@ -405,7 +405,7 @@ public class LPLRefactorWizard extends Wizard {
 			String argumentParts[] = argumentString.split(",");
 			ArrayList<String> extractedArguments;
 			extractedArguments = new ArrayList<String>();
-			for(int it : smellContent.getIndexList()) {
+			for(int it : smellContent.getExtractedParameterIndicesList()) {
 				extractedArguments.add(argumentParts[it]);
 				argumentParts[it] = null;
 			}
