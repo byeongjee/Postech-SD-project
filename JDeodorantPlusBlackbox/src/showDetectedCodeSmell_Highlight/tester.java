@@ -43,8 +43,13 @@ import java.util.concurrent.CyclicBarrier;
 
 import org.eclipse.core.runtime.CoreException;
 
+/**
+ *  Specific on JUnit Test :: 
+ *  	junittest.speculativeGenerality/UIButtonTest.java/testgetHighlightPositions()
+ * 
+ */
 @RunWith(SWTBotJunit4ClassRunner.class)
-public class messageChainBasic {
+public class tester {
 	private static SWTWorkbenchBot bot;
 
 	private static void openPackageExplorer() {
@@ -75,6 +80,7 @@ public class messageChainBasic {
 		testProject.deleteProject();
 		bot.resetWorkbench();
 	}
+	
 
 	@Test
 	public void testDoubleClickToSeeHighlight() {
@@ -92,28 +98,8 @@ public class messageChainBasic {
 			detectionApplier.bot().tree().getTreeItem("").expand();
 			detectionApplier.bot().tree().getTreeItem("").getNode(0).select();
 			detectionApplier.bot().tree().getTreeItem("").getNode(0).doubleClick();
-		} catch (Exception e) {
-
-		}
-	}
-
-	@Test
-	public void testButtonClick() {
-		try {
-			bot.menu("JDe5dorant").menu("Message Chain").click();
-			bot.viewByTitle("Message Chain");
-			SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-			packageExplorer.show();
-			packageExplorer.bot().tree().getTreeItem("testProject").click();
-
-			SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
-			detectionApplier.show();
-			detectionApplier.getToolbarButtons().get(0).click();
-			detectionApplier.bot().tree().getTreeItem("").select();
-			detectionApplier.bot().tree().getTreeItem("").expand();
-			detectionApplier.bot().tree().getTreeItem("").getNode(1).select();
-			detectionApplier.bot().tree().getTreeItem("").getNode(1).doubleClick();
-			detectionApplier.bot().button(2).click();
+			
+			
 		} catch (Exception e) {
 
 		}

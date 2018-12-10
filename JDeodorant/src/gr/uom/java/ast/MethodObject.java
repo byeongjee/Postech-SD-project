@@ -90,7 +90,6 @@ public class MethodObject implements AbstractMethodDeclaration {
 
     public Object[] getHighlightPositions() {
        Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
-       getMethodDeclaration();
        Position position = new Position(smellStartPosition, smellLength);
       annotationMap.put(position, "HELLO");
       return new Object[] {annotationMap};
