@@ -215,7 +215,7 @@ public class SGRefactorWizard extends Wizard {
 		} else if (classToRefactor.getCodeSmellType().equals("Unnecessary Parameters")) {
 			List<MethodObject> _smellingMethods = classToRefactor.getSmellingMethods();
 			try {
-				for (MethodObject target : _smellingMethods) {
+				for(MethodObject target : _smellingMethods) {
 					ParameterMethodRefactoring _refactor = new ParameterMethodRefactoring(classToRefactor, target);
 					_refactor.setUnusedParameterList();
 					_refactor.setUsedParameterList();
@@ -226,7 +226,7 @@ public class SGRefactorWizard extends Wizard {
 					_refactor.processRefactoring();
 					changeMethodsInProject(activeProject, target, _refactor.getUnusedParameterIndex());
 				}
-			} catch (Exception e) {
+			} catch(Exception e){
 			}
 		}
 				
@@ -235,7 +235,6 @@ public class SGRefactorWizard extends Wizard {
 		
 		return true;
 	}
-	
 	
 	/**
 	 * @author Jaeyeop Lee, Taeyoung Son (referred from LPL Team)

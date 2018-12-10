@@ -51,8 +51,9 @@ public class MethodObject implements AbstractMethodDeclaration {
     protected boolean testAnnotation;
     protected volatile int hashCode = 0;
 
-    private int smell_start = 5;
-	private int smell_length= 10;
+    private int smellStartPosition = 5;
+	private int smellLength= 10;
+
 	private ClassObjectCandidate parentClass;
 	
     public MethodObject(ConstructorObject co) {
@@ -66,17 +67,17 @@ public class MethodObject implements AbstractMethodDeclaration {
 
     
     
-    public int getstart() {
-		return smell_start;
+    public int getSmellStart() {
+		return this.smellStartPosition;
 	}
-	public void setstart(int smell_start) {
-		this.smell_start = smell_start;
+	public void setSmellStart(int smellStartPosition) {
+		this.smellStartPosition = smellStartPosition;
 	}
-	public int getlength() {
-		return smell_length;
+	public int getSmellLength() {
+		return this.smellLength;
 	}
-	public void setlength(int smell_length) {
-		this.smell_length = smell_length;
+	public void setSmellLength(int smellLength) {
+		this.smellLength = smellLength;
 	}
     public void setparentClass(ClassObjectCandidate COC)
     {
@@ -89,7 +90,8 @@ public class MethodObject implements AbstractMethodDeclaration {
 
     public Object[] getHighlightPositions() {
        Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
-       Position position = new Position(smell_start, smell_length);
+       getMethodDeclaration();
+       Position position = new Position(smellStartPosition, smellLength);
       annotationMap.put(position, "HELLO");
       return new Object[] {annotationMap};
     }

@@ -258,7 +258,7 @@ public class ClassObjectCandidate extends ClassObject {
     	int length =0;
     	for(String s: myContent) {
     		for(int i=0; i<s.length(); i++) {
-    			if(s.charAt(i) == '{' && s.substring(0,i).equals(getClassFullName())) {
+    			if(s.contains(getClassFullName())) {
     				this.smell_start = startPos;
     				this.smell_length = length + s.length();
     				return;
