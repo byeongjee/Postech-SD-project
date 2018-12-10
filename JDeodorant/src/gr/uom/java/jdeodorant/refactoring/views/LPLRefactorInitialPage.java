@@ -112,7 +112,6 @@ public class LPLRefactorInitialPage extends WizardPage {
     }
     
     public void handleEvent(Event event) {
-    	System.out.println("checkbox!");
     }
 
     public ArrayList getParameterIndexList() {

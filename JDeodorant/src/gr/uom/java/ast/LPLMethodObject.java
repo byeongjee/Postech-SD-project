@@ -22,28 +22,8 @@ public class LPLMethodObject extends MethodObject {
 
 	static int NumParameterLimit = 3;
 	
-	public static void createNewParameterClass(IPackageFragment pf, String className, List<String> parameterTypes, List<String> parameterNames) {
-		try {
-			assert(pf != null);
-			ICompilationUnit cu = pf.createCompilationUnit(className + ".java", "", false, null);
-			ICompilationUnit workingCopy = cu
-					.getWorkingCopy(new WorkingCopyOwner() {
-					}, null);
-			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
-			
-			fillNewParameterClass(buffer, pf, className, parameterTypes, parameterNames);
-			
-			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
-			workingCopy.commitWorkingCopy(false, null);
-			workingCopy.discardWorkingCopy();
-			workingCopy.discardWorkingCopy();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 	
-	private static void fillNewParameterClass(IBuffer buffer, IPackageFragment pf, String className, List<String> parameterTypes, List<String> parameterNames) {
+	public static void fillNewParameterClass(IBuffer buffer, IPackageFragment pf, String className, List<String> parameterTypes, List<String> parameterNames) {
 		try {
 			assert(parameterTypes.size() == parameterNames.size());
 			List<String> parameterTypeAndNames = new ArrayList<String>();

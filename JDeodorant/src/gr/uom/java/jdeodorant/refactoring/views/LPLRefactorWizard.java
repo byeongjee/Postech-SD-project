@@ -57,44 +57,64 @@ public class LPLRefactorWizard extends Wizard {
 	
 	@Override
 	public boolean performFinish() {
-		System.out.println("Finish");
-		System.out.println(initialPage.getParameterIndexList());
-		System.out.println(packagePage.getPackageName());
 		try {
 			LPLSmellContent smellContent = new LPLSmellContent(methodToRefactor, initialPage.getParameterIndexList(), namePage.getClassName(), namePage.getParameterName());
 			
-			IPackageFragment pf = getIPackageFragment(packagePage.getPackageName());
+			IPackageFragment pf = getIPackageFragment(packagePage.getPackageName()); 
+			assert(pf != null);
 			String className = namePage.getClassName();
 			String parameterName = namePage.getParameterName();
 			List<String> parameterTypes = initialPage.getExtractParameterTypes();
 			List<String> parameterNames = initialPage.getExtractParameterNames();
 			IMethod convertedIMethod = methodToRefactor.toIMethod(javaProject);
 			String tempVarInitializeCode = LPLMethodObject.codeForInitializingTempVars(convertedIMethod, parameterTypes, parameterNames, parameterName);
-			
-			LPLMethodObject.createNewParameterClass(pf, className, parameterTypes, parameterNames);
+
+			createNewParameterClass(pf, className, parameterTypes, parameterNames);
+
 			changeMethodsInProject(javaProject, smellContent);		
 
-			ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit()
-					.getWorkingCopy(new WorkingCopyOwner() {
-					}, null);
-			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
-			LPLMethodObject.editParameterFromBuffer(buffer, convertedIMethod, initialPage.getParameterIndexList(), smellContent, tempVarInitializeCode);
-
-			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
-			workingCopy.commitWorkingCopy(false, null);
-			workingCopy.discardWorkingCopy();
-			workingCopy.discardWorkingCopy();
+			changeOriginalMethodSource(smellContent, convertedIMethod, tempVarInitializeCode);
 			
 			ArrayList<String> parameterStringList = new ArrayList<String>();
 			for(int i = 0; i < parameterTypes.size(); i++) {
 				parameterStringList.add(parameterTypes.get(i) + " " + parameterNames.get(i));
 			}
-			System.out.println("signatures!!");
 			findMethodsWithSameSignatures(javaProject, smellContent, parameterStringList, tempVarInitializeCode);
 			
 		} catch (Exception e) {
 		}
 		return true;
+	}
+
+	private void changeOriginalMethodSource(LPLSmellContent smellContent, IMethod convertedIMethod,
+			String tempVarInitializeCode) throws JavaModelException {
+		ICompilationUnit cu = convertedIMethod.getCompilationUnit();
+		ICompilationUnit workingCopy = createWorkingCopy(cu);
+		IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
+		LPLMethodObject.editParameterFromBuffer(buffer, convertedIMethod, initialPage.getParameterIndexList(), smellContent, tempVarInitializeCode);
+		finishEditingWorkingCopy(workingCopy);
+	}
+
+	private void createNewParameterClass(IPackageFragment pf, String className, List<String> parameterTypes,
+			List<String> parameterNames) throws JavaModelException {
+		ICompilationUnit cu = pf.createCompilationUnit(className + ".java", "", false, null);
+		ICompilationUnit workingCopy = createWorkingCopy(cu);
+		IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
+		LPLMethodObject.fillNewParameterClass(buffer, pf, className, parameterTypes, parameterNames);
+		finishEditingWorkingCopy(workingCopy);
+	}
+	
+	private static void finishEditingWorkingCopy(ICompilationUnit workingCopy) throws JavaModelException {
+		workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
+		workingCopy.commitWorkingCopy(false, null);
+		workingCopy.discardWorkingCopy();
+	}
+
+	private ICompilationUnit createWorkingCopy(ICompilationUnit cu) throws JavaModelException {
+		ICompilationUnit workingCopy = cu
+				.getWorkingCopy(new WorkingCopyOwner() {
+				}, null);
+		return workingCopy;
 	}
 	
 	@Override
@@ -198,7 +218,6 @@ public class LPLRefactorWizard extends Wizard {
 					}
 				};
 				cu.accept(visitor);
-				System.out.println(methodInvocationIndexes);
 				for(int j = methodInvocationIndexes.size() - 1; j >= 0; j--) {
 					changeMethodCall(iCu, methodInvocationIndexes.get(j), smellContent);
 				}
@@ -305,9 +324,7 @@ public class LPLRefactorWizard extends Wizard {
 			buffer.replace(defPosition, 0, tempVarInitializeCode);
 			buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
 			
-			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
-			workingCopy.commitWorkingCopy(false, null);
-			workingCopy.discardWorkingCopy();
+			finishEditingWorkingCopy(workingCopy);
 		} catch (Exception e) {
 				e.printStackTrace();
 		}
@@ -413,9 +430,7 @@ public class LPLRefactorWizard extends Wizard {
 			
 			buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
 			
-			workingCopy.reconcile(ICompilationUnit.NO_AST, false, null, null);
-			workingCopy.commitWorkingCopy(false, null);
-			workingCopy.discardWorkingCopy();
+			finishEditingWorkingCopy(workingCopy);
 			workingCopy.discardWorkingCopy();
 		} catch (Exception e) {
 		}
