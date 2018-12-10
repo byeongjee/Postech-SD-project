@@ -44,7 +44,7 @@ public class LPLRefactorClassNamePage extends WizardPage {
             		if(newClassName.getText().length() == 0) {
             			warningLabel.setText("");
             		}
-            		if(!Character.isUpperCase(newClassName.getText().charAt(0))) {
+            		else if(!Character.isUpperCase(newClassName.getText().charAt(0))) {
             			warningLabel.setText("* Class name does not start with capital letter");
             		}
             		else {
