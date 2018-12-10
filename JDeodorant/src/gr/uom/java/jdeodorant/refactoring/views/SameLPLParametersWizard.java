@@ -56,4 +56,12 @@ public class SameLPLParametersWizard extends Wizard {
 		doExtraction = true;
 		return true;
 	}
+	
+	/**
+	 * Returns doExtraction
+	 * @return
+	 */
+	public boolean getDoExtraction() {
+		return this.doExtraction;
+	}
 }

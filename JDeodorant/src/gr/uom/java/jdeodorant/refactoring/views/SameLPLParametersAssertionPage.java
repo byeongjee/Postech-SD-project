@@ -32,29 +32,25 @@ import gr.uom.java.ast.LPLMethodObject;
 public class SameLPLParametersAssertionPage extends WizardPage {
 	private ArrayList<Integer> parameterIndexList;
     private Composite container;
-    private LPLMethodObject methodToRefactor;
-    private TableViewer tableViewer;
     private ArrayList<String> extractParameterNames;
     private ArrayList<String> extractParameterTypes;
-    private IJavaProject javaProject;
     private IMethod candidateMethod;
 
     public SameLPLParametersAssertionPage(IMethod candidateMethod) {
         super("Same Parameters Found");
         this.candidateMethod = candidateMethod;
-        setTitle(candidateMethod.getElementName() + "has similar parameters.");
+        setTitle(candidateMethod.getElementName() + " has similar parameters.");
         setDescription("Would you also like to extract these parameters?");
         extractParameterNames = new ArrayList<String>();
         extractParameterTypes = new ArrayList<String>();
         parameterIndexList = new ArrayList<Integer>();
     }
 
-    //@Override
     public void createControl(Composite parent) {
     	container = new Composite(parent, SWT.NONE);
     	container.setLayout(new FillLayout());
     	
-    	Table table = new Table(container, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL);
+    	Table table = new Table(container, SWT.BORDER | SWT.H_SCROLL);
     	table.setHeaderVisible(true);
     	TableColumn checkColumn = new TableColumn(table, SWT.CENTER);
     	checkColumn.setText("Select");
@@ -72,7 +68,6 @@ public class SameLPLParametersAssertionPage extends WizardPage {
 		
 		for(int i = 0; i < parameterTypeList.size(); i++) {
 			TableItem tableItem = new TableItem(table, SWT.NONE);
-			//tableItem.setText(1, methodToRefactor.getParameterTypeList().get(i).toString());
 			String parameter = parameterTypeList.get(i);
 			tableItem.setText(1, parameter.split(" ")[0]);
 			tableItem.setText(2, parameter.split(" ")[1]);
@@ -82,22 +77,7 @@ public class SameLPLParametersAssertionPage extends WizardPage {
         setPageComplete(true);
     }
     
-    public void handleEvent(Event event) {
-    }
-
-    public ArrayList getParameterIndexList() {
-        return parameterIndexList;
-    }
-    
-    public ArrayList getExtractParameterNames() {
-    	return extractParameterNames;
-    }
-    
-    public ArrayList getExtractParameterTypes() {
-    	return extractParameterTypes;
-    }
-    
-    public ArrayList getSourceCodeParameterList(IMethod method) {
+    public ArrayList<String> getSourceCodeParameterList(IMethod method) {
     	try {
 			IMethod convertedIMethod = method;
 			int startPosition = convertedIMethod.getSourceRange().getOffset();
@@ -127,7 +107,6 @@ public class SameLPLParametersAssertionPage extends WizardPage {
 			String argumentParts[] = argumentString.split(",");
 			for(int i = 0; i < argumentParts.length; i++) {
 				argumentParts[i] = argumentParts[i].trim();
-				//argumentParts[i] = argumentParts[i].split(" ")[0];
 			}
 			ArrayList<String> ret = new ArrayList<String>();
 			for(String s : argumentParts) {

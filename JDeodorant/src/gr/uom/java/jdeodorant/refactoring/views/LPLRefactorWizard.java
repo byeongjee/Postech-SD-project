@@ -264,9 +264,11 @@ public class LPLRefactorWizard extends Wizard {
 					SameLPLParametersWizard wizard = new SameLPLParametersWizard(candidateMethod);
 					WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); 
 					dialog.open();
-					List<Integer> extractedParameterIndices = getExtractedParameterIndicesFrom(candidateMethod, parameterStringList);
-					changeMethodDeclarationWithSameParameters(candidateMethod, parameterStringList, smellContent, tempVarInitializeCode);
-					changeMethodsInProject(javaProject, candidateMethod.getElementName(), extractedParameterIndices, smellContent.getNewClassName());
+					if(wizard.getDoExtraction()) {
+						List<Integer> extractedParameterIndices = getExtractedParameterIndicesFrom(candidateMethod, parameterStringList);
+						changeMethodDeclarationWithSameParameters(candidateMethod, parameterStringList, smellContent, tempVarInitializeCode);
+						changeMethodsInProject(javaProject, candidateMethod.getElementName(), extractedParameterIndices, smellContent.getNewClassName());
+					}
 				}
 			}
 		}
