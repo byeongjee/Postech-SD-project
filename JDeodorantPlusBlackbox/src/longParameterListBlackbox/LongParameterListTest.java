@@ -284,6 +284,7 @@ public class LongParameterListTest {
 				// bot.sleep(4000);
 				//testLPLProject.buildLPLProject();
 				//bot.sleep(100000);
+				bot.sleep(2000);
 				createDemoEmptySample();
 				// bot.sleep(200000);
 			} catch (Exception e) {
@@ -346,7 +347,6 @@ public class LongParameterListTest {
 	}
 
 	public static void createDemoEmptySample() {
-		bot.resetActivePerspective();
 		bot.menu("File").menu("New").menu("Project...").click();
 		SWTBotShell shell = bot.shell("New Project");
 		shell.activate();

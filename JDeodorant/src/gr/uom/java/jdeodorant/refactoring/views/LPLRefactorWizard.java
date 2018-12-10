@@ -22,6 +22,8 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.ui.PlatformUI;
 
 import gr.uom.java.ast.LPLMethodObject;
 import gr.uom.java.ast.LPLSmellContent;
@@ -259,6 +261,9 @@ public class LPLRefactorWizard extends Wizard {
 			}
 			for(IMethod candidateMethod : foundMethods) {
 				if(hasExtractedParameters(candidateMethod, foundCu, parameterStringList)) {
+					SameLPLParametersWizard wizard1 = new SameLPLParametersWizard(candidateMethod);
+					WizardDialog dialog1 = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard1); 
+					dialog1.open();
 					changeMethodWithSameParameters(candidateMethod, parameterStringList, smellContent, tempVarInitializeCode);
 				}
 			}
