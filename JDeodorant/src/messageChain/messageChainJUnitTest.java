@@ -172,9 +172,9 @@ public class messageChainJUnitTest {
          String result = MessageChainRefactoring.makeNewMethodCode ("newMethod", "int", stringofArgumentType, numOfArgumentOfEachMethod, stringOfMethodInvocation);
 
          System.out.println(result);
-         assertTrue(result.equals("public int newMethod(int x0, double x1, int x2) {\r\n" + 
-               "\treturn method1(x0, x1).method2(x2);\r\n" + 
-               "}\r\n"));
+         assertTrue(result.equals("\r\n\tpublic int newMethod(int x0, double x1, int x2) {\r\n" + 
+               "\t\treturn method1(x0, x1).method2(x2);\r\n" + 
+               "\t}\r\n"));
       }
    
    @Test
