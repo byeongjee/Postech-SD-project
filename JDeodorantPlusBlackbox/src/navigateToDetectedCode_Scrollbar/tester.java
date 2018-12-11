@@ -6,6 +6,9 @@ import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.*;
 import org.junit.runner.RunWith;
+
+import applyRefactoring.testMCProject;
+
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -47,10 +50,14 @@ import org.eclipse.core.runtime.CoreException;
 
 /**
  * JUnit Test :: 
- * 	junittest.speculativeGenerality/UIButtonTest/testNavigationScrollBar
+ * 	junittest.speculativeGenerality/UIButtonTest.java/testPopUpInfoMessage
  * 
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class tester {
 
+	@Test
+	public void referJUnitTest() throws CoreException {
+		// Blank
+	}
 }

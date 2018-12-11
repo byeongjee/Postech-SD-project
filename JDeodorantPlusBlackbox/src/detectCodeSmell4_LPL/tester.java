@@ -65,7 +65,6 @@ public class tester {
 	@BeforeClass
 	public static void initBot() throws CoreException {
 		bot = new SWTWorkbenchBot();
-		// bot.viewByTitle("Welcome").close();
 
 		testLPLProject.buildLPLProject();
 		openPackageExplorer();
@@ -100,23 +99,6 @@ public class tester {
 		detectionView.getToolbarButtons().get(0).click();
 	}
 
-	private void openRefactoringPopUpFromDetectedSmell() {
-		SWTBotView detectionView = bot.viewByTitle("Long Parameter List");
-		detectionView.show();
-		detectionView.bot().button("TEST").click();
-	}
-
-	private void detectCodeSmellAndOpenRefactoringPopUp() {
-		openLPLTab();
-		selectTargetPackage();
-		applyDetection();
-		openRefactoringPopUpFromDetectedSmell();
-	}
-
-	private void closeRefactoringPopUp() {
-		bot.shell("Refactoring").close();
-	}
-	
 	public static void deleteTestProject() {
     	bot.resetActivePerspective();
     	SWTBotView view = bot.viewByTitle("Project Explorer");
@@ -148,7 +130,6 @@ public class tester {
 			openPackageExplorer();
 			selectTargetPackage();
 			applyDetection();
-			// bot.sleep(200000);
 			bot.viewByTitle("Long Parameter List").bot().tree().getTreeItem("Long Parameter List").getItems();
 		} catch (Exception e) {
 			fail("test fail with exception " + e);

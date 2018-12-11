@@ -113,7 +113,7 @@ public class tester {
 	}
 
 	@Test
-	public void testApplyingSGDetection_OneChildInterface() throws CoreException {
+	public void testApplyingSGDetection_OneChildAbstract() throws CoreException {
 		SWTBotView detectionApplier;
 		
     	turnOnProject(1);
@@ -121,7 +121,7 @@ public class tester {
 		detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
-    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OneChildInterface").isEnabled());
+		assertFalse(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OneChildInterface").isVisible());
     	testProject.deleteProject();
 	}
 	

@@ -68,7 +68,7 @@ public class tester {
 	}
 
 	@Test
-	public void testOpenPackageExplorer() {
+	public void testOpenJDe5DorantMenu() {
 		assertTrue(bot.menu("JDe5dorant").isEnabled());
 
 		List<String> itemList = bot.menu("JDe5dorant").menuItems();

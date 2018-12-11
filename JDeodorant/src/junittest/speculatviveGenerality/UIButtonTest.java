@@ -102,7 +102,7 @@ public class UIButtonTest {
 	}
 
 	@Test
-	public void testgetHighlightPositions() {
+	public void testHighlightPositions() {
 		ClassObjectCandidate testcoc =  new ClassObjectCandidate();
 		testcoc.setStart(11);
 		testcoc.setLength(22);
@@ -126,7 +126,7 @@ public class UIButtonTest {
 	}
 	
 	@Test
-	public void testNavigationScrollBar()
+	public void testPopUpInfoMessage()
 	{
 		ClassObjectCandidate testcoc =  new ClassObjectCandidate();
 		testcoc.setStart(11);

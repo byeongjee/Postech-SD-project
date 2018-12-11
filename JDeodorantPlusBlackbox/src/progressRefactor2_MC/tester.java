@@ -1,4 +1,4 @@
-package ZZmessageChainBlackbox;
+package progressRefactor2_MC;
 
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
@@ -44,7 +44,7 @@ import java.util.concurrent.CyclicBarrier;
 import org.eclipse.core.runtime.CoreException;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
-public class messageChainBasic {
+public class tester {
 	private static SWTWorkbenchBot bot;
 
 	private static void openPackageExplorer() {
@@ -54,10 +54,16 @@ public class messageChainBasic {
 		bot.tree().getTreeItem("Java").expand().getNode("Package Explorer").doubleClick();
 	}
 
+	public static void testOpenMessageChainTab() throws CoreException {
+		bot.menu("JDe5dorant").menu("Message Chain").click();
+		bot.viewByTitle("Message Chain");
+	}
+	
 	@BeforeClass
 	public static void initBot() throws CoreException {
 		bot = new SWTWorkbenchBot();
 		openPackageExplorer();
+		testOpenMessageChainTab();
 	}
 
 	@AfterClass
@@ -66,52 +72,6 @@ public class messageChainBasic {
 		bot.resetWorkbench();
 	}
 
-	@Test
-	public void testOpenMessageChainTab() throws CoreException {
-		testProject.buildProject();
-		bot.menu("JDe5dorant").menu("Message Chain").click();
-		bot.viewByTitle("Message Chain");
-		assertTrue(bot.viewByTitle("Message Chain").isActive());
-		testProject.deleteProject();
-	}
-
-	@Test
-	public void testApplyingMCDetection() throws CoreException {
-		testProject.buildProject();
-		bot.menu("JDe5dorant").menu("Message Chain").click();
-		bot.viewByTitle("Message Chain");
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-
-		SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-		assertTrue(detectionApplier.bot().tree().getTreeItem("").isEnabled());
-		testProject.deleteProject();
-	}
-
-	@Test
-	public void testExpand() throws CoreException {
-		testProject.buildProject();
-		bot.menu("JDe5dorant").menu("Message Chain").click();
-		bot.viewByTitle("Message Chain");
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-
-		SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-		detectionApplier.bot().tree().getTreeItem("").select();
-		detectionApplier.bot().tree().getTreeItem("").expand();
-		assertTrue(detectionApplier.bot().tree().getTreeItem("").getNode(1).isEnabled());
-		testProject.deleteProject();
-	}
-
-	// Add in Iteration 3
-
-	//@Ignore
 	@Test
 	public void testButtonClick() throws CoreException {
 		testProject.buildProject();
@@ -162,6 +122,7 @@ public class messageChainBasic {
 			detectionApplier.bot().button(2).click();
 			bot.shell("Refactoring").activate();
 			bot.button("Cancel").click();
+			
 			bot.shell("Refactoring").activate();
 			bot.button("Finish").click();
 		} catch (Exception e) {

@@ -57,7 +57,6 @@ public class tester {
 	@BeforeClass
 	public static void initBot() throws CoreException {
 		bot = new SWTWorkbenchBot();
-		//bot.viewByTitle("Welcome").close();
 
 		testProject.buildProject();
 		SWTBotPreferences.KEYBOARD_LAYOUT = "EN_US";

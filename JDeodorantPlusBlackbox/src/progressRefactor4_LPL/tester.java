@@ -65,17 +65,12 @@ public class tester {
 	@BeforeClass
 	public static void initBot() throws CoreException {
 		bot = new SWTWorkbenchBot();
-		// bot.viewByTitle("Welcome").close();
-
-		testLPLProject.buildLPLProject();
 		openPackageExplorer();
 		SWTBotPreferences.KEYBOARD_LAYOUT = "EN_US";
 	}
 
 	@AfterClass
 	public static void afterClass() throws CoreException {
-		//bot.sleep(100000);
-		deleteTestProject();
 		bot.resetWorkbench();
 	}
 
@@ -118,8 +113,9 @@ public class tester {
 	}
 
 	@Test
-	public void testOpenRefactoringPopUp() {
+	public void testOpenRefactoringPopUp() throws CoreException {
 		try {
+		testLPLProject.buildLPLProject();
 		detectCodeSmellAndOpenRefactoringPopUp();
 		SWTBotShell refactoringWizard = bot.shell("Refactoring");
 		assertTrue(refactoringWizard.isVisible());
@@ -127,8 +123,9 @@ public class tester {
 			try {
 		closeRefactoringPopUp();
 		closeLPLTab();
+		deleteTestProject();
 			} catch (Exception e) {
-				
+				deleteTestProject();
 			}
 		}
 	}
@@ -136,8 +133,9 @@ public class tester {
 	@Test // assert that user cannot continue to the class name page without checking
 			// arguments
 	// to extract.
-	public void testRefactoringPopUpInitialPageExceptionScenario() {
+	public void testRefactoringPopUpInitialPageExceptionScenario() throws CoreException {
 		try {
+		testLPLProject.buildLPLProject();
 		detectCodeSmellAndOpenRefactoringPopUp();
 		SWTBotShell refactoringWizard = bot.shell("Refactoring");
 		assertFalse(refactoringWizard.bot().button("Next >").isEnabled());
@@ -145,8 +143,9 @@ public class tester {
 			try {
 		closeRefactoringPopUp();
 		closeLPLTab();
+		deleteTestProject();
 			} catch (Exception e) {
-				
+				deleteTestProject();
 			}
 		}
 	}
@@ -154,8 +153,9 @@ public class tester {
 	@Test // assert that user cannot continue to the package selection page without giving
 			// the
 	// new class name
-	public void testRefactoringPopUpUIClassNamePageExceptionScenario() {
+	public void testRefactoringPopUpUIClassNamePageExceptionScenario() throws CoreException {
 		try {
+		testLPLProject.buildLPLProject();
 		detectCodeSmellAndOpenRefactoringPopUp();
 		SWTBotShell refactoringWizard = bot.shell("Refactoring");
 		refactoringWizard.bot().table().getTableItem(0).check();
@@ -167,8 +167,9 @@ public class tester {
 			try {
 		closeRefactoringPopUp();
 		closeLPLTab();
+		deleteTestProject();
 			} catch (Exception e) {
-				
+				deleteTestProject();
 			}
 		}
 	}
@@ -176,6 +177,7 @@ public class tester {
 	@Test
 	public void testLPLRefactoringSuccessScenario() {
 		try {
+			testLPLProject.buildLPLProject();
 			//testLPLProject.buildLPLProject();
 			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testLPLProject");
 			IJavaProject javaProject = JavaCore.create(project);
@@ -214,6 +216,7 @@ public class tester {
 			assertTrue(newCompilationUnit.exists() && fields.size() == 2);
 		} catch (Exception e) {
 			fail("fail with Exception " + e);
+			deleteTestProject();
 		} finally {
 			try {
 		closeRefactoringPopUp();
@@ -221,7 +224,7 @@ public class tester {
 		testLPLProject.buildLPLProject();
 		deleteTestProject();
 			} catch (Exception e) {
-				
+				deleteTestProject();
 			}
 		}
 	}
@@ -230,6 +233,7 @@ public class tester {
 	@Test
 	public void testClassNameWarning() {
 		try {
+			testLPLProject.buildLPLProject();
 			detectCodeSmellAndOpenRefactoringPopUp();
 			SWTBotShell refactoringWizard = bot.shell("Refactoring");
 			refactoringWizard.bot().table().getTableItem(0).check();
@@ -242,6 +246,7 @@ public class tester {
 		}
 		catch (Exception e) {
 			fail("fail with Exception " + e);
+			deleteTestProject();
 		} finally {
 			try {
 		closeRefactoringPopUp();
@@ -249,7 +254,7 @@ public class tester {
 		testLPLProject.buildLPLProject();
 		deleteTestProject();
 			} catch (Exception e) {
-				
+				deleteTestProject();
 			}
 		}
 	}
@@ -257,6 +262,7 @@ public class tester {
 	@Test
 	public void testSameClassWarning() {
 		try {
+			testLPLProject.buildLPLProject();
 			detectCodeSmellAndOpenRefactoringPopUp();
 			SWTBotShell refactoringWizard = bot.shell("Refactoring");
 			refactoringWizard.bot().table().getTableItem(0).check();
@@ -272,6 +278,7 @@ public class tester {
 			assertFalse(refactoringWizard.bot().button("Finish").isEnabled());
 		}		catch (Exception e) {
 			fail("fail with Exception " + e);
+			deleteTestProject();
 		} finally {
 			try {
 		closeRefactoringPopUp();
@@ -279,7 +286,7 @@ public class tester {
 		testLPLProject.buildLPLProject();
 		deleteTestProject();
 			} catch (Exception e) {
-				
+				deleteTestProject();
 			}
 		}
 	}
@@ -293,5 +300,4 @@ public class tester {
     	bot.checkBox("Delete project contents on disk (cannot be undone)").click();
     	bot.button("OK").click();
     }
-
 }

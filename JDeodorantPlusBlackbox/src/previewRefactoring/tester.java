@@ -46,7 +46,7 @@ import static org.junit.Assert.assertTrue;
 import org.eclipse.core.runtime.CoreException;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
-public class tester_SG {
+public class tester {
 	private static SWTWorkbenchBot bot;
 	private static boolean flagProjectOn = false;
 	
@@ -83,16 +83,16 @@ public class tester_SG {
 	
 	private void turnOnProject(int arg) throws CoreException {
 		if(!flagProjectOn) {
-			testSGProject.buildProject(arg);
+			testProject.buildProject(arg);
 			flagProjectOn = true;
 		} else {
-			testSGProject.deleteProject();
-			testSGProject.buildProject(arg);
+			testProject.deleteProject();
+			testProject.buildProject(arg);
 		}
 	}
 	
 	@Test
-	public void previewTabOpening() throws CoreException {
+	public void testPreviewTabOpening() throws CoreException {
 		turnOnProject(0);
 		selectSGTarget();
 		
@@ -103,14 +103,15 @@ public class tester_SG {
 		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").select();
 		detectionApplier.bot().button("TEST").click();
     	
+		assertTrue(bot.shell("Refactoring").isActive());
 		SWTBotShell refactoringWizard = bot.shell("Refactoring");
 		assertTrue(refactoringWizard.isVisible());
 		
-    	testSGProject.deleteProject();
+    	testProject.deleteProject();
 	}
 	
 	@Test
-	public void previewTabClosing() throws CoreException {
+	public void testPreviewTabClosing() throws CoreException {
 		turnOnProject(0);
 		selectSGTarget();
 		
@@ -125,11 +126,14 @@ public class tester_SG {
 		assertEquals(refactoringWizard.bot().button(1).getText(), "Cancel");
 		refactoringWizard.bot().button(1).click();
 		
-    	testSGProject.deleteProject();
+		assertTrue(bot.viewByTitle("Speculative Generality").isActive());
+		
+		
+    	testProject.deleteProject();
 	}
 	
 	@Test
-	public void previewTabAssertion() throws CoreException {
+	public void testPreviewTabAssertion() throws CoreException {
 		turnOnProject(0);
 		selectSGTarget();
 		
@@ -145,7 +149,7 @@ public class tester_SG {
 		
 		assertTrue(detectionApplier.isActive());
 		
-    	testSGProject.deleteProject();
+    	testProject.deleteProject();
 	}
 	
 }

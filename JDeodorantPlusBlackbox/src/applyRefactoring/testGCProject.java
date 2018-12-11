@@ -1,4 +1,4 @@
-package applyDetectingCodeSmell;
+package applyRefactoring;
 
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
 import static org.junit.Assert.assertEquals;
@@ -34,7 +34,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.*;
  
-public class testMCProject {
+public class testGCProject {
 	/**
 	 *  Creating (kind of) Mock Project will be exploited during Black-Box Test
 	 *  reference :: https://jaxenter.com/introduction-functional-testing-swtbot-123449.html 

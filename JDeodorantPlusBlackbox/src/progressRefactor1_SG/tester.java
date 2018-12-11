@@ -6,6 +6,7 @@ import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.*;
 import org.junit.runner.RunWith;
+
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -60,12 +61,12 @@ public class tester {
 	public static void testOpenSpeculativeGeneralityTab() {
 		bot.menu("JDe5dorant").menu("Speculative Generality").click();
 		bot.viewByTitle("Speculative Generality");
-		assertTrue(bot.viewByTitle("Speculative Generality").isActive());
 	}
 	
 	@BeforeClass
 	public static void initBot() throws CoreException {
 		bot = new SWTWorkbenchBot();
+		//bot.viewByTitle("Welcome").close();
 		openPackageExplorer();
 		testOpenSpeculativeGeneralityTab();
 	}
@@ -92,7 +93,7 @@ public class tester {
 	}
 	
 	@Test
-	public void NoChildInterface() throws CoreException {
+	public void testApplyingSGRefactoring_NoChildInterface() throws CoreException {
 		turnOnProject(0);
 		selectSGTarget();
 		
@@ -102,6 +103,9 @@ public class tester {
 		
 		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").select();
 		detectionApplier.bot().button("TEST").click();
+		
+		bot.shell("Refactoring").activate();
+		bot.button("Finish").click();
     	
     	// Rebuild
     	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
@@ -128,7 +132,7 @@ public class tester {
 	}
 	
 	@Test
-	public void OneChildInterface() throws CoreException {
+	public void testApplyingSGRefactoring_OneChildInterface() throws CoreException {
 		turnOnProject(1);
 		selectSGTarget();
 		
@@ -138,6 +142,9 @@ public class tester {
 		
 		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OneChildInterface").select();
 		detectionApplier.bot().button("TEST").click();
+		
+		bot.shell("Refactoring").activate();
+		bot.button("Finish").click();
     	
     	// Rebuild
     	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
@@ -161,7 +168,7 @@ public class tester {
 	}
 	
 	@Test
-	public void OneChildAbstract_simpleConstructor() throws CoreException {
+	public void testApplyingSGRefactoring_OneChildAbstract() throws CoreException {
 		turnOnProject(2);
 		selectSGTarget();
 		
@@ -171,10 +178,14 @@ public class tester {
 		
 		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.OneChildAbstract").select();
 		detectionApplier.bot().button("TEST").click();
+		
+		bot.shell("Refactoring").activate();
+		bot.button("Finish").click();
     	
 		// Rebuild
     	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
 		IJavaProject javaProject = JavaCore.create(project);
+		
     	ICompilationUnit _CUorigin;
     	IBuffer _bufferOrigin;
 		try {
@@ -188,7 +199,7 @@ public class tester {
 	}
 	
 	@Test
-	public void UnnecessaryParameters_simpleCase() throws CoreException {
+	public void testApplyingSGRefactoring_UnnecessaryParameters() throws CoreException {
 		turnOnProject(3);
 		selectSGTarget();
 		
@@ -198,6 +209,9 @@ public class tester {
 		
 		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").select();
 		detectionApplier.bot().button("TEST").click();
+		
+		bot.shell("Refactoring").activate();
+		bot.button("Finish").click();
     	
     	// Rebuild
     	IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");

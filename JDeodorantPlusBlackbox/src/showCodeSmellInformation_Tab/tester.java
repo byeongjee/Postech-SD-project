@@ -1,4 +1,4 @@
-package applyRefactoring;
+package showCodeSmellInformation_Tab;
 
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
@@ -6,9 +6,6 @@ import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.*;
 import org.junit.runner.RunWith;
-
-import applyRefactoring.testSGProject;
-
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -49,10 +46,10 @@ import static org.junit.Assert.assertTrue;
 import org.eclipse.core.runtime.CoreException;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
-public class tester_SG {
+public class tester {
 	private static SWTWorkbenchBot bot;
 	private static boolean flagProjectOn = false;
-
+	
 	private static void openPackageExplorer() {
 		bot.menu("Window").menu("Show View").menu("Other...").click();
 		SWTBotShell dialog = bot.shell("Show View");
@@ -60,20 +57,22 @@ public class tester_SG {
 		bot.tree().getTreeItem("Java").expand().getNode("Package Explorer").doubleClick();
 	}
 	
+	public static void openSpeculativeGeneralityTab() {
+		bot.menu("JDe5dorant").menu("Speculative Generality").click();
+		bot.viewByTitle("Speculative Generality");
+	}
+	
 	@BeforeClass
 	public static void initBot() throws CoreException {
 		bot = new SWTWorkbenchBot();
+		//bot.viewByTitle("Welcome").close();
 		openPackageExplorer();
+		openSpeculativeGeneralityTab();
 	}
 
 	@AfterClass
 	public static void afterClass() throws CoreException {
 		bot.resetWorkbench();
-	}
-	
-	public void openSGTab() {
-		bot.menu("JDe5dorant").menu("Speculative Generality").click();
-		bot.viewByTitle("Speculative Generality");
 	}
 
 	private void selectSGTarget() {
@@ -83,39 +82,84 @@ public class tester_SG {
 	}
 	
 	private void turnOnProject(int arg) throws CoreException {
-		if(flagProjectOn)
+		if(!flagProjectOn) {
+			testSGProject.buildProject(arg);
+			flagProjectOn = true;
+		} else {
 			testSGProject.deleteProject();
-		testSGProject.buildProject(arg);
-		flagProjectOn = true;
+			testSGProject.buildProject(arg);
+		}
 	}
-	
+
 	@Test
-	public void SG_NoChild() throws CoreException {
-		openSGTab();
+	public void testSGInformation() throws CoreException {
+		SWTBotView detectionApplier;
+		
 		turnOnProject(0);
 		selectSGTarget();
 		
-		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
+		detectionApplier = bot.viewByTitle("Speculative Generality");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
-		
-		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").select();
-		assertTrue(detectionApplier.bot().button("TEST").isEnabled());
+    	assertTrue(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").isEnabled());
+    	
+    	assertEquals(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").cell(2), "Interface Class");    	
+    	assertEquals(detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.NoChildInterface").cell(3), "Merge Class");
+    	
+    	testSGProject.deleteProject();
+	}
+	
+
+	public static void openMessageChainTab() {
+		bot.menu("JDe5dorant").menu("Message Chain").click();
+		bot.viewByTitle("Message Chain");
+		assertTrue(bot.viewByTitle("Message Chain").isActive());
 	}
 	
 	@Test
-	public void SG_WithChild() throws CoreException {
-		turnOnProject(3);
-		selectSGTarget();
+	public void testMCInformation() throws CoreException {
+		testMCProject.buildProject();
 		
-		SWTBotView detectionApplier = bot.viewByTitle("Speculative Generality");
+		bot.menu("JDe5dorant").menu("Message Chain").click();
+		bot.viewByTitle("Message Chain");
+		
+		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
+		packageExplorer.show();
+		packageExplorer.bot().tree().getTreeItem("testProject").click();
+
+		SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
-		bot.sleep(190000);
-		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").select();
-		detectionApplier.bot().tree().getTreeItem("SpeculativeGenerality.TC_UnnecessaryParameter").expand().getNode(0).select();
 		
-		assertTrue(detectionApplier.bot().button("Child").isVisible());
-	}
+		detectionApplier.bot().tree().getTreeItem("").select();
+		detectionApplier.bot().tree().getTreeItem("").expand();
 
+		assertEquals("387", detectionApplier.bot().tree().getTreeItem("").getNode(1).cell(0));
+		assertEquals("test_message->method2->method3->method4", detectionApplier.bot().tree().getTreeItem("").getNode(1).cell(1));
+		
+		testMCProject.deleteProject();
+	}
+	
+	
+	@Test
+	public void testLPLInformation() throws CoreException {
+		testLPLProject.buildLPLProject();
+		
+		bot.menu("JDe5dorant").menu("Long Parameter List").click();
+		bot.viewByTitle("Long Parameter List");
+		
+		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
+		packageExplorer.show();
+		packageExplorer.bot().tree().getTreeItem("testLPLProject").click();
+
+		SWTBotView detectionApplier = bot.viewByTitle("Long Parameter List");
+		detectionApplier.show();
+		detectionApplier.getToolbarButtons().get(0).click();
+		
+		assertEquals(detectionApplier.bot().tree().getTreeItem("Long Parameter List").cell(4), "4");
+		
+		testLPLProject.deleteLPLProject();
+	}
+	
+	
 }
