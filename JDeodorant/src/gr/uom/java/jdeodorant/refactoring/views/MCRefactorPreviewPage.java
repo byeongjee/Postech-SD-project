@@ -42,22 +42,20 @@ public class MCRefactorPreviewPage extends WizardPage {
     //@Override
     public void createControl(Composite parent) {
         container = new Composite(parent, SWT.NONE);
-    	container.setLayout(new FillLayout());
-    	
-        Table table = new Table(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-    	table.setHeaderVisible(true);
-    	TableColumn originalColumn = new TableColumn(table, SWT.LEFT);
-    	originalColumn.setText("Original Source");
-    	originalColumn.setWidth(500);
-    	TableColumn refactoredColumn = new TableColumn(table, SWT.LEFT);
-    	refactoredColumn.setText("Refactored Source");
-    	refactoredColumn.setWidth(500);
-    	
-    	TableItem tableItem = new TableItem(table, SWT.NONE);
-		tableItem.setText(0, originalSource);
-		tableItem.setText(1, refactoredSource);
-
-		setControl(container);
+        container.setLayout(new GridLayout(2, true));
+        (new Label(container, SWT.NULL)).setText("Original Source");
+        (new Label(container, SWT.NULL)).setText("Refactored Source");
+        
+        Text originalText = new Text(container, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+        originalText.setText(originalSource);
+        Text refactoredText = new Text(container, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+        refactoredText.setText(refactoredSource);
+        
+        GridData gridData = new GridData(GridData.FILL_BOTH);
+        originalText.setLayoutData(gridData);
+        gridData = new GridData(GridData.FILL_BOTH);
+        refactoredText.setLayoutData(gridData);
+        setControl(container);
         setPageComplete(true);
     }
 
