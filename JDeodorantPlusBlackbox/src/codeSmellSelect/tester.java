@@ -86,7 +86,7 @@ public class tester {
 			}
 		}
 
-		assertFalse(flag_typeCheckingExist);
+		assertTrue(flag_typeCheckingExist);
 	}
 	
 	@Test
@@ -100,7 +100,7 @@ public class tester {
 			}
 		}
 		
-		assertFalse(flag_typeCheckingExist);
+		assertTrue(flag_typeCheckingExist);
 	}
 	
 	@Test

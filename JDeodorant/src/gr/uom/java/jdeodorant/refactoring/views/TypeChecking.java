@@ -30,7 +30,9 @@ import java.util.Set;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
@@ -122,6 +124,20 @@ public class TypeChecking extends ViewPart {
 	
 	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
 	
+	private class TypeCheckingRefactoringButtonUI extends RefactoringButtonUI {
+		
+		public void pressRefactorButton(int index) {
+			refactorTypeCheckingSmell(index, -1);
+		}
+		
+		//To be implemented
+		public void pressChildRefactorButton(int parentIndex, int childIndex) {
+			System.out.println("CHIld");
+			refactorTypeCheckingSmell(parentIndex, childIndex);
+		}
+	}
+	private TypeCheckingRefactoringButtonUI refactorButtonMaker;
+	
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}
@@ -212,7 +228,7 @@ public class TypeChecking extends ViewPart {
 				switch(index) {
 				case 6:
 					if(rate != -1) {
-						image = Activator.getImageDescriptor("/icons/" + String.valueOf(rate) + ".jpg").createImage();
+						//image = Activator.getImageDescriptor("/icons/" + String.valueOf(rate) + ".jpg").createImage();
 					}
 				default:
 					break;
@@ -297,6 +313,7 @@ public class TypeChecking extends ViewPart {
 	 * to create the viewer and initialize it.
 	 */
 	public void createPartControl(Composite parent) {
+		refactorButtonMaker = new TypeCheckingRefactoringButtonUI();
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
@@ -343,6 +360,10 @@ public class TypeChecking extends ViewPart {
 		column6.setText("Rate it!");
 		column6.setResizable(true);
 		column6.pack();
+		TreeColumn column7 = new TreeColumn(treeViewer.getTree(),SWT.LEFT);
+		column7.setText("Refactoring");
+		column7.setResizable(true);
+		column7.pack();
 		treeViewer.expandAll();
 		
 		treeViewer.setColumnProperties(new String[] {"type", "source", "methodName", "systemOccurrences", "classOccurrences", "averageStatements", "rate"});
@@ -453,6 +474,44 @@ public class TypeChecking extends ViewPart {
 		});
 	}
 
+	public void refactorTypeCheckingSmell(int parentIndex, int childIndex) {
+		if(childIndex == -1) {
+			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex));
+		}
+		else {
+			System.out.println("CHild Called");
+			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex).getItem(childIndex));
+		}
+		
+		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+		if(selection.getFirstElement() instanceof TypeCheckElimination) {
+			TypeCheckElimination typeCheckElimination = (TypeCheckElimination)selection.getFirstElement();
+			IFile sourceFile = typeCheckElimination.getTypeCheckIFile();
+			String typeCheckMethodName = typeCheckElimination.toString();
+			Statement typeCheckCodeFragment = typeCheckElimination.getTypeCheckCodeFragment();
+			try {
+				IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
+				ITextEditor sourceEditor = (ITextEditor)JavaUI.openInEditor(sourceJavaElement);
+				AnnotationModel annotationModel = (AnnotationModel)sourceEditor.getDocumentProvider().getAnnotationModel(sourceEditor.getEditorInput());
+				Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
+				while(annotationIterator.hasNext()) {
+					Annotation currentAnnotation = annotationIterator.next();
+					if(currentAnnotation.getType().equals(SliceAnnotation.EXTRACTION)) {
+						annotationModel.removeAnnotation(currentAnnotation);
+					}
+				}
+				SliceAnnotation annotation = new SliceAnnotation(SliceAnnotation.EXTRACTION, typeCheckMethodName);
+				Position position = new Position(typeCheckCodeFragment.getStartPosition(), typeCheckCodeFragment.getLength());
+				annotationModel.addAnnotation(annotation, position);
+				sourceEditor.setHighlightRange(typeCheckCodeFragment.getStartPosition(), typeCheckCodeFragment.getLength(), true);
+			} catch (PartInitException e) {
+				e.printStackTrace();
+			} catch (JavaModelException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	private void contributeToActionBars() {
 		IActionBars bars = getViewSite().getActionBars();
 		fillLocalToolBar(bars.getToolBarManager());
@@ -461,8 +520,8 @@ public class TypeChecking extends ViewPart {
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
 		manager.add(applyRefactoringAction);
-		manager.add(renameMethodAction);
-		manager.add(saveResultsAction);
+		//manager.add(renameMethodAction);
+		//manager.add(saveResultsAction);
 		//manager.add(evolutionAnalysisAction);
 	}
 
@@ -477,6 +536,18 @@ public class TypeChecking extends ViewPart {
 				renameMethodAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
 				//evolutionAnalysisAction.setEnabled(true);
+				refactorButtonMaker.disposeButtons();
+				
+				Tree tree = treeViewer.getTree();
+				refactorButtonMaker.setTree(tree);
+				refactorButtonMaker.makeRefactoringButtons(7);
+
+				tree.addListener(SWT.Expand, new Listener() {
+					public void handleEvent(Event e) {
+						refactorButtonMaker.makeChildrenRefactoringButtons(7);
+					}
+				});
+
 			}
 		};
 		ImageDescriptor refactoringButtonImage = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/search_button.png");

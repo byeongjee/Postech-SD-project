@@ -47,14 +47,14 @@
                menubarPath="BadSmellsMenu/sampleGroup"
                tooltip="Feature Envy">
          </action>
-         <!--action
+         <action
                class="gr.uom.java.jdeodorant.refactoring.actions.BadSmellsMenu"
                icon="icons/repair.png"
                id="gr.uom.java.jdeodorant.actions.TypeChecking"
                label="Type Checking"
                menubarPath="BadSmellsMenu/sampleGroup"
                tooltip="Type Checking">
-         </action-->
+         </action>
          <action
                class="gr.uom.java.jdeodorant.refactoring.actions.BadSmellsMenu"
                icon="icons/repair.png"
@@ -71,14 +71,14 @@
                menubarPath="BadSmellsMenu/sampleGroup"
                id="gr.uom.java.jdeodorant.actions.GodClass">
          </action>
-         <!--action
+         <action
                label="Duplicated Code"
                icon="icons/repair.png"
                class="gr.uom.java.jdeodorant.refactoring.actions.BadSmellsMenu"
                tooltip="Duplicated Code"
                menubarPath="BadSmellsMenu/sampleGroup"
                id="gr.uom.java.jdeodorant.actions.DuplicatedCode">
-         </action-->
+         </action>
       </actionSet>
    </extension>
    <extension
@@ -94,13 +94,13 @@
             class="gr.uom.java.jdeodorant.refactoring.views.FeatureEnvy"
             id="gr.uom.java.jdeodorant.views.FeatureEnvy">
       </view>
-      <!--view
+      <view
             category="gr.uom.java.jdeodorant"
             class="gr.uom.java.jdeodorant.refactoring.views.TypeChecking"
             icon="icons/repair.png"
             id="gr.uom.java.jdeodorant.views.TypeChecking"
             name="Type Checking">
-      </view-->
+      </view>
       <view
             category="gr.uom.java.jdeodorant"
             class="gr.uom.java.jdeodorant.refactoring.views.LongMethod"
@@ -115,13 +115,13 @@
             id="gr.uom.java.jdeodorant.views.GodClass"
             name="God Class">
       </view>
-      <!--view
+      <view
             category="gr.uom.java.jdeodorant"
             class="gr.uom.java.jdeodorant.refactoring.views.DuplicatedCode"
             icon="icons/repair.png"
             id="gr.uom.java.jdeodorant.views.DuplicatedCode"
             name="Duplicated Code">
-      </view-->
+      </view>
       <view
             category="gr.uom.java.jdeodorant"
             class="gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality"

@@ -38,7 +38,9 @@ import gr.uom.java.jdeodorant.refactoring.views.CodeSmellPackageExplorer.CodeSme
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Tree;
@@ -118,6 +120,24 @@ public class GodClass extends ViewPart {
 	private IType selectedType;
 
 	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
+
+	private GodClassRefactoringButtonUI refactorButtonMaker;
+	public class GodClassRefactoringButtonUI extends RefactoringButtonUI {
+		/**
+		 * Action on Refactoring Button
+		 * 
+		 */
+		public void pressRefactorButton(int index) {
+			refactorGodClassSmell(index, -1, -1);
+		}
+		
+		
+		
+		public void pressGrandChildRefactorButton(int parentIndex, int childIndex, int grandchildIndex) {
+			refactorGodClassSmell(parentIndex, childIndex, grandchildIndex);
+		}
+	}
+
 	class ViewContentProvider implements ITreeContentProvider {
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}
@@ -312,6 +332,7 @@ public class GodClass extends ViewPart {
 	 * to create the viewer and initialize it.
 	 */
 	public void createPartControl(Composite parent) {
+		refactorButtonMaker = new GodClassRefactoringButtonUI();
 		treeViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		treeViewer.setContentProvider(new ViewContentProvider());
 		treeViewer.setLabelProvider(new ViewLabelProvider());
@@ -323,6 +344,7 @@ public class GodClass extends ViewPart {
 		layout.addColumnData(new ColumnWeightData(40, true));
 		layout.addColumnData(new ColumnWeightData(40, true));
 		layout.addColumnData(new ColumnWeightData(20, true));
+		
 		treeViewer.getTree().setLayout(layout);
 		treeViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
 		new TreeColumn(treeViewer.getTree(), SWT.LEFT).setText("Refactoring Type");
@@ -330,6 +352,7 @@ public class GodClass extends ViewPart {
 		new TreeColumn(treeViewer.getTree(), SWT.LEFT).setText("Extractable Concept");
 		new TreeColumn(treeViewer.getTree(), SWT.LEFT).setText("Source/Extracted accessed members");
 		new TreeColumn(treeViewer.getTree(), SWT.LEFT).setText("Rate it!");
+		new TreeColumn(treeViewer.getTree(), SWT.LEFT).setText("Refactoring");
 		
 		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
@@ -466,6 +489,112 @@ public class GodClass extends ViewPart {
 			}
 		});
 	}
+	
+	private void refactorGodClassSmell(int parentIndex, int childIndex, int grandchildIndex) {
+		if(childIndex == -1 && parentIndex == -1) {
+			//selectionTree.setSelection(selectionTree.getItem(parentIndex));
+			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex));
+		}
+		else {
+			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex).getItem(childIndex).getItem(grandchildIndex));
+		}
+		
+		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+		if(selection != null && selection.getFirstElement() instanceof CandidateRefactoring) {
+			CandidateRefactoring entry = (CandidateRefactoring)selection.getFirstElement();
+			if(entry.getSourceClassTypeDeclaration() != null) {
+				IFile sourceFile = entry.getSourceIFile();
+				CompilationUnit sourceCompilationUnit = (CompilationUnit)entry.getSourceClassTypeDeclaration().getRoot();
+				Refactoring refactoring = null;
+				if(entry instanceof ExtractClassCandidateRefactoring) {
+					ExtractClassCandidateRefactoring candidate = (ExtractClassCandidateRefactoring)entry;
+					String[] tokens = candidate.getTargetClassName().split("\\.");
+					String extractedClassName = tokens[tokens.length-1];
+					Set<VariableDeclaration> extractedFieldFragments = candidate.getExtractedFieldFragments();
+					Set<MethodDeclaration> extractedMethods = candidate.getExtractedMethods();
+					IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+					boolean allowUsageReporting = store.getBoolean(PreferenceConstants.P_ENABLE_USAGE_REPORTING);
+					if(allowUsageReporting) {
+						Tree tree = treeViewer.getTree();
+						int groupPosition = -1;
+						int totalGroups = tree.getItemCount();
+						int totalOpportunities = 0;
+						for(int i=0; i<tree.getItemCount(); i++) {
+							TreeItem treeItem = tree.getItem(i);
+							ExtractClassCandidateGroup group = (ExtractClassCandidateGroup)treeItem.getData();
+							if(group.getSource().equals(candidate.getSource())) {
+								groupPosition = i;
+							}
+							totalOpportunities += group.getCandidates().size();
+						}
+						try {
+							boolean allowSourceCodeReporting = store.getBoolean(PreferenceConstants.P_ENABLE_SOURCE_CODE_REPORTING);
+							String declaringClass = candidate.getSourceClassTypeDeclaration().resolveBinding().getQualifiedName();
+							String content = URLEncoder.encode("project_name", "UTF-8") + "=" + URLEncoder.encode(activeProject.getElementName(), "UTF-8");
+							content += "&" + URLEncoder.encode("source_class_name", "UTF-8") + "=" + URLEncoder.encode(declaringClass, "UTF-8");
+							String extractedElementsSourceCode = "";
+							String extractedFieldsText = "";
+							for(VariableDeclaration fieldFragment : extractedFieldFragments) {
+								extractedFieldsText += fieldFragment.resolveBinding().toString() + "\n";
+								extractedElementsSourceCode += fieldFragment.resolveBinding().toString() + "\n";
+							}
+							content += "&" + URLEncoder.encode("extracted_fields", "UTF-8") + "=" + URLEncoder.encode(extractedFieldsText, "UTF-8");
+							String extractedMethodsText = "";
+							for(MethodDeclaration method : extractedMethods) {
+								extractedMethodsText += method.resolveBinding().toString() + "\n";
+								extractedElementsSourceCode += method.toString() + "\n";
+							}
+							content += "&" + URLEncoder.encode("extracted_methods", "UTF-8") + "=" + URLEncoder.encode(extractedMethodsText, "UTF-8");
+							content += "&" + URLEncoder.encode("group_position", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(groupPosition), "UTF-8");
+							content += "&" + URLEncoder.encode("total_groups", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(totalGroups), "UTF-8");
+							content += "&" + URLEncoder.encode("total_opportunities", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(totalOpportunities), "UTF-8");
+							content += "&" + URLEncoder.encode("EP", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(0.0), "UTF-8");
+							if(allowSourceCodeReporting)
+								content += "&" + URLEncoder.encode("extracted_elements_source_code", "UTF-8") + "=" + URLEncoder.encode(extractedElementsSourceCode, "UTF-8");
+							content += "&" + URLEncoder.encode("application", "UTF-8") + "=" + URLEncoder.encode("1", "UTF-8");
+							content += "&" + URLEncoder.encode("application_selected_name", "UTF-8") + "=" + URLEncoder.encode(extractedClassName, "UTF-8");
+							content += "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(System.getProperty("user.name"), "UTF-8");
+							content += "&" + URLEncoder.encode("tb", "UTF-8") + "=" + URLEncoder.encode("3", "UTF-8");
+							URL url = new URL(Activator.RANK_URL);
+							URLConnection urlConn = url.openConnection();
+							urlConn.setDoInput(true);
+							urlConn.setDoOutput(true);
+							urlConn.setUseCaches(false);
+							urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+							DataOutputStream printout = new DataOutputStream(urlConn.getOutputStream());
+							printout.writeBytes(content);
+							printout.flush();
+							printout.close();
+							DataInputStream input = new DataInputStream(urlConn.getInputStream());
+							input.close();
+						} catch (IOException ioe) {
+							ioe.printStackTrace();
+						}
+					}
+					refactoring = new ExtractClassRefactoring(sourceFile, sourceCompilationUnit,
+							candidate.getSourceClassTypeDeclaration(),
+							extractedFieldFragments, extractedMethods,
+							candidate.getDelegateMethods(), extractedClassName);
+				}
+				try {
+					IJavaElement sourceJavaElement = JavaCore.create(sourceFile);
+					JavaUI.openInEditor(sourceJavaElement);
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				} catch (JavaModelException e) {
+					e.printStackTrace();
+				}
+				MyRefactoringWizard wizard = new MyRefactoringWizard(refactoring, applyRefactoringAction);
+				RefactoringWizardOpenOperation op = new RefactoringWizardOpenOperation(wizard); 
+				try { 
+					String titleForFailedChecks = ""; //$NON-NLS-1$ 
+					op.run(getSite().getShell(), titleForFailedChecks); 
+				} catch(InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 
 	private Menu getRightClickMenu(TreeViewer treeViewer, final ExtractClassCandidateRefactoring candidateRefactoring) {
 		Menu popupMenu = new Menu(treeViewer.getControl());
@@ -516,11 +645,22 @@ public class GodClass extends ViewPart {
 				CompilationUnitCache.getInstance().clearCache();
 				candidateRefactoringTable = getTable();
 				treeViewer.setContentProvider(new ViewContentProvider());
-				applyRefactoringAction.setEnabled(true);
+				//applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
 				packageExplorerAction.setEnabled(true);
 				if(wasAlreadyOpen)
 					openPackageExplorerViewPart();
+				refactorButtonMaker.disposeGrandButtons();
+				
+				Tree tree = treeViewer.getTree();
+				refactorButtonMaker.setTree(tree);
+				refactorButtonMaker.makeRefactoringButtons(5);
+				tree.addListener(SWT.Expand, new Listener() {
+					public void handleEvent(Event e) {
+						refactorButtonMaker.makeGrandChildrenRefactoringButtons(5);
+					}
+				});
+
 			}
 		};
 		ImageDescriptor refactoringButtonImage = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/search_button.png");

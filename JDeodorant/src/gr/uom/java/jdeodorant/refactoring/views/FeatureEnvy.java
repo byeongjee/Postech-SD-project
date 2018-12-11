@@ -36,11 +36,13 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.part.*;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.IProgressService;
@@ -105,7 +107,6 @@ import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 public class FeatureEnvy extends ViewPart {
 	private static final String MESSAGE_DIALOG_TITLE = "Feature Envy";
 	private TableViewer tableViewer;
-	private TreeViewer treeViewer;
 	private Action identifyBadSmellsAction;
 	private Action applyRefactoringAction;
 	private Action doubleClickAction;
@@ -131,20 +132,10 @@ public class FeatureEnvy extends ViewPart {
 	 * (like Task List, for example).
 	 */
 	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
-	
+	private FeatureEnvyRefactoringButtonUI refactorButtonMaker;
 	private class FeatureEnvyRefactoringButtonUI extends RefactoringButtonUI {
-		
 		public void pressRefactorButton(int index) {
-			System.out.println("Pressed parent refactor button");
-			System.out.println("index: " + index);
-			refactorFeatureEnvySmell(index, -1);
-		}
-		
-		//To be implemented
-		public void pressChildRefactorButton(int parentIndex, int childIndex) {
-			System.out.println("Pressed child refactor button");
-			System.out.println("index: " + parentIndex + " " + childIndex);
-			refactorFeatureEnvySmell(parentIndex, childIndex);
+			refactorFeatureEnvySmell(index);
 		}
 	}
 
@@ -285,6 +276,7 @@ public class FeatureEnvy extends ViewPart {
 	 * to create the viewer and initialize it.
 	 */
 	public void createPartControl(Composite parent) {
+		refactorButtonMaker = new FeatureEnvyRefactoringButtonUI();
 		tableViewer = new TableViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
 		tableViewer.setContentProvider(new ViewContentProvider());
 		tableViewer.setLabelProvider(new ViewLabelProvider());
@@ -496,12 +488,24 @@ public class FeatureEnvy extends ViewPart {
 				CompilationUnitCache.getInstance().clearCache();
 				candidateRefactoringTable = getTable();
 				tableViewer.setContentProvider(new ViewContentProvider());
-				applyRefactoringAction.setEnabled(true);
+
+				//applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
 				//evolutionAnalysisAction.setEnabled(true);
 				packageExplorerAction.setEnabled(true);
 				if(wasAlreadyOpen)
 					openPackageExplorerViewPart();
+				
+				refactorButtonMaker.disposeButtons();
+				Table tree = tableViewer.getTable();
+				refactorButtonMaker.setTable(tree);
+				refactorButtonMaker.makeRefactoringButtonsTable(5);
+				tree.addListener(SWT.Expand, new Listener() {
+					public void handleEvent(Event e) {
+						refactorButtonMaker.makeChildrenRefactoringButtons(5);
+					}
+				});
+
 			}
 		};
 		ImageDescriptor refactoringButtonImage = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/search_button.png");
@@ -722,16 +726,8 @@ public class FeatureEnvy extends ViewPart {
 		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(selectionListener);
 	}
 	
-	private void refactorFeatureEnvySmell(int childIndex, int parentIndex) {
-		
-		if(childIndex == -1 && parentIndex == -1) {
-			//selectionTree.setSelection(selectionTree.getItem(parentIndex));
-			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex));
-		}
-		else {
-			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex).getItem(childIndex));
-		}
-		
+	private void refactorFeatureEnvySmell(int index) {
+		tableViewer.getTable().setSelection(tableViewer.getTable().getItem(index));
 		
 		IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
 		CandidateRefactoring entry = (CandidateRefactoring)selection.getFirstElement();

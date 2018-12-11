@@ -138,15 +138,11 @@ public class LongMethod extends ViewPart {
 	private class LongMethodRefactoringButtonUI extends RefactoringButtonUI {
 		
 		public void pressRefactorButton(int index) {
-			System.out.println("Pressed parent refactor button");
-			System.out.println("index: " + index);
 			refactorLongMethodSmell(index, -1);
 		}
 		
 		//To be implemented
 		public void pressChildRefactorButton(int parentIndex, int childIndex) {
-			System.out.println("Pressed child refactor button");
-			System.out.println("index: " + parentIndex + " " + childIndex);
 			refactorLongMethodSmell(parentIndex, childIndex);
 		}
 	}
