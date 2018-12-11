@@ -52,10 +52,6 @@ public class SameLPLParametersAssertionPage extends WizardPage {
     	
     	Table table = new Table(container, SWT.BORDER | SWT.H_SCROLL);
     	table.setHeaderVisible(true);
-    	TableColumn checkColumn = new TableColumn(table, SWT.CENTER);
-    	checkColumn.setText("Select");
-    	checkColumn.setWidth(80);
-    	checkColumn.setAlignment(SWT.CENTER);
     	TableColumn tableTypeColumn = new TableColumn(table, SWT.LEFT);
 		tableTypeColumn.setText("Type");
 		tableTypeColumn.setWidth(200);
@@ -69,8 +65,8 @@ public class SameLPLParametersAssertionPage extends WizardPage {
 		for(int i = 0; i < parameterTypeList.size(); i++) {
 			TableItem tableItem = new TableItem(table, SWT.NONE);
 			String parameter = parameterTypeList.get(i);
-			tableItem.setText(1, parameter.split(" ")[0]);
-			tableItem.setText(2, parameter.split(" ")[1]);
+			tableItem.setText(0, parameter.split(" ")[0]);
+			tableItem.setText(1, parameter.split(" ")[1]);
 		}
 		
 		setControl(container);

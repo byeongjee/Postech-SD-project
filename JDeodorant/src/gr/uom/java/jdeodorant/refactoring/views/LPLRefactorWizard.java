@@ -21,8 +21,13 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 import gr.uom.java.ast.LPLMethodObject;
@@ -34,6 +39,22 @@ public class LPLRefactorWizard extends Wizard {
 	private LPLRefactorInitialPage initialPage;
 	private LPLRefactorClassNamePage namePage;
 	private LPLRefactorSelectPackagePage packagePage;
+	
+	public static class MyCustomDialog extends WizardDialog {
+
+		public MyCustomDialog(Shell parentShell, IWizard newWizard) {
+		    super(parentShell, newWizard);
+		}
+
+		@Override
+		public void createButtonsForButtonBar(Composite parent){
+		    super.createButtonsForButtonBar(parent);
+		    Button finishButton = getButton(IDialogConstants.FINISH_ID);
+		    finishButton.setText("Yes");
+		    Button noButton = getButton(IDialogConstants.CANCEL_ID);
+		    noButton.setText("No");
+		}
+	}
 	
 	public LPLRefactorWizard(IJavaProject javaProject, LPLMethodObject methodToRefactor) {
 		super();
@@ -262,7 +283,8 @@ public class LPLRefactorWizard extends Wizard {
 			for(IMethod candidateMethod : foundMethods) {
 				if(hasExtractedParameters(candidateMethod, foundCu, parameterStringList)) {
 					SameLPLParametersWizard wizard = new SameLPLParametersWizard(candidateMethod);
-					WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); 
+					//WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
+					MyCustomDialog dialog = new MyCustomDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
 					dialog.open();
 					if(wizard.getDoExtraction()) {
 						List<Integer> extractedParameterIndices = getExtractedParameterIndicesFrom(candidateMethod, parameterStringList);
