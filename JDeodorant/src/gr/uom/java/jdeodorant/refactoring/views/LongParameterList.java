@@ -151,9 +151,10 @@ public class LongParameterList extends ViewPart {
 	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
 	
 	private class LongParameterListRefactoringButtonUI extends RefactoringButtonUI {
-
-		// To be implemented
 		
+		/**
+		 * Make refactoring buttons appear for UI
+		 */
 		@Override
 		public void makeRefactoringButtons(int columnIndex) {
 			TreeItem[] items = tree.getItems();
@@ -194,7 +195,10 @@ public class LongParameterList extends ViewPart {
 		}
 		
 		
-		
+		/**
+		 * Function that runs when refactoring button is pressed.
+		 * A new popup where the user can input refactoring option appears.
+		 */
 		public void pressRefactorButton(int index) {
 			LPLMethodObject methodToRefactor = methodObjectTable[index];
 			LPLRefactorWizard wizard = new LPLRefactorWizard(selectedProject, methodToRefactor);
@@ -396,9 +400,8 @@ public class LongParameterList extends ViewPart {
 
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
-		//manager.add(applyRefactoringAction);
-		//manager.add(saveResultsAction);
-		//manager.add(evolutionAnalysisAction);
+		manager.add(applyRefactoringAction);
+		manager.add(saveResultsAction);
 	}
 
 	private void makeActions() {
@@ -511,6 +514,35 @@ public class LongParameterList extends ViewPart {
 	public void dispose() {
 		super.dispose();
 		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(selectionListener);
+	}
+	
+	/**
+	 * Finds in the IJavaProject the ICompilationUnit with a specific name 
+	 * @param javaProject project to search in
+	 * @param CompilationUnitName name of compilation unit
+	 * @return ICompilationUnit if class is found, null if not.
+	 */
+	public static ICompilationUnit findCompilationUnit(IJavaProject javaProject, String CompilationUnitName) {
+		try {
+			IPackageFragment[] allPkg = javaProject.getPackageFragments();
+			List<IPackageFragment> srcPkgs = new ArrayList<IPackageFragment>();
+			for(IPackageFragment myPackage : allPkg) {
+				if(myPackage.getKind() == IPackageFragmentRoot.K_SOURCE && myPackage.getCompilationUnits().length != 0) {
+					srcPkgs.add(myPackage);
+				}
+			}
+			
+			for(IPackageFragment srcPkg : srcPkgs) {
+				for(ICompilationUnit iCompUnit : srcPkg.getCompilationUnits()) {
+					if(iCompUnit.getElementName().equals(CompilationUnitName)) {
+						return iCompUnit;
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	private LPLMethodObject[] getTable() {

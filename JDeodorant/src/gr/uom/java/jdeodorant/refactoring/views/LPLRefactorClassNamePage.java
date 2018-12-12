@@ -18,12 +18,18 @@ public class LPLRefactorClassNamePage extends WizardPage {
     private Composite container;
     private Label warningLabel;
 
+    /**
+     * Constructor for the page where the user inputs the new class name.
+     */
     public LPLRefactorClassNamePage() {
         super("New Class Name");
         setTitle("New Class Name");
         setDescription("Enter name of new class");
     }
 
+    /**
+     * Creates an interface for the user to input a new class name
+     */
     public void createControl(Composite parent) {
         container = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
@@ -44,7 +50,7 @@ public class LPLRefactorClassNamePage extends WizardPage {
             		if(newClassName.getText().length() == 0) {
             			warningLabel.setText("");
             		}
-            		if(!Character.isUpperCase(newClassName.getText().charAt(0))) {
+            		else if(!Character.isUpperCase(newClassName.getText().charAt(0))) {
             			warningLabel.setText("* Class name does not start with capital letter");
             		}
             		else {
@@ -96,17 +102,29 @@ public class LPLRefactorClassNamePage extends WizardPage {
         
         setControl(container);
         setPageComplete(false);
-
     }
 
+    /**
+     * Returns the text of the new class name that the user typed
+     * @return
+     */
     public String getClassName() {
         return newClassName.getText();
     }
     
+    /**
+     * Returns the text of the parameter variable that the user typed
+     * @return
+     */
     public String getParameterName() {
     	return newParameterName.getText();
     }
     
+    /**
+     * Checks if a string is a valid class name
+     * @param name string to check
+     * @return true if valid, false if not.
+     */
     private boolean isValidName(String name) {
     	return SourceVersion.isIdentifier(name) && !SourceVersion.isKeyword(name);
     }

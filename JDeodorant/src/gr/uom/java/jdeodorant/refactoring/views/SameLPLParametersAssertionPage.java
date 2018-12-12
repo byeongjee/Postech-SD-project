@@ -29,44 +29,36 @@ import org.eclipse.swt.widgets.Text;
 
 import gr.uom.java.ast.LPLMethodObject;
 
-public class LPLRefactorInitialPage extends WizardPage {
+public class SameLPLParametersAssertionPage extends WizardPage {
 	private ArrayList<Integer> parameterIndexList;
     private Composite container;
-    private LPLMethodObject methodToRefactor;
-    private TableViewer tableViewer;
     private ArrayList<String> extractParameterNames;
     private ArrayList<String> extractParameterTypes;
-    private IJavaProject javaProject;
+    private IMethod candidateMethod;
 
     /**
-     * Constructor for the parameter selection page
-     * @param methodToRefactor LPLMethodObject
-     * @param javaProject target project
+     * Constructor for wizardPage.
+     * @param candidateMethod
      */
-    public LPLRefactorInitialPage(LPLMethodObject methodToRefactor, IJavaProject javaProject) {
-        super("First Page");
-        this.methodToRefactor = methodToRefactor;
-        this.javaProject = javaProject;
-        setTitle(methodToRefactor.getName());
-        setDescription("Select parameters to extract");
+    public SameLPLParametersAssertionPage(IMethod candidateMethod) {
+        super("Same Parameters Found");
+        this.candidateMethod = candidateMethod;
+        setTitle(candidateMethod.getElementName() + " has similar parameters.");
+        setDescription("Would you also like to extract these parameters?");
         extractParameterNames = new ArrayList<String>();
         extractParameterTypes = new ArrayList<String>();
         parameterIndexList = new ArrayList<Integer>();
     }
 
     /**
-     * Creates the interface for the table
+     * Lists the parameters of the method found, and asks if user wants to refactor it.
      */
     public void createControl(Composite parent) {
     	container = new Composite(parent, SWT.NONE);
     	container.setLayout(new FillLayout());
     	
-    	Table table = new Table(container, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL);
+    	Table table = new Table(container, SWT.BORDER | SWT.H_SCROLL);
     	table.setHeaderVisible(true);
-    	TableColumn checkColumn = new TableColumn(table, SWT.CENTER);
-    	checkColumn.setText("Select");
-    	checkColumn.setWidth(80);
-    	checkColumn.setAlignment(SWT.CENTER);
     	TableColumn tableTypeColumn = new TableColumn(table, SWT.LEFT);
 		tableTypeColumn.setText("Type");
 		tableTypeColumn.setWidth(200);
@@ -75,77 +67,20 @@ public class LPLRefactorInitialPage extends WizardPage {
 		tableNameColumn.setWidth(200);
 		ArrayList<String> parameterTypeList = new ArrayList<String>();
 		
-		try {
-			parameterTypeList = getSourceCodeTypeList(methodToRefactor.toIMethod(javaProject));
-		} catch (JavaModelException e) {
-			e.printStackTrace();
-		}
+		parameterTypeList = getSourceCodeParameterList(candidateMethod);
 		
-		for(int i = 0; i < methodToRefactor.getParameterTypeList().size(); i++) {
+		for(int i = 0; i < parameterTypeList.size(); i++) {
 			TableItem tableItem = new TableItem(table, SWT.NONE);
-			tableItem.setText(1, parameterTypeList.get(i));
-			tableItem.setText(2, methodToRefactor.getParameterNameList().get(i));
+			String parameter = parameterTypeList.get(i);
+			tableItem.setText(0, parameter.split(" ")[0]);
+			tableItem.setText(1, parameter.split(" ")[1]);
 		}
 		
-		table.addListener(SWT.Selection,  new Listener() {
-			public void handleEvent(Event event) {
-				boolean isChecked = false;
-				if(event.detail == SWT.CHECK) {
-					parameterIndexList.clear();
-					extractParameterTypes.clear();
-					extractParameterNames.clear();
-					for(int i = 0; i < ((Table)event.widget).getItems().length; i++) {
-						TableItem item = ((Table)event.widget).getItem(i);
-						if(item.getChecked()) {
-							parameterIndexList.add(i);
-							extractParameterTypes.add(((Table)event.widget).getItem(i).getText(1));
-							extractParameterNames.add(((Table)event.widget).getItem(i).getText(2));
-							isChecked = true;
-						}
-					}
-					if(isChecked) {
-						setPageComplete(true);
-					}
-					else {
-					setPageComplete(false);
-					}
-				}
-			}
-		});
 		setControl(container);
-        setPageComplete(false);
+        setPageComplete(true);
     }
     
-    /**
-     * Get the indexes of the parameters the user checed 
-     * @return ArrayList of indexes
-     */
-     public ArrayList getParameterIndexList() {
-        return parameterIndexList;
-    }
-    
-     /**
-      * Get the names of the parameters the user checked
-      * @return ArrayList of indexes
-      */
-    public ArrayList getExtractParameterNames() {
-    	return extractParameterNames;
-    }
-    
-    /**
-     * Get the types of the parameters the user checked
-     * @return ArrayList of types
-     */
-    public ArrayList getExtractParameterTypes() {
-    	return extractParameterTypes;
-    }
-    
-    /**
-     * Get the strings of the source code of the parameters the user checked
-     * For example ["int", "int", "String"]
-     * @return ArrayList of parameters in source code form
-     */
-    public static ArrayList<String> getSourceCodeTypeList(IMethod method) {
+   public ArrayList<String> getSourceCodeParameterList(IMethod method) {
     	try {
 			IMethod convertedIMethod = method;
 			int startPosition = convertedIMethod.getSourceRange().getOffset();
@@ -175,7 +110,6 @@ public class LPLRefactorInitialPage extends WizardPage {
 			String argumentParts[] = argumentString.split(",");
 			for(int i = 0; i < argumentParts.length; i++) {
 				argumentParts[i] = argumentParts[i].trim();
-				argumentParts[i] = argumentParts[i].split(" ")[0];
 			}
 			ArrayList<String> ret = new ArrayList<String>();
 			for(String s : argumentParts) {
@@ -187,5 +121,4 @@ public class LPLRefactorInitialPage extends WizardPage {
 		}
     	return null;
     }
-
 }

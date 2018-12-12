@@ -26,6 +26,7 @@ import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.junit.After;
@@ -93,5 +94,49 @@ public class tester {
 		 //  	junittest.speculativeGenerality/UIButtonTest.java/testgetHighlightPositions()
 	}
 	
+
+	/**
+	 * this test corresponds to
+	 * 	1. Show Detected code-smell 1 : Highlight (iteration 3)
+	 * 	2. Navigate to detected Code 1 : Tab Double Click (iteration 3)
+	 * test if user can doubleclick a detected code smell to open the corresponding text editor, 
+	 * and see the highlighted smell
+	 */
+	@Test
+	public void testSmellHighlight() {
+		openLPLTab();
+		selectTargetPackage();
+		applyDetection();
+		SWTBotView detectionView = bot.viewByTitle("Long Parameter List");
+		detectionView.show();
+		detectionView.bot().tree().getTreeItem("Long Parameter List").doubleClick();
+		SWTBotEditor editor = bot.editorByTitle("TestLPL.java");
+		SWTBotEclipseEditor eclipseEditor = editor.toTextEditor();
+	}
+	
+	private void openLPLTab() {
+		bot.menu("JDe5dorant").menu("Long Parameter List").click();
+	}
+
+	private void selectTargetPackage() {
+		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
+		packageExplorer.show();
+		packageExplorer.bot().tree().getTreeItem("testLPLProject").doubleClick();
+		packageExplorer.bot().tree().getTreeItem("testLPLProject").getNode("src").doubleClick();
+		packageExplorer.bot().tree().getTreeItem("testLPLProject").getNode("src").getNode("LongParameterList").click();
+	}
+
+	private void applyDetection() {
+		SWTBotView detectionView = bot.viewByTitle("Long Parameter List");
+		detectionView.show();
+		detectionView.getToolbarButtons().get(0).click();
+	}
+
+	private void openRefactoringPopUpFromDetectedSmell() {
+		SWTBotView detectionView = bot.viewByTitle("Long Parameter List");
+		detectionView.show();
+		detectionView.bot().button("TEST").click();
+	}
+
 	
 }

@@ -158,7 +158,13 @@ public class tester {
 		
 		assertEquals(detectionApplier.bot().tree().getTreeItem("Long Parameter List").cell(4), "4");
 		
-		testLPLProject.deleteLPLProject();
+		bot.resetActivePerspective();
+    	SWTBotView view = bot.viewByTitle("Project Explorer");
+    	view.bot().tree().getTreeItem("testLPLProject").contextMenu("Delete").click();
+    	SWTBotShell deleteShell = bot.shell("Delete Resources");
+    	deleteShell.activate();
+    	bot.checkBox("Delete project contents on disk (cannot be undone)").click();
+    	bot.button("OK").click();
 	}
 	
 	

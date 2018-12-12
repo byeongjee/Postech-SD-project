@@ -30,6 +30,10 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
     private String packageName;
     private Label existingWarningLabel;
 
+    /**
+     * Constructor for UI popup for selecting packages
+     * @param javaProject
+     */
     public LPLRefactorSelectPackagePage(IJavaProject javaProject) {
         super("Select package of new class");
         setTitle("Select package");
@@ -39,6 +43,9 @@ public class LPLRefactorSelectPackagePage extends WizardPage {
         canFinishPage = false;
     }
 
+    /**
+     * Makes a checkable table with the names of packages in project
+     */
     public void createControl(Composite parent) {
         container = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(2, false);

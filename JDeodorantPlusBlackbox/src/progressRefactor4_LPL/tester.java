@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
@@ -47,6 +48,7 @@ import static org.junit.Assert.fail;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
@@ -98,6 +100,7 @@ public class tester {
 	private void openRefactoringPopUpFromDetectedSmell() {
 		SWTBotView detectionView = bot.viewByTitle("Long Parameter List");
 		detectionView.show();
+		bot.sleep(500);
 		detectionView.bot().button("TEST").click();
 	}
 
@@ -112,6 +115,11 @@ public class tester {
 		bot.shell("Refactoring").close();
 	}
 
+	/**
+	 * this test corresponds to 
+     * 	1. Progress refactor UI : LPL (iteration 3)
+	 * test if a user can click refactoring button to open the refactoring tab
+	 */
 	@Test
 	public void testOpenRefactoringPopUp() throws CoreException {
 		try {
@@ -130,9 +138,12 @@ public class tester {
 		}
 	}
 
-	@Test // assert that user cannot continue to the class name page without checking
-			// arguments
-	// to extract.
+	/**
+	 * this test corresponds to an exceptional case of 
+	 * 	1. Progress refactor UI : LPL (iteartion 3)
+	 * assert that user cannot continue to the class name page without checking any arguments to extract
+	 */
+	@Test
 	public void testRefactoringPopUpInitialPageExceptionScenario() throws CoreException {
 		try {
 		testLPLProject.buildLPLProject();
@@ -150,9 +161,12 @@ public class tester {
 		}
 	}
 
-	@Test // assert that user cannot continue to the package selection page without giving
-			// the
-	// new class name
+	/**
+	 * this test corresponds to an exceptional case of 
+	 * 	1. Progress refactor UI : LPL (iteration 3)
+	 * assert that user cannot continue to the package selection page without giving the new class name and parameter name
+	 */
+	@Test 
 	public void testRefactoringPopUpUIClassNamePageExceptionScenario() throws CoreException {
 		try {
 		testLPLProject.buildLPLProject();
@@ -173,26 +187,31 @@ public class tester {
 			}
 		}
 	}
-
+	
+	/**
+	 * this test corresponds to
+	 * 	1. Progress refactor UI : LPL (iteration 3)
+	 * 	2. Progress refactor 4 : LPL (iteration 4)
+	 * assert that user can finish refactoring successfully with refactoring tabs
+	 */
 	@Test
 	public void testLPLRefactoringSuccessScenario() {
 		try {
 			testLPLProject.buildLPLProject();
-			//testLPLProject.buildLPLProject();
 			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testLPLProject");
 			IJavaProject javaProject = JavaCore.create(project);
 			String originalSource = "";
 			int LPLPkgIndex = 0;
-			for(LPLPkgIndex = 0; LPLPkgIndex < javaProject.getPackageFragments().length; LPLPkgIndex++) {
-				if(javaProject.getPackageFragments()[LPLPkgIndex].getElementName() == "LongParameterList")
+			for (LPLPkgIndex = 0; LPLPkgIndex < javaProject.getPackageFragments().length; LPLPkgIndex++) {
+				if (javaProject.getPackageFragments()[LPLPkgIndex].getElementName().equals("LongParameterList")) {
 					break;
+				}
 			}
-			LPLPkgIndex--;
 			originalSource = javaProject.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").getSource();
 			detectCodeSmellAndOpenRefactoringPopUp();
 			SWTBotShell refactoringWizard = bot.shell("Refactoring");
-			refactoringWizard.bot().table().getTableItem(0).check();
-			refactoringWizard.bot().table().getTableItem(1).check();
+			refactoringWizard.bot().table().getTableItem(2).check();
+			refactoringWizard.bot().table().getTableItem(3).check();
 			refactoringWizard.bot().button("Next >").click();
 			// now in class name page
 			refactoringWizard.bot().text(0).selectAll().typeText("TestClass");
@@ -204,32 +223,38 @@ public class tester {
 
 			IJavaProject javaProjectUpdated = JavaCore.create(project);
 
-			assertTrue(javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").exists());
-			assertFalse(javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").getSource().equals(originalSource));
-			ICompilationUnit newCompilationUnit = javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestClass.java");
+			assertTrue(
+					javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").exists());
+			assertFalse(javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java")
+					.getSource().equals(originalSource));
+			ICompilationUnit newCompilationUnit = javaProjectUpdated.getPackageFragments()[LPLPkgIndex]
+					.getCompilationUnit("TestClass.java");
+			assertTrue(newCompilationUnit != null);
 			List<IField> fields = new ArrayList<IField>();
-			for (IType type: newCompilationUnit.getTypes()) {
-				for (IField field: type.getFields()) {
+			for (IType type : newCompilationUnit.getTypes()) {
+				for (IField field : type.getFields()) {
 					fields.add(field);
 				}
 			}
 			assertTrue(newCompilationUnit.exists() && fields.size() == 2);
 		} catch (Exception e) {
+			e.printStackTrace();
 			fail("fail with Exception " + e);
 			deleteTestProject();
 		} finally {
 			try {
-		closeRefactoringPopUp();
-		closeLPLTab();
-		testLPLProject.buildLPLProject();
-		deleteTestProject();
-			} catch (Exception e) {
+				closeLPLTab();
 				deleteTestProject();
+			} catch (Exception e) {
 			}
 		}
 	}
 	
-
+	/**
+	 * this test corresponds to an exceptional case of 
+	 * 	1. Progress refactor UI : LPL (iteration 3)
+	 * assert that a warning is shown if a user tries to use a class name that does not start with a capital letter
+	 **/
 	@Test
 	public void testClassNameWarning() {
 		try {
@@ -258,7 +283,114 @@ public class tester {
 			}
 		}
 	}
+	
+	/**
+	 * this test corresponds to
+	 * 	1. Progress refactor UI : LPL (iteration 3)
+	 * 	2. Progress refactor 4 : LPL (iteration 4)
+	 * test if a user can refactor multiple methods with the similar parameters together through a popup dialog
+	 **/
+	@Test
+	public void testLPLRefactoringSameParameters() {
+		try {
+			testLPLProject.buildLPLProject();
+			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testLPLProject");
+			IJavaProject javaProject = JavaCore.create(project);
+			String originalSource = "";
+			int LPLPkgIndex = 0;
+			for (LPLPkgIndex = 0; LPLPkgIndex < javaProject.getPackageFragments().length; LPLPkgIndex++) {
+				if (javaProject.getPackageFragments()[LPLPkgIndex].getElementName().equals("LongParameterList")) {
+					break;
+				}
+			}
+			originalSource = javaProject.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").getSource();
+			detectCodeSmellAndOpenRefactoringPopUp();
+			SWTBotShell refactoringWizard = bot.shell("Refactoring");
+			refactoringWizard.bot().table().getTableItem(0).check();
+			refactoringWizard.bot().table().getTableItem(1).check();
+			refactoringWizard.bot().button("Next >").click();
+			// now in class name page
+			refactoringWizard.bot().text(0).selectAll().typeText("TestClass");
+			refactoringWizard.bot().text(1).selectAll().typeText("testParameter");
+			refactoringWizard.bot().button("Next >").click();
+			// now in package selection page
+			refactoringWizard.bot().table().getTableItem(0).check();
+			refactoringWizard.bot().button("Finish").click();
+			
+			for(int i = 0; i < 3; i++) {
+				SWTBotShell sameParametersWizard = bot.shell("Same parameters found");
+				if(i == 1)
+					sameParametersWizard.bot().button("No").click();
+				else
+					sameParametersWizard.bot().button("Yes").click();
+			}
 
+			IJavaProject javaProjectUpdated = JavaCore.create(project);
+
+			assertTrue(
+					javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").exists());
+			assertFalse(javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java")
+					.getSource().equals(originalSource));
+			
+			int methodVisit = 0;
+			ICompilationUnit srcCompilationUnit = javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java");
+			for(IType iT : srcCompilationUnit.getTypes()) {
+				for(IMethod iM : iT.getMethods()) {
+					String methodName = iM.getElementName();
+					if(methodName.equals("getVal2")) {
+						assertTrue(iM.getParameterNames().length == 1);
+						assertTrue(iM.getParameterNames()[0].equals("testParameter"));
+						methodVisit++;
+					}
+					else if(methodName.equals("getVal3")) {
+						assertTrue(iM.getParameterNames().length == 3);
+						List parameterNameList = Arrays.asList(iM.getParameterNames());
+						assertTrue(parameterNameList.contains("x"));
+						assertTrue(parameterNameList.contains("y"));
+						assertTrue(parameterNameList.contains("z"));
+						methodVisit++;
+					}
+					else if(methodName.equals("getVal4")) {
+						assertTrue(iM.getParameterNames().length == 3);
+						List parameterNameList = Arrays.asList(iM.getParameterNames());
+						assertTrue(parameterNameList.contains("z"));
+						assertTrue(parameterNameList.contains("w"));
+						assertTrue(parameterNameList.contains("testParameter"));
+						methodVisit++;
+					}
+				}
+			}
+			assertTrue(methodVisit == 3);
+			ICompilationUnit newCompilationUnit = javaProjectUpdated.getPackageFragments()[LPLPkgIndex]
+					.getCompilationUnit("TestClass.java");
+			assertTrue(newCompilationUnit != null);
+			List<IField> fields = new ArrayList<IField>();
+			for (IType type : newCompilationUnit.getTypes()) {
+				for (IField field : type.getFields()) {
+					fields.add(field);
+				}
+			}
+			assertTrue(newCompilationUnit.exists() && fields.size() == 2);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("fail with Exception " + e);
+			deleteTestProject();
+		} finally {
+			try {
+				closeLPLTab();
+				deleteTestProject();
+			} catch (Exception e) {
+				deleteTestProject();
+			}
+		}
+	}
+	
+	/**
+	 * this test corresponds to an exceptional case of 
+	 * 	1. Progress refactor UI : LPL (iteration 3)
+	 * assert that user cannot continue to the package selection page
+	 * if the name of the class that the user wants to create already exists
+	 **/
 	@Test
 	public void testSameClassWarning() {
 		try {

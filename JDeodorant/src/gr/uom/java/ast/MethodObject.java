@@ -63,9 +63,7 @@ public class MethodObject implements AbstractMethodDeclaration {
         this._synchronized = false;
         this._native = false;
         this.testAnnotation = false;
-    }
-
-    
+    }    
     
     public int getSmellStart() {
 		return this.smellStartPosition;
@@ -91,18 +89,10 @@ public class MethodObject implements AbstractMethodDeclaration {
     public Object[] getHighlightPositions() {
        Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
        Position position = new Position(smellStartPosition, smellLength);
-      annotationMap.put(position, "HELLO");
-      return new Object[] {annotationMap};
+       annotationMap.put(position, "HELLO");
+       return new Object[] {annotationMap};
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
+ 
     
     public void setReturnType(TypeObject returnType) {
         this.returnType = returnType;
