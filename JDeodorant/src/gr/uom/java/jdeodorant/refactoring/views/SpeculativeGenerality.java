@@ -81,8 +81,14 @@ import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TreeEditor;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -113,7 +119,7 @@ import org.eclipse.jdt.core.dom.Statement;
 /**
  * Detect Code Smell of Speculative Generality
  * @author 이재엽, 이주용
- * 
+ *
  * Refactor the Smelling Codes
  * @author 이주용, 손태영
  */
@@ -130,29 +136,115 @@ public class SpeculativeGenerality extends ViewPart {
 	private ICompilationUnit selectedCompilationUnit;
 	private IType selectedType;
 	private IMethod selectedMethod;
-	
+
 	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
-	
+
 	// Exp : would-be extended to contain information of line, source-path, and so forth... (for UI)
-	private ClassObjectCandidate[] classObjectTable; 
-	
-	
+	private ClassObjectCandidate[] classObjectTable;
+
+
 	private ClassObjectCandidate[] _smellingClassEntries;
 	private Set<ClassObject> _classObjectToBeExamined = new HashSet<ClassObject>();
-	
+
 	private SpeculativeGeneralityRefactoringButtonUI refactorButtonMaker;
-	
+
 	public class SpeculativeGeneralityRefactoringButtonUI extends RefactoringButtonUI {
+		@Override
+		public void makeChildrenRefactoringButtons(int columnIndex) {
+			TreeItem[] items = tree.getItems();
+			for(int i = 0; i < items.length; i++) {
+				TreeEditor editor = new TreeEditor(tree);
+
+				TreeItem item1 = items[i];
+
+				this.getChildrenButtonList().add(new ArrayList<Button>());
+
+				for(int j = 0; j < item1.getItems().length; j++) {
+					TreeEditor editor2 = new TreeEditor(item1.getItem(j).getParent());
+					Button button = new Button(item1.getItem(j).getParent(), SWT.PUSH);
+					button.setData("parentIndex", i);
+					button.setData("childIndex", j);
+
+					button.addPaintListener( new PaintListener() {
+						  //@Override
+						  public void paintControl( PaintEvent event ) {
+							  event.gc.setBackground( event.display.getSystemColor( SWT.COLOR_WHITE ) );
+							  event.gc.fillRectangle( event.x, event.y, event.width, event.height );						  }
+					});
+					button.setText("Child");
+
+					button.setSize(3, 3);
+					button.pack();
+
+					button.addSelectionListener(new SelectionListener() {
+						public void widgetSelected(SelectionEvent event) {
+							Integer parentIndex = (Integer) event.widget.getData("parentIndex");
+							Integer childIndex = (Integer) event.widget.getData("childIndex");
+							pressChildRefactorButton(parentIndex, childIndex);
+						}
+
+						public void widgetDefaultSelected(SelectionEvent event) {
+						}
+					});
+
+					editor2.horizontalAlignment = SWT.RIGHT;
+					editor2.grabHorizontal = true;
+					editor2.minimumWidth = 50;
+					editor2.setEditor(button, item1.getItem(j), columnIndex);
+					this.getChildrenButtonList().get(i).add(button);
+				}
+			}
+		}
+
+		@Override
+		public void makeRefactoringButtons(int columnIndex) {
+			TreeItem[] items = tree.getItems();
+			for(int i = 0; i < items.length; i++) {
+				TreeItem item1 = items[i];
+				TreeEditor editor = new TreeEditor(item1.getParent());
+				Button button = new Button(item1.getParent(), SWT.PUSH);
+
+				button.setText("TEST");
+				button.setSize(16, 16);
+				button.pack();
+				button.setData("index", i);
+
+				editor.horizontalAlignment = SWT.RIGHT;
+				editor.grabHorizontal = true;
+				editor.minimumWidth = 50;
+				editor.setEditor(button, item1, columnIndex);
+				buttonList.add(button);
+				button.addSelectionListener(new SelectionListener() {
+					public void widgetSelected(SelectionEvent event) {
+						pressRefactorButton((Integer) event.widget.getData("index"));
+					}
+
+					public void widgetDefaultSelected(SelectionEvent event) {
+					}
+				});
+
+				button.addPaintListener(new PaintListener() {
+					public void paintControl( PaintEvent event ) {
+						  event.gc.setBackground( event.display.getSystemColor( SWT.COLOR_WHITE ) );
+						  event.gc.fillRectangle( event.x, event.y, event.width, event.height );
+						  Image image = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/refactoring_button.png").createImage();
+						  event.gc.drawImage( image, event.width/2-8, event.height/2-8 );
+					}
+				});
+
+			}
+		}
+
 		/**
 		 * Action on Refactoring Button
-		 * 
-		 * @author 손태영, 이주용 
+		 *
+		 * @author 손태영, 이주용
 		 */
 		public void pressRefactorButton(int index) {
 			ClassObjectCandidate targetClass = _smellingClassEntries[index];
-			
+
 			SGRefactorWizard wizard = new SGRefactorWizard(targetClass, _classObjectToBeExamined, identifyBadSmellsAction, activeProject);
-			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard); 
+			WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
 			dialog.open();
 		}
 	}
@@ -174,26 +266,26 @@ public class SpeculativeGenerality extends ViewPart {
 		public Object getParent(Object arg0) {
 			if(arg0 instanceof ClassObjectCandidate) {
 				ClassObjectCandidate target = (ClassObjectCandidate)arg0;
-				
+
 				for(int i=0; i<_smellingClassEntries.length; i++) {
 					if(_smellingClassEntries[i].getName().equals(target.getName())) {
 						return _smellingClassEntries[i];
 					}
 				}
 			}
-				
+
 			return null;
 		}
-				
+
 		public Object[] getChildren(Object arg) {
 			if(arg instanceof ClassObjectCandidate){
-				return ((ClassObjectCandidate) arg).getSmellingMethods().toArray(); 
+				return ((ClassObjectCandidate) arg).getSmellingMethods().toArray();
 			} else {
 				ClassObjectCandidate[] res = { };
-				return res; 
+				return res;
 			}
 		}
-		
+
 		public boolean hasChildren(Object arg0) {
 			return getChildren(arg0).length > 0;
 		}
@@ -233,7 +325,7 @@ public class SpeculativeGenerality extends ViewPart {
 			}
 			return "";
 		}
-		
+
 		public Image getColumnImage(Object obj, int index) {
 			Image image = null;
 			return image;
@@ -243,7 +335,7 @@ public class SpeculativeGenerality extends ViewPart {
 		}
 	}
 
-	
+
 	private ISelectionListener selectionListener = new ISelectionListener() {
 		public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
 			if (selection instanceof IStructuredSelection) {
@@ -353,13 +445,13 @@ public class SpeculativeGenerality extends ViewPart {
 		column4.setResizable(true);
 		column4.pack();
 		treeViewer.expandAll();
-		
+
 		treeViewer.setColumnProperties(new String[] {"type", "source", "variable", "block", "duplicationRatio", "rate"});
 		treeViewer.setCellEditors(new CellEditor[] {
 				new TextCellEditor(), new TextCellEditor(), new TextCellEditor(), new TextCellEditor(), new TextCellEditor(),
 				new MyComboBoxCellEditor(treeViewer.getTree(), new String[] {"0", "1", "2", "3", "4", "5"}, SWT.READ_ONLY)
 		});
-		
+
 		treeViewer.setCellModifier(new ICellModifier() {
 			public boolean canModify(Object element, String property) {
 				return property.equals("rate");
@@ -373,10 +465,10 @@ public class SpeculativeGenerality extends ViewPart {
 					else
 						return 0;
 				}
-				
+
 				if(element instanceof ClassObject) {
 				}
-				
+
 				return 0;
 			}
 
@@ -441,9 +533,9 @@ public class SpeculativeGenerality extends ViewPart {
 					}
 					treeViewer.update(data, null);
 				}
-				
+
 			}
-			
+
 		});
 		makeActions();
 		hookDoubleClickAction();
@@ -467,7 +559,7 @@ public class SpeculativeGenerality extends ViewPart {
 		IActionBars bars = getViewSite().getActionBars();
 		fillLocalToolBar(bars.getToolBarManager());
 	}
-	
+
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
 		//manager.add(applyRefactoringAction);
@@ -482,17 +574,17 @@ public class SpeculativeGenerality extends ViewPart {
 
 				setClassObjectToBeExamined();
 				setSmellingClassEntries( _classObjectToBeExamined );
-				
+
 				treeViewer.setContentProvider(new ViewContentProvider());
-				
+
 				//applyRefactoringAction.setEnabled(true);
 				//evolutionAnalysisAction.setEnabled(true);
-				
+
 				refactorButtonMaker.disposeButtons();
-				
+
 				Tree tree = treeViewer.getTree();
 				refactorButtonMaker.setTree(tree);
-				
+
 				refactorButtonMaker.makeRefactoringButtons(4);
 				tree.addListener(SWT.Expand, new Listener() {
 					public void handleEvent(Event e) {
@@ -521,7 +613,7 @@ public class SpeculativeGenerality extends ViewPart {
 		applyRefactoringAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 				getImageDescriptor(ISharedImages.IMG_DEF_VIEW));
 		applyRefactoringAction.setEnabled(false);
-		
+
 		doubleClickAction = new Action() {
 			public void run() {
 				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
@@ -558,7 +650,7 @@ public class SpeculativeGenerality extends ViewPart {
 					} catch (JavaModelException e) {
 						e.printStackTrace();
 					}
-						
+
 				}
 				else if(selection.getFirstElement() instanceof MethodObject) {
 		               MethodObject slice = (MethodObject)selection.getFirstElement();
@@ -593,7 +685,7 @@ public class SpeculativeGenerality extends ViewPart {
 		               } catch (JavaModelException e) {
 		                  e.printStackTrace();
 		               }
-		                  
+
 		            }
 			}
 		};
@@ -619,13 +711,12 @@ public class SpeculativeGenerality extends ViewPart {
 
 	/**
 	 * @author JaeYeop Lee, JuYong Lee
-	 * @return 
 	 */
 	public void setClassObjectToBeExamined() {
 		try {
 			IWorkbench wb = PlatformUI.getWorkbench();
 			IProgressService ps = wb.getProgressService();
-			
+
 			if(ASTReader.getSystemObject() != null && activeProject.equals(ASTReader.getExaminedProject())) {
 				new ASTReader(activeProject, ASTReader.getSystemObject(), null);
 			}
@@ -646,7 +737,7 @@ public class SpeculativeGenerality extends ViewPart {
 				});
 			}
 
-			
+
 			SystemObject systemObject = ASTReader.getSystemObject();
 			if(systemObject != null) {
 				Set<ClassObject> classObjectsToBeExamined = new HashSet<ClassObject>();
@@ -657,7 +748,7 @@ public class SpeculativeGenerality extends ViewPart {
 				else {
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
 				}
-				
+
 				// Duplicated Entry Deletion
 				this._classObjectToBeExamined = new HashSet<ClassObject>();
 				for (ClassObject co : classObjectsToBeExamined) {
@@ -668,11 +759,11 @@ public class SpeculativeGenerality extends ViewPart {
 							break;
 						}
 					}
-					
+
 					if(!flagExistence) {
 						this._classObjectToBeExamined.add(co);
 					}
-				}		
+				}
 			}
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
@@ -682,15 +773,15 @@ public class SpeculativeGenerality extends ViewPart {
 			MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), MESSAGE_DIALOG_TITLE,
 					"Compilation errors were detected in the project. Fix the errors before using JDeodorant.");
 		}
-		
 
-		return;	
+
+		return;
 	}
-	
+
 	public void setClassObjectToBeExamined(Set<ClassObject> arg) {
 		this._classObjectToBeExamined = arg;
 	}
-	
+
 	/**
 	 *  Get the class objects to be examined
 	 *  @return classObjectToBeExamined
@@ -698,7 +789,7 @@ public class SpeculativeGenerality extends ViewPart {
 	public Set<ClassObject> getClassObjectToBeExamined() {
 		return this._classObjectToBeExamined;
 	}
-	
+
 	/**
 	 *  Examine the class objects
 	 *  @author JaeYeop Lee, JuYong Lee
@@ -707,43 +798,43 @@ public class SpeculativeGenerality extends ViewPart {
 	 */
 	public void setSmellingClassEntries(final Set<ClassObject> classObjectsToBeExamined){
 		final List<ClassObjectCandidate> smellingClassObjectCandidates = new ArrayList<ClassObjectCandidate>();
-		
-		for(ClassObject targetClass : classObjectsToBeExamined) {	
+
+		for(ClassObject targetClass : classObjectsToBeExamined) {
 			// Abstract Class
 			if(targetClass.isAbstract()) {
 				ClassObjectCandidate target = new ClassObjectCandidate(targetClass);
-				
+
 				int childOfTargetNum = 0;
-				
+
 				for(ClassObject childCandidate : classObjectsToBeExamined) {
 					TypeObject superClass = childCandidate.getSuperclass();
 					if(superClass == null) {
 						continue;
 					}
-				
+
 					if(superClass.getClassType().equals(targetClass.getName())){
 						childOfTargetNum++;
 					}
 
-					
+
 					if(childOfTargetNum >= 2)
 						break;
 				}
-				
+
 				if(childOfTargetNum < 2) {
 					target.setNumChild(childOfTargetNum);
 					target.setCodeSmellType("Abstract Class");
-					target.setRefactorType("Merge Class");	
+					target.setRefactorType("Merge Class");
 					smellingClassObjectCandidates.add(target);
 				}
 			}
-			
+
 			// Interface Class
 			else if(targetClass.isInterface()) {
 				ClassObjectCandidate target = new ClassObjectCandidate(targetClass);
-				
+
 				int childOfTargetNum = 0;
-				
+
 				for(ClassObject childCandidate : classObjectsToBeExamined) {
 					ListIterator<TypeObject> myIter=childCandidate.getInterfaceIterator();
 					while(myIter.hasNext()) {
@@ -761,16 +852,16 @@ public class SpeculativeGenerality extends ViewPart {
 
 					target.setNumChild(childOfTargetNum);
 					target.setCodeSmellType("Interface Class");
-					target.setRefactorType("Merge Class");	
+					target.setRefactorType("Merge Class");
 					smellingClassObjectCandidates.add(target);
 				}
 			}
-			
+
 			// Unnecsary Parameter
 			if(!targetClass.isEnum() && !targetClass.isInterface() && !targetClass.isGeneratedByParserGenenator()) {
 				ClassObjectCandidate target = new ClassObjectCandidate(targetClass);
 				target.setCodeSmellType("Unnecessary Parameters");
-				
+
 				List<MethodObject> _methodList = target.getMethodList();
 				for(int i = 0; i < _methodList.size(); i++) {
 					MethodObject targetMethod = _methodList.get(i);
@@ -778,7 +869,7 @@ public class SpeculativeGenerality extends ViewPart {
 					targetMethod.setparentClass(target);
 					List<String> unusedPList = new ArrayList<String>();
 					int unusedPNum = 0;
-					
+
 					// GetStatements
 					String methodBodyStatements = null;
 					MethodBodyObject _methodBody = targetMethod.getMethodBody();
@@ -806,13 +897,13 @@ public class SpeculativeGenerality extends ViewPart {
 							}
 						}
 					}
-					
+
 					if(unusedPNum > 0) {
 						// Check Overriding
 						boolean flag_overriding = false;
 						for(ClassObject parentCandidate : this._classObjectToBeExamined) {
 							TypeObject superClass = targetClass.getSuperclass();
-														
+
 							if(superClass != null && targetClass.getSuperclass().getClassType().equals(parentCandidate.getName())) {
 								for( Iterator<MethodObject> itr = parentCandidate.getMethodIterator(); itr.hasNext(); )	{
 									MethodObject tmp = itr.next();
@@ -842,36 +933,36 @@ public class SpeculativeGenerality extends ViewPart {
 							targetMethod.setSmellLength(targetMethod.getMethodDeclaration().getLength());
 							target.addSmellingMethod(targetMethod);
 						}
-						
+
 					}
 				}
-				
+
 				if(target.getSmellingMethods().size() > 0) {
-					target.setRefactorType("Parameter Method");	
+					target.setRefactorType("Parameter Method");
 					smellingClassObjectCandidates.add(target);
 				}
 			}
 		}
-		
+
 		this._smellingClassEntries = new ClassObjectCandidate[smellingClassObjectCandidates.size()];
 		for(int i=0;i<smellingClassObjectCandidates.size();i++) {
 			this._smellingClassEntries[i]= smellingClassObjectCandidates.get(i);
 		}
-		
+
 		 return;
 	}
-	
+
 	/**
 	 *  Get the class objects
 	 *  @return smellingClassEntries
 	 */
 	public ClassObjectCandidate[] getSmellingClassEntries() {
 		return this._smellingClassEntries;
-	}	
-	
+	}
+
 	/**
 	TestClass * Check "content" contains "target"
-	 * 
+	 *
 	 * @author JuYong Lee
 	 * @param method
 	 * @param var
@@ -880,9 +971,9 @@ public class SpeculativeGenerality extends ViewPart {
 	public boolean checkContainance(String content, String target) {
 		String[] operator = { " ", "(", ")", "[", "]", ".",	"+", "-", "*", "/", "%",
 				"!", "~", "++", "--", "<<", ">>", ">>>", ">", "<", ">= ", "<=", "==", "!=",
-				"&", "^", "|", "&&", "||", "?", "=", "+=", "/=", "&=", "*=", "-=", 
-				"<<=", ">>=", ">>>=", "^=", "|=", "%=", ";"}; 
-		
+				"&", "^", "|", "&&", "||", "?", "=", "+=", "/=", "&=", "*=", "-=",
+				"<<=", ">>=", ">>>=", "^=", "|=", "%=", ";"};
+
 		for(int i = 0; i < operator.length; i++) {
 			for(int j = 0; j < operator.length; j++) {
 				if(content.contains(operator[i] + target + operator[j])) {
@@ -890,7 +981,7 @@ public class SpeculativeGenerality extends ViewPart {
 				}
 			}
 		}
-		 
+
 		return false;
 	}
 }

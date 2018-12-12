@@ -252,8 +252,8 @@ public class MergeClassRefactoring extends Refactoring {
 	}
 
     /**
+     * merge parent and child together for abstract, interface code smell
      * @author Taeyoung Son, JuYong Lee
-     * @param child the ClassObjectCandidate to merge with this ClassObjectCandidate
      */
 	public void mergeIntoChild(){
 		assert this.parentClass.getNumChild() == 1;
@@ -417,12 +417,20 @@ public class MergeClassRefactoring extends Refactoring {
 			this.parentRefactoredContentList.add("*/");
 		}
 	}
-	
+
+    /**
+     * @author Taeyoung Son
+     * process child and parents' refactoring
+     */
 	public void processRefactoring() {
 		processRefactoringParent();
 		processRefactoringChild();
 	}
-	
+
+    /**
+     * @author Taeyoung Son
+     * process parents' refactoring
+     */
 	public void processRefactoringParent() {
 		SystemObject systemObject = ASTReader.getSystemObject();
 		if (systemObject != null) {
@@ -443,7 +451,10 @@ public class MergeClassRefactoring extends Refactoring {
 			}
 		}
 	}
-
+/**
+     * @author Taeyoung Son
+     * process childs' refactoring
+     */
 	public void processRefactoringChild() {
 		SystemObject systemObject = ASTReader.getSystemObject();
 		if (systemObject != null) {
@@ -520,6 +531,10 @@ public class MergeClassRefactoring extends Refactoring {
 		return false;
 	}
 
+    /**
+     * @author Juyong Lee
+     * @return this class's name
+     */
 	@Override
 	public String getName() {
 		return this.getName();
@@ -542,10 +557,18 @@ public class MergeClassRefactoring extends Refactoring {
 		return null;
 	}
 
+    /**
+     * @author Juyong Lee
+     * @return the String form of child's original content
+     */
 	public String getOriginalContent() {
 		return this.childOriginalContent;
 	}
-	
+
+    /**
+     * @author Juyong Lee
+     * @return the String form of refactored content
+     */
 	public String getRefactoredContent() {
 		return this.childRefactoredContent;
 	}
