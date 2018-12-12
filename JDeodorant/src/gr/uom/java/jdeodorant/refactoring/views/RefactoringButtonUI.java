@@ -35,11 +35,11 @@ public class RefactoringButtonUI {
 		grandChildButtonList = new ArrayList<List<List<Button>>>();
 	}
 	
-	public List getButtonList() {
+	public ArrayList<Button> getButtonList() {
 		return buttonList;
 	}
 	
-	public List getChildrenButtonList() {
+	public ArrayList<List <Button>> getChildrenButtonList() {
 		return childButtonList;
 	}
 	
