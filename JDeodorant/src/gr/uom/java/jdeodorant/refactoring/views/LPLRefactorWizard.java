@@ -138,7 +138,7 @@ public class LPLRefactorWizard extends Wizard {
 			String tempVarInitializeCode) throws JavaModelException {
 		ICompilationUnit cu = convertedIMethod.getCompilationUnit();
 		ICompilationUnit workingCopy = createWorkingCopy(cu);
-		IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
+		IBuffer buffer = workingCopy.getBuffer();
 		LPLMethodObject.editParameterFromBuffer(buffer, convertedIMethod, initialPage.getParameterIndexList(), smellContent, tempVarInitializeCode);
 		finishEditingWorkingCopy(workingCopy);
 	}
@@ -147,7 +147,7 @@ public class LPLRefactorWizard extends Wizard {
 			List<String> parameterNames) throws JavaModelException {
 		ICompilationUnit cu = pf.createCompilationUnit(className + ".java", "", false, null);
 		ICompilationUnit workingCopy = createWorkingCopy(cu);
-		IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
+		IBuffer buffer = workingCopy.getBuffer();
 		LPLMethodObject.fillNewParameterClass(buffer, pf, className, parameterTypes, parameterNames);
 		finishEditingWorkingCopy(workingCopy);
 	}
@@ -158,7 +158,7 @@ public class LPLRefactorWizard extends Wizard {
 		workingCopy.discardWorkingCopy();
 	}
 
-	private ICompilationUnit createWorkingCopy(ICompilationUnit cu) throws JavaModelException {
+	private static ICompilationUnit createWorkingCopy(ICompilationUnit cu) throws JavaModelException {
 		ICompilationUnit workingCopy = cu
 				.getWorkingCopy(new WorkingCopyOwner() {
 				}, null);
@@ -239,7 +239,6 @@ public class LPLRefactorWizard extends Wizard {
 			}
 			return false;
 		} catch(Exception e) {
-			e.printStackTrace();
 		}
 		return false;
 	}
@@ -344,7 +343,6 @@ public class LPLRefactorWizard extends Wizard {
 			for(IMethod candidateMethod : foundMethods) {
 				if(hasExtractedParameters(candidateMethod, foundCu, parameterStringList)) {
 					SameLPLParametersWizard wizard = new SameLPLParametersWizard(candidateMethod);
-					//WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
 					MyCustomDialog dialog = new MyCustomDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
 					dialog.open();
 					if(wizard.getDoExtraction()) {
@@ -360,9 +358,9 @@ public class LPLRefactorWizard extends Wizard {
 	private static List<Integer> getExtractedParameterIndicesFrom(IMethod candidateMethod,
 			ArrayList<String> parameterStringList) {
 		try {
-			IMethod convertedIMethod = candidateMethod;
-			int startPosition = convertedIMethod.getSourceRange().getOffset();
-			ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit().getWorkingCopy(new WorkingCopyOwner() {}, null);
+			int startPosition = candidateMethod.getSourceRange().getOffset();
+			ICompilationUnit cu = candidateMethod.getCompilationUnit();
+			ICompilationUnit workingCopy = createWorkingCopy(cu);
 			IBuffer buffer = workingCopy.getBuffer();
 			
 			while (true) {
@@ -401,7 +399,6 @@ public class LPLRefactorWizard extends Wizard {
 			return parameterIndicesList;
 
 		} catch (Exception e) {
-				e.printStackTrace();
 				return new ArrayList<Integer>();
 		}
 	}
@@ -409,9 +406,9 @@ public class LPLRefactorWizard extends Wizard {
 	protected static void changeMethodDeclarationWithSameParameters(IMethod method, ArrayList<String> parameterList, 
 			LPLSmellContent smellContent, String tempVarInitializeCode) {
 		try {
-			IMethod convertedIMethod = method;
-			int startPosition = convertedIMethod.getSourceRange().getOffset();
-			ICompilationUnit workingCopy = convertedIMethod.getCompilationUnit().getWorkingCopy(new WorkingCopyOwner() {}, null);
+			int startPosition = method.getSourceRange().getOffset();
+			ICompilationUnit cu = method.getCompilationUnit();
+			ICompilationUnit workingCopy = createWorkingCopy(cu);
 			IBuffer buffer = workingCopy.getBuffer();
 			
 			while (true) {
@@ -467,13 +464,13 @@ public class LPLRefactorWizard extends Wizard {
 			
 			finishEditingWorkingCopy(workingCopy);
 		} catch (Exception e) {
-				e.printStackTrace();
 		}
 	}
 	
 	protected static boolean hasExtractedParameters(IMethod candidateMethod, ICompilationUnit foundCu, ArrayList<String> extractedParameters) {
 		try {
-			IBuffer buffer = ((IOpenable) foundCu).getBuffer();
+			ICompilationUnit workingCopy = createWorkingCopy(foundCu);
+			IBuffer buffer = workingCopy.getBuffer();
 			int startPosition = candidateMethod.getSourceRange().getOffset();
 			while (true) {
 				if (buffer.getChar(startPosition) != '(') {
@@ -506,10 +503,9 @@ public class LPLRefactorWizard extends Wizard {
 					return false;
 				}
 			}
-			foundCu.discardWorkingCopy();
+			finishEditingWorkingCopy(workingCopy);
 			return true;
 		} catch (Exception e) {
-				e.printStackTrace();
 		}
 		return false;
 	}
@@ -517,10 +513,8 @@ public class LPLRefactorWizard extends Wizard {
 
 	protected static void changeMethodCall(ICompilationUnit iCu, int startPosition, List<Integer> extractedParameterIndices, String newClassName) {
 		try {
-			ICompilationUnit workingCopy = iCu
-					.getWorkingCopy(new WorkingCopyOwner() {
-					}, null);
-			IBuffer buffer = ((IOpenable) workingCopy).getBuffer();
+			ICompilationUnit workingCopy = createWorkingCopy(iCu);
+			IBuffer buffer = workingCopy.getBuffer();
 			while (true) {
 				if (buffer.getChar(startPosition) != '(') {
 					startPosition += 1;
@@ -572,7 +566,6 @@ public class LPLRefactorWizard extends Wizard {
 			buffer.replace(startPosition, endPosition - startPosition + 1, replaceSignature);
 			
 			finishEditingWorkingCopy(workingCopy);
-			workingCopy.discardWorkingCopy();
 		} catch (Exception e) {
 		}
 	}
