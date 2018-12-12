@@ -65,6 +65,11 @@ public class LongParameterListTest {
 		bot.tree().getTreeItem("Java").expand().getNode("Package Explorer").doubleClick();
 	}
 
+	/**
+	 * this method initializes SWTBot, build demo project, and open package explorer
+	 * Also, this method set SWTBot keyboard layout for .typeText() method
+	 * @throws CoreException
+	 */
 	@BeforeClass
 	public static void initBot() throws CoreException {
 		bot = new SWTWorkbenchBot();
@@ -75,6 +80,10 @@ public class LongParameterListTest {
 		SWTBotPreferences.KEYBOARD_LAYOUT = "EN_US";
 	}
 
+	/**
+	 * this method deletes temporary project, and reset workbench for further testing
+	 * @throws CoreException
+	 */
 	@AfterClass
 	public static void afterClass() throws CoreException {
 		//bot.sleep(100000);
@@ -121,6 +130,12 @@ public class LongParameterListTest {
 		bot.shell("Refactoring").close();
 	}
 
+	/**
+	 * this test corresponds to 
+	 * 	1.Smells list Opening user story (iteration 1)
+	 * 	2.code smell select (iteration 2)
+	 * test if user can open Long Parameter List tab
+	 */
 	@Test
 	public void testOpenLPLTab() {
 		try {
@@ -133,6 +148,11 @@ public class LongParameterListTest {
 		}
 	}
 
+	/**
+	 * this test corresponds to 
+	 *	 1.Apply Detecting code-smell (iteration 2)
+	 * test if user can click a button to detect code smells
+	 */
 	@Test
 	public void testApplyingLPLDetection() {
 		try {
@@ -146,6 +166,12 @@ public class LongParameterListTest {
 		}
 	}
 
+	/**
+	 * this test corresponds to 
+	 * 	1.Detect Code Smell 4 : LPL user story(iteration 2)
+	 * 	2.Show code-smell Information 1 : Tab(iteration 2)
+	 * test if user can see detected code smells after clicking a detection button 
+	 */
 	@Test
 	public void testLPLRefactoringItemShownScenario() {
 		try {
@@ -153,7 +179,6 @@ public class LongParameterListTest {
 			openPackageExplorer();
 			selectTargetPackage();
 			applyDetection();
-			// bot.sleep(200000);
 			bot.viewByTitle("Long Parameter List").bot().tree().getTreeItem("Long Parameter List").getItems();
 		} catch (Exception e) {
 			fail("test fail with exception " + e);
@@ -162,6 +187,13 @@ public class LongParameterListTest {
 		}
 	}
 
+	/**
+	 * this test corresponds to
+	 * 	1. Show Detected code-smell 1 : Highlight (iteration 3)
+	 * 	2. Navigate to detected Code 1 : Tab Double Click (iteration 3)
+	 * test if user can doubleclick a detected code smell to open the corresponding text editor, 
+	 * and see the highlighted smell
+	 */
 	@Test
 	public void testSmellHighlight() {
 		openLPLTab();
@@ -174,6 +206,11 @@ public class LongParameterListTest {
 		SWTBotEclipseEditor eclipseEditor = editor.toTextEditor();
 	}
 
+	/**
+	 * this test corresponds to 
+	 * 	1. Progress refactor UI : LPL (iteration 3)
+	 * test if a user can click refactoring button to open the refactoring tab
+	 */
 	@Test
 	public void testOpenRefactoringPopUp() {
 		try {
@@ -192,9 +229,12 @@ public class LongParameterListTest {
 		}
 	}
 
-	@Test // assert that user cannot continue to the class name page without checking
-			// arguments
-	// to extract.
+	/**
+	 * this test corresponds to an exceptional case of 
+	 * 	1. Progress refactor UI : LPL (iteartion 3)
+	 * assert that user cannot continue to the class name page without checking any arguments to extract
+	 */
+	@Test
 	public void testRefactoringPopUpInitialPageExceptionScenario() {
 		try {
 			detectCodeSmellAndOpenRefactoringPopUp();
@@ -212,9 +252,12 @@ public class LongParameterListTest {
 		}
 	}
 
-	@Test // assert that user cannot continue to the package selection page without giving
-			// the
-	// new class name
+	/**
+	 * this test corresponds to an exceptional case of 
+	 * 	1. Progress refactor UI : LPL (iteration 3)
+	 * assert that user cannot continue to the package selection page without giving the new class name and parameter name
+	 */
+	@Test 
 	public void testRefactoringPopUpUIClassNamePageExceptionScenario() {
 		try {
 			detectCodeSmellAndOpenRefactoringPopUp();
@@ -235,6 +278,13 @@ public class LongParameterListTest {
 			}
 		}
 	}
+	
+	/**
+	 * this test corresponds to
+	 * 	1. Progress refactor UI : LPL (iteration 3)
+	 * 	2. Progress refactor 4 : LPL (iteration 4)
+	 * assert that user can finish refactoring successfully with refactoring tabs
+	 */
 	@Test
 	public void testLPLRefactoringSuccessScenario() {
 		try {
@@ -269,7 +319,6 @@ public class LongParameterListTest {
 					.getSource().equals(originalSource));
 			ICompilationUnit newCompilationUnit = javaProjectUpdated.getPackageFragments()[LPLPkgIndex]
 					.getCompilationUnit("TestClass.java");
-			//ICompilationUnit newCompilationUnit = findCompilationUnit(javaProjectUpdated, "TestClass.java");
 			assertTrue(newCompilationUnit != null);
 			List<IField> fields = new ArrayList<IField>();
 			for (IType type : newCompilationUnit.getTypes()) {
@@ -291,6 +340,12 @@ public class LongParameterListTest {
 		}
 	}
 	
+	/**
+	 * this test corresponds to
+	 * 	1. Progress refactor UI : LPL (iteration 3)
+	 * 	2. Progress refactor 4 : LPL (iteration 4)
+	 * test if a user can refactor multiple methods with the similar parameters together through a popup dialog
+	 */
 	@Test
 	public void testLPLRefactoringSameParameters() {
 		try {
@@ -384,7 +439,11 @@ public class LongParameterListTest {
 		}
 	}
 	
-
+	/**
+	 * this test corresponds to an exceptional case of 
+	 * 	1. Progress refactor UI : LPL (iteration 3)
+	 * assert that a warning is shown if a user tries to use a class name that does not start with a capital letter
+	 */
 	@Test
 	public void testClassNameWarning() {
 		try {
@@ -411,6 +470,12 @@ public class LongParameterListTest {
 		}
 	}
 
+	/**
+	 * this test corresponds to an exceptional case of 
+	 * 	1. Progress refactor UI : LPL (iteration 3)
+	 * assert that user cannot continue to the package selection page
+	 * if the name of the class that the user wants to create already exists
+	 */
 	@Test
 	public void testSameClassWarning() {
 		try {
@@ -439,6 +504,9 @@ public class LongParameterListTest {
 		}
 	}
 
+	/**
+	 * this method deletes the demo project for further testings
+	 */
 	public static void deleteTestProject() {
 		SWTBotView view = bot.viewByTitle("Project Explorer");
 		view.bot().tree().getTreeItem("testLPLProject").contextMenu("Delete").click();
