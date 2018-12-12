@@ -38,6 +38,11 @@ public class LPLRefactorInitialPage extends WizardPage {
     private ArrayList<String> extractParameterTypes;
     private IJavaProject javaProject;
 
+    /**
+     * Constructor for the parameter selection page
+     * @param methodToRefactor LPLMethodObject
+     * @param javaProject target project
+     */
     public LPLRefactorInitialPage(LPLMethodObject methodToRefactor, IJavaProject javaProject) {
         super("First Page");
         this.methodToRefactor = methodToRefactor;
@@ -49,9 +54,10 @@ public class LPLRefactorInitialPage extends WizardPage {
         parameterIndexList = new ArrayList<Integer>();
     }
 
-    //@Override
+    /**
+     * Creates the interface for the table
+     */
     public void createControl(Composite parent) {
-    	
     	container = new Composite(parent, SWT.NONE);
     	container.setLayout(new FillLayout());
     	
@@ -70,14 +76,13 @@ public class LPLRefactorInitialPage extends WizardPage {
 		ArrayList<String> parameterTypeList = new ArrayList<String>();
 		
 		try {
-			parameterTypeList = getSourceCodeParameterList(methodToRefactor.toIMethod(javaProject));
+			parameterTypeList = getSourceCodeTypeList(methodToRefactor.toIMethod(javaProject));
 		} catch (JavaModelException e) {
 			e.printStackTrace();
 		}
 		
 		for(int i = 0; i < methodToRefactor.getParameterTypeList().size(); i++) {
 			TableItem tableItem = new TableItem(table, SWT.NONE);
-			//tableItem.setText(1, methodToRefactor.getParameterTypeList().get(i).toString());
 			tableItem.setText(1, parameterTypeList.get(i));
 			tableItem.setText(2, methodToRefactor.getParameterNameList().get(i));
 		}
@@ -111,22 +116,36 @@ public class LPLRefactorInitialPage extends WizardPage {
         setPageComplete(false);
     }
     
-    public void handleEvent(Event event) {
-    }
-
-    public ArrayList getParameterIndexList() {
+    /**
+     * Get the indexes of the parameters the user checed 
+     * @return ArrayList of indexes
+     */
+     public ArrayList getParameterIndexList() {
         return parameterIndexList;
     }
     
+     /**
+      * Get the names of the parameters the user checked
+      * @return ArrayList of indexes
+      */
     public ArrayList getExtractParameterNames() {
     	return extractParameterNames;
     }
     
+    /**
+     * Get the types of the parameters the user checked
+     * @return ArrayList of types
+     */
     public ArrayList getExtractParameterTypes() {
     	return extractParameterTypes;
     }
     
-    public ArrayList getSourceCodeParameterList(IMethod method) {
+    /**
+     * Get the strings of the source code of the parameters the user checked
+     * For example ["int", "int", "String"]
+     * @return ArrayList of parameters in source code form
+     */
+    public static ArrayList<String> getSourceCodeTypeList(IMethod method) {
     	try {
 			IMethod convertedIMethod = method;
 			int startPosition = convertedIMethod.getSourceRange().getOffset();

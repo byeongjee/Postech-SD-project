@@ -36,6 +36,10 @@ public class SameLPLParametersAssertionPage extends WizardPage {
     private ArrayList<String> extractParameterTypes;
     private IMethod candidateMethod;
 
+    /**
+     * Constructor for wizardPage.
+     * @param candidateMethod
+     */
     public SameLPLParametersAssertionPage(IMethod candidateMethod) {
         super("Same Parameters Found");
         this.candidateMethod = candidateMethod;
@@ -46,6 +50,9 @@ public class SameLPLParametersAssertionPage extends WizardPage {
         parameterIndexList = new ArrayList<Integer>();
     }
 
+    /**
+     * Lists the parameters of the method found, and asks if user wants to refactor it.
+     */
     public void createControl(Composite parent) {
     	container = new Composite(parent, SWT.NONE);
     	container.setLayout(new FillLayout());
@@ -73,7 +80,7 @@ public class SameLPLParametersAssertionPage extends WizardPage {
         setPageComplete(true);
     }
     
-    public ArrayList<String> getSourceCodeParameterList(IMethod method) {
+   public ArrayList<String> getSourceCodeParameterList(IMethod method) {
     	try {
 			IMethod convertedIMethod = method;
 			int startPosition = convertedIMethod.getSourceRange().getOffset();
@@ -114,5 +121,4 @@ public class SameLPLParametersAssertionPage extends WizardPage {
 		}
     	return null;
     }
-
 }

@@ -81,11 +81,6 @@ public class TestLPLMethodObjectBasicFunctionality {
 	}
 
 	@Test
-	public void testCompareTo() {
-		assertTrue(mockLPLMethodObject1.compareTo(mockLPLMethodObject2) < 0);
-	}
-
-	@Test
 	public void testIsLongParameterListMethod() {
 		assertFalse(mockLPLMethodObject1.isLongParamterListMethod());
 		assertTrue(mockLPLMethodObject2.isLongParamterListMethod());

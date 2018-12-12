@@ -42,10 +42,18 @@ public class LPLRefactorWizard extends Wizard {
 	
 	public static class MyCustomDialog extends WizardDialog {
 
+		/**
+		 * Constructor for MyCustonDialog
+		 * @param parentShell
+		 * @param newWizard
+		 */
 		public MyCustomDialog(Shell parentShell, IWizard newWizard) {
 		    super(parentShell, newWizard);
 		}
 
+		/**
+		 * Sets the names of the original finish and cancel buttons to 'Yes' and 'No' buttons
+		 */
 		@Override
 		public void createButtonsForButtonBar(Composite parent){
 		    super.createButtonsForButtonBar(parent);
@@ -56,6 +64,11 @@ public class LPLRefactorWizard extends Wizard {
 		}
 	}
 	
+	/**
+	 * Constructor for LPLRefactorWizard.
+	 * @param javaProject the IJavaProject to refactor
+	 * @param methodToRefactor the LPLMethodObject of the method to refactor
+	 */
 	public LPLRefactorWizard(IJavaProject javaProject, LPLMethodObject methodToRefactor) {
 		super();
 		setNeedsProgressMonitor(true);
@@ -63,11 +76,17 @@ public class LPLRefactorWizard extends Wizard {
 		this.methodToRefactor = methodToRefactor;
 	}
 	
+	/**
+	 * Returns the title of the popup.
+	 */
 	@Override
 	public String getWindowTitle() {
 		return "Refactoring";
 	}
 	
+	/**
+	 * Add popup pages to the wizard. There are three pages in total
+	 */
 	@Override
 	public void addPages() {
 		initialPage = new LPLRefactorInitialPage(methodToRefactor, javaProject);
@@ -78,6 +97,10 @@ public class LPLRefactorWizard extends Wizard {
 		addPage(packagePage);
 	}
 	
+	/**
+	 * The function that is called when the popup is finished. It refactors the project based
+	 * on the input the user gave.
+	 */
 	@Override
 	public boolean performFinish() {
 		try {
@@ -140,6 +163,11 @@ public class LPLRefactorWizard extends Wizard {
 		return workingCopy;
 	}
 	
+	/**
+	 * Activates/Deactivates the finish button.
+	 * If the refactoring to be performed is invalid (ex: class already exists),
+	 * the finish button is turned off.
+	 */
 	@Override
 	public boolean canFinish() {
 		if(getContainer().getCurrentPage() == packagePage) {
@@ -204,7 +232,9 @@ public class LPLRefactorWizard extends Wizard {
 	/**
 	 * Changes all methods called in javaProject to matched the refactored method 
 	 * @param javaProject Project to search in
-	 * @param smellContent contains information for changing method
+	 * @param methodName the name of the method to search in project
+	 * @param extractedParameterIndices The index of the parameters to extract
+	 * @param className the name of the new class
 	 * @throws JavaModelException
 	 */
 	static public void changeMethodsInProject(IJavaProject javaProject, final String methodName, List<Integer> extractedParameterIndices, String newClassName) throws JavaModelException {

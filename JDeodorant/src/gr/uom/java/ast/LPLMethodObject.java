@@ -22,7 +22,14 @@ public class LPLMethodObject extends MethodObject {
 
 	static int NumParameterLimit = 3;
 	
-	
+	/**
+	 * Fills a IBuffer with a new class object declaration
+	 * @param buffer buffer to modify
+	 * @param pf IPackageFragment of the buffer
+	 * @param className name of new class
+	 * @param extractedParameterTypes list of the types of the extracted parameters
+	 * @param extractedParameterNames list of the names of the new parameters
+	 */
 	public static void fillNewParameterClass(IBuffer buffer, IPackageFragment pf, String className, List<String> extractedParameterTypes, List<String> extractedParameterNames) {
 		try {
 			assert(extractedParameterTypes.size() == extractedParameterNames.size());
@@ -117,6 +124,15 @@ public class LPLMethodObject extends MethodObject {
 		}
 	}
 	
+	/**
+	 * Extracts the parameters of the method, add new class to the parameter, and change method body
+	 * so that compilation errors are avoided.
+	 * @param buffer IBuffer to modify
+	 * @param method IMethod to modify
+	 * @param parameterToExtractIndexList index list of the parameters to extract
+	 * @param smellContent object containing information for refactoring such as new class name.
+	 * @param tempVarInitializeCode string to insert at beginning of method body. Usually some get statements.
+	 */
 	public static void editParameterFromBuffer(IBuffer buffer, IMethod method, List<Integer> parameterToExtractIndexList, 
 			LPLSmellContent smellContent, String tempVarInitializeCode) {
 		try {
@@ -176,6 +192,13 @@ public class LPLMethodObject extends MethodObject {
 		}
 	}
 	
+	/**
+	 * Returns a string to insert in the beginning of method body when refactoring.
+	 * @param extractedParameterTypes list of types of extracted parameters
+	 * @param extractedParameterNames list of names of extracted parameters
+	 * @param parameterObjName name of new parameter objects
+	 * @return
+	 */
 	public static String codeForInitializingTempVars(List<String> extractedParameterTypes, List<String> extractedParameterNames, String parameterObjName) {
 		StringBuilder codeBuilder = new  StringBuilder();
 		codeBuilder.append("\n");
@@ -203,20 +226,12 @@ public class LPLMethodObject extends MethodObject {
 		super(co);
 		codeSmellType = "Long Parameter List";
 	}
-	private int smell_start=10;
-	private int smell_length=15;
-    public Object[] getHighlightPositions() {
-       Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
-       Position position = new Position(smell_start, smell_length);
-      annotationMap.put(position, "LPL_SMELL");
-      return new Object[] {annotationMap};
-    }
-    public IFile getIFile()
-    {
-    	//TODO ::getIfile
-    	return null;
-    }
 
+	/**
+	 * Creates a new LPLMethodObject from an MethodObject
+	 * @param methodObject MethodObject to create from
+	 * @return
+	 */
 	public static LPLMethodObject createLPLMethodObjectFrom(MethodObject mo) {
 		LPLMethodObject returnObject = new LPLMethodObject(mo.constructorObject);
 		returnObject.returnType = mo.returnType;
@@ -230,6 +245,11 @@ public class LPLMethodObject extends MethodObject {
 		return returnObject;
 	}
 
+	/**
+	 * Get text of a specific column of a code smell in UI
+	 * @param index index of column
+	 * @return text in column
+	 */
 	public String getColumnText(int index) {
 		switch (index) {
 		case 0:
@@ -247,14 +267,20 @@ public class LPLMethodObject extends MethodObject {
 		}
 	}
 
-	public int compareTo(LPLMethodObject that) {
-		return this.getName().compareTo(that.getName());
-	}
-
+	/**
+	 * Check if this object has a long parameter
+	 * @return true if there are more parameters than the limit.
+	 */
 	public boolean isLongParamterListMethod() {
 		return getParameterList().size() > NumParameterLimit;
 	}
 
+	/**
+	 * Returns an IMethod corresponding to this LPLMethodObject
+	 * @param javaProject IJavaProject to search in
+	 * @return IMethod corresponding to this project, null if there is some error
+	 * @throws JavaModelException
+	 */
 	public IMethod toIMethod(IJavaProject javaProject) throws JavaModelException {
 		String classNameToParse = this.getClassName();
 		String[] fileWords = classNameToParse.split("\\.");
