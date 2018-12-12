@@ -31,6 +31,12 @@ public class LPLRefactorPreviewPage extends WizardPage {
     private String originalSource;
     private String refactoredSource;
     
+    /**
+     * Constructor
+     * @param classToRefactor
+     * @param origin
+     * @param refactor
+     */
     public LPLRefactorPreviewPage(LPLMethodObject classToRefactor, String origin, String refactor) {
         super("Preview Page");
         setTitle("Long Parameter List");
@@ -39,6 +45,9 @@ public class LPLRefactorPreviewPage extends WizardPage {
         refactoredSource = refactor;
     }
 
+    /**
+     * Set Original and Refactor String
+     */
     //@Override
     public void createControl(Composite parent) {
         container = new Composite(parent, SWT.NONE);

@@ -148,7 +148,6 @@ public class MessageChain extends ViewPart {
 	private IType selectedType;
 	private IMethod selectedMethod;
 	private ASTSliceGroup[] sliceGroupTable;
-	
 	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
 	
 	public MessageChainStructure[] targets;

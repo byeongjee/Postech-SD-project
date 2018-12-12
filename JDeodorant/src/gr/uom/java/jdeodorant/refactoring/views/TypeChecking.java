@@ -132,7 +132,6 @@ public class TypeChecking extends ViewPart {
 		
 		//To be implemented
 		public void pressChildRefactorButton(int parentIndex, int childIndex) {
-			System.out.println("CHIld");
 			refactorTypeCheckingSmell(parentIndex, childIndex);
 		}
 	}
@@ -479,7 +478,6 @@ public class TypeChecking extends ViewPart {
 			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex));
 		}
 		else {
-			System.out.println("CHild Called");
 			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex).getItem(childIndex));
 		}
 		

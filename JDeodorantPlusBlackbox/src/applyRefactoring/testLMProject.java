@@ -138,6 +138,11 @@ public class testLMProject {
     			"		List<String> str = new ArrayList<String> ();\r\n"+
     			"       str.add(\"HelloIt'sMe\");\r\n" + 
     			"       str.get(0).substring(0, 2).substring(6).length();\r\n" + 
+    			"		boolean cond = true;\n"+
+    			"		Integer nrOfIters = new Integer(1);\n"+
+    			"		if (6 > 1){\n"+
+    			"			nrOfIters = new Integer(4);\n"+
+    			"		}\n"+
     			"	}\r\n" +
     			"	public void test_message3(){\r\n" +
     			"		int a = test_message(11,22).method2().method3().method4();\r\n" +

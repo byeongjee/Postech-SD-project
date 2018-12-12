@@ -13,6 +13,11 @@ import org.eclipse.jface.wizard.Wizard;
 
 import gr.uom.java.ast.LPLMethodObject;
 
+/**
+ * Preview Wizard Page to open preview dialog
+ * @author Sukyung Oh
+ *
+ */
 public class MCPreviewWizard extends Wizard {
    private IJavaProject javaProject;
    private ICompilationUnit workingCompilationUnit;

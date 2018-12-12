@@ -894,8 +894,6 @@ public class LongMethod extends ViewPart {
 					System.out.println("In GetTable : classObjectsToBeExamined else");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
 				}
-				//각각의 단위별로 ClassObject를 받아오는 부분이다.
-				
 				
 				final List<ASTSliceGroup> extractedSliceGroups = new ArrayList<ASTSliceGroup>();
 

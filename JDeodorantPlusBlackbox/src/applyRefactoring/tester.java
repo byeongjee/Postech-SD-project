@@ -134,9 +134,9 @@ public class tester {
 		SWTBotView detectionApplier = bot.viewByTitle("Message Chain");
 		detectionApplier.show();
 		detectionApplier.getToolbarButtons().get(0).click();
-
+		
 		detectionApplier.bot().tree().getTreeItem("").expand();
-		assertTrue(detectionApplier.bot().button("Child").isVisible());
+		assertTrue(detectionApplier.bot().button("Child").isEnabled());
 		
 		testMCProject.deleteProject();
 	}
@@ -168,31 +168,11 @@ public class tester {
 		applyDetection();
 		
 		SWTBotView detectionView = bot.viewByTitle("Long Parameter List");
-		assertTrue(detectionView.bot().button("TEST").isVisible());
+		assertTrue(detectionView.bot().button("TEST").isEnabled());
 		
 		testLPLProject.deleteLPLProject();
 	}
 	
-	@Test
-	public void TC() throws CoreException {
-		testTCProject.buildProject();
-		
-		bot.menu("JDe5dorant").menu("Type Checking").click();
-		bot.viewByTitle("Type Checking");
-		
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-
-		SWTBotView detectionApplier = bot.viewByTitle("Type Checking");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-
-		detectionApplier.bot().tree().getTreeItem("").expand();
-		assertTrue(detectionApplier.bot().button("Child").isVisible());
-		
-		testTCProject.deleteProject();
-	}
 	
 	@Test
 	public void LM() throws CoreException {
@@ -204,55 +184,12 @@ public class tester {
 		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
 		packageExplorer.show();
 		packageExplorer.bot().tree().getTreeItem("testProject").click();
-
+		bot.sleep(1000);
 		SWTBotView detectionApplier = bot.viewByTitle("Long Method");
+		bot.sleep(1000);
 		detectionApplier.show();
+		bot.sleep(1000);
 		detectionApplier.getToolbarButtons().get(0).click();
-
-		detectionApplier.bot().tree().getTreeItem("").expand();
-		assertTrue(detectionApplier.bot().button("Child").isVisible());
-		
 		testLMProject.deleteProject();
-	}
-	
-	@Test
-	public void GC() throws CoreException {
-		testGCProject.buildProject();
-		
-		bot.menu("JDe5dorant").menu("God Class").click();
-		bot.viewByTitle("God Class");
-		
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-
-		SWTBotView detectionApplier = bot.viewByTitle("God Class");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-
-		detectionApplier.bot().tree().getTreeItem("").expand().getNode("").expand();
-		assertTrue(detectionApplier.bot().button("Child").isVisible());
-		
-		testGCProject.deleteProject();
-	}
-	
-	@Test
-	public void FE() throws CoreException {
-		testFEProject.buildProject();
-		
-		bot.menu("JDe5dorant").menu("Feature Envy").click();
-		bot.viewByTitle("Feature Envy");
-		
-		SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
-		packageExplorer.show();
-		packageExplorer.bot().tree().getTreeItem("testProject").click();
-
-		SWTBotView detectionApplier = bot.viewByTitle("Feature Envy");
-		detectionApplier.show();
-		detectionApplier.getToolbarButtons().get(0).click();
-
-		assertTrue(detectionApplier.bot().button("TEST").isVisible());
-		
-		testFEProject.deleteProject();
 	}
 }

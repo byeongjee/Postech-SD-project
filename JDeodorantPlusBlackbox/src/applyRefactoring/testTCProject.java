@@ -82,7 +82,7 @@ public class testTCProject {
     	
     	// Creating Package 
     	IPackageFragment _package = 
-    			javaProject.getPackageFragmentRoot(sourceFolder).createPackageFragment("MessageChain", false, null);
+    			javaProject.getPackageFragmentRoot(sourceFolder).createPackageFragment("TypeChecking", false, null);
     	StringBuffer source;
     	
     	// Generate Java Class : Simple
@@ -91,22 +91,14 @@ public class testTCProject {
     	String strSimple = "public class Simple {\r\n" + 
     							  	 "	public int a;\r\n" +
     							  	 "	public int b;\r\n" +
-    							  	 "  public Simple() {\r\n" +
-    							  	 "  	a = 0;\r\n"+
-    							  	 "      b = 1;\r\n"+
-    							  	 "  }\r\n"+
-    							  	 "  public void method1() {\r\n"+
-    							  	 "  	int c = 2;\r\n"+
-    							  	 "	}\r\n	"+
-    							  	 "  public Simple method2() {\r\n"+
-    							  	 "		a = 4;\r\n"+
-    							  	 "		return this;\r\n"+
-    							  	 "  }\r\n"+
-    							  	 "  public Simple method3() {\r\n"+
-    							  	 "		return this;\r\n"+
-    							  	 "  }\r\n"+
-    							  	 "  public int method4() {\r\n"+
-    							  	 "		return a;\r\n"+
+    							  	 "  public Object test(int type) {\r\n" +
+    							  	 "		switch (type){\n"+
+    							  	 "		case 1:\n"+
+    							  	 "			return 5;\n"+
+    							  	 "  	case 3:\n"+
+    							  	 "			return 2;\r\n"+
+    							  	 "		}\n"+
+    							  	 "		return null;\r\n"+
     							  	 "  }\r\n"+
     							  	 "}";
     	source.append(strSimple);
@@ -144,7 +136,7 @@ public class testTCProject {
     			"	}\r\n" + 
     			"}";
     	source.append(strSimple2);
-    	ICompilationUnit classOneChildAbstract = _package.createCompilationUnit("Simple2.java", source.toString(), false, null);
+    	//ICompilationUnit classOneChildAbstract = _package.createCompilationUnit("Simple2.java", source.toString(), false, null);
 		
     }
     
