@@ -400,8 +400,6 @@ public class LongParameterList extends ViewPart {
 
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
-		manager.add(applyRefactoringAction);
-		manager.add(saveResultsAction);
 	}
 
 	private void makeActions() {
