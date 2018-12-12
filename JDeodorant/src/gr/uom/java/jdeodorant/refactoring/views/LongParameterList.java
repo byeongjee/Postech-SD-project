@@ -511,6 +511,29 @@ public class LongParameterList extends ViewPart {
 		super.dispose();
 		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(selectionListener);
 	}
+	
+	public static ICompilationUnit findCompilationUnit(IJavaProject javaProject, String CompilationUnitName) {
+		try {
+			IPackageFragment[] allPkg = javaProject.getPackageFragments();
+			List<IPackageFragment> srcPkgs = new ArrayList<IPackageFragment>();
+			for(IPackageFragment myPackage : allPkg) {
+				if(myPackage.getKind() == IPackageFragmentRoot.K_SOURCE && myPackage.getCompilationUnits().length != 0) {
+					srcPkgs.add(myPackage);
+				}
+			}
+			
+			for(IPackageFragment srcPkg : srcPkgs) {
+				for(ICompilationUnit iCompUnit : srcPkg.getCompilationUnits()) {
+					if(iCompUnit.getElementName().equals(CompilationUnitName)) {
+						return iCompUnit;
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	private LPLMethodObject[] getTable() {
 		LPLMethodObject[] table = null;

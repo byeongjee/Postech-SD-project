@@ -54,6 +54,7 @@ import org.eclipse.jface.text.IDocument;
 import gr.uom.java.ast.decomposition.AbstractExpression;
 import gr.uom.java.ast.decomposition.MethodBodyObject;
 import gr.uom.java.ast.util.StatementExtractor;
+import gr.uom.java.jdeodorant.refactoring.views.LongParameterList;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -131,6 +132,9 @@ public class ASTReader {
 			systemObject.removeClasses(removedCompilationUnitFile);
 		}
 		for(ICompilationUnit changedCompilationUnit : changedCompilationUnits) {
+			if(LongParameterList.findCompilationUnit(iJavaProject, changedCompilationUnit.getElementName()) == null){
+				continue;
+			}
 			List<ClassObject> changedClassObjects = parseAST(changedCompilationUnit);
 			for(ClassObject changedClassObject : changedClassObjects) {
 				systemObject.replaceClass(changedClassObject);
@@ -139,6 +143,9 @@ public class ASTReader {
 				monitor.worked(1);
 		}
 		for(ICompilationUnit addedCompilationUnit : addedCompilationUnits) {
+			if(LongParameterList.findCompilationUnit(iJavaProject, addedCompilationUnit.getElementName()) == null){
+				continue;
+			}
 			List<ClassObject> addedClassObjects = parseAST(addedCompilationUnit);
 			for(ClassObject addedClassObject : addedClassObjects) {
 				systemObject.addClass(addedClassObject);

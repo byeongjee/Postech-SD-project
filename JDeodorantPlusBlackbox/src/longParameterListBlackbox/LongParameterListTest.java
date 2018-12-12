@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
@@ -39,6 +40,7 @@ import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.junit.runner.*;
 
 import static org.eclipse.swtbot.swt.finder.SWTBotAssert.assertVisible;
+import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.widgetOfType;
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -47,6 +49,7 @@ import static org.junit.Assert.fail;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
@@ -235,22 +238,20 @@ public class LongParameterListTest {
 	@Test
 	public void testLPLRefactoringSuccessScenario() {
 		try {
-			// testLPLProject.buildLPLProject();
 			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testLPLProject");
 			IJavaProject javaProject = JavaCore.create(project);
 			String originalSource = "";
 			int LPLPkgIndex = 0;
 			for (LPLPkgIndex = 0; LPLPkgIndex < javaProject.getPackageFragments().length; LPLPkgIndex++) {
-				if (javaProject.getPackageFragments()[LPLPkgIndex].getElementName() == "LongParameterList")
+				if (javaProject.getPackageFragments()[LPLPkgIndex].getElementName().equals("LongParameterList")) {
 					break;
+				}
 			}
-			LPLPkgIndex--;
-			originalSource = javaProject.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java")
-					.getSource();
+			originalSource = javaProject.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").getSource();
 			detectCodeSmellAndOpenRefactoringPopUp();
 			SWTBotShell refactoringWizard = bot.shell("Refactoring");
-			refactoringWizard.bot().table().getTableItem(0).check();
-			refactoringWizard.bot().table().getTableItem(1).check();
+			refactoringWizard.bot().table().getTableItem(2).check();
+			refactoringWizard.bot().table().getTableItem(3).check();
 			refactoringWizard.bot().button("Next >").click();
 			// now in class name page
 			refactoringWizard.bot().text(0).selectAll().typeText("TestClass");
@@ -268,6 +269,8 @@ public class LongParameterListTest {
 					.getSource().equals(originalSource));
 			ICompilationUnit newCompilationUnit = javaProjectUpdated.getPackageFragments()[LPLPkgIndex]
 					.getCompilationUnit("TestClass.java");
+			//ICompilationUnit newCompilationUnit = findCompilationUnit(javaProjectUpdated, "TestClass.java");
+			assertTrue(newCompilationUnit != null);
 			List<IField> fields = new ArrayList<IField>();
 			for (IType type : newCompilationUnit.getTypes()) {
 				for (IField field : type.getFields()) {
@@ -276,6 +279,7 @@ public class LongParameterListTest {
 			}
 			assertTrue(newCompilationUnit.exists() && fields.size() == 2);
 		} catch (Exception e) {
+			e.printStackTrace();
 			fail("fail with Exception " + e);
 		} finally {
 			try {
@@ -286,6 +290,100 @@ public class LongParameterListTest {
 			}
 		}
 	}
+	
+	@Test
+	public void testLPLRefactoringSameParameters() {
+		try {
+			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testLPLProject");
+			IJavaProject javaProject = JavaCore.create(project);
+			String originalSource = "";
+			int LPLPkgIndex = 0;
+			for (LPLPkgIndex = 0; LPLPkgIndex < javaProject.getPackageFragments().length; LPLPkgIndex++) {
+				if (javaProject.getPackageFragments()[LPLPkgIndex].getElementName().equals("LongParameterList")) {
+					break;
+				}
+			}
+			originalSource = javaProject.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").getSource();
+			detectCodeSmellAndOpenRefactoringPopUp();
+			SWTBotShell refactoringWizard = bot.shell("Refactoring");
+			refactoringWizard.bot().table().getTableItem(0).check();
+			refactoringWizard.bot().table().getTableItem(1).check();
+			refactoringWizard.bot().button("Next >").click();
+			// now in class name page
+			refactoringWizard.bot().text(0).selectAll().typeText("TestClass");
+			refactoringWizard.bot().text(1).selectAll().typeText("testParameter");
+			refactoringWizard.bot().button("Next >").click();
+			// now in package selection page
+			refactoringWizard.bot().table().getTableItem(0).check();
+			refactoringWizard.bot().button("Finish").click();
+			
+			for(int i = 0; i < 3; i++) {
+				SWTBotShell sameParametersWizard = bot.shell("Same parameters found");
+				if(i == 1)
+					sameParametersWizard.bot().button("No").click();
+				else
+					sameParametersWizard.bot().button("Yes").click();
+			}
+
+			IJavaProject javaProjectUpdated = JavaCore.create(project);
+
+			assertTrue(
+					javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java").exists());
+			assertFalse(javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java")
+					.getSource().equals(originalSource));
+			
+			int methodVisit = 0;
+			ICompilationUnit srcCompilationUnit = javaProjectUpdated.getPackageFragments()[LPLPkgIndex].getCompilationUnit("TestLPL.java");
+			for(IType iT : srcCompilationUnit.getTypes()) {
+				for(IMethod iM : iT.getMethods()) {
+					String methodName = iM.getElementName();
+					if(methodName.equals("getVal2")) {
+						assertTrue(iM.getParameterNames().length == 1);
+						assertTrue(iM.getParameterNames()[0].equals("testParameter"));
+						methodVisit++;
+					}
+					else if(methodName.equals("getVal3")) {
+						assertTrue(iM.getParameterNames().length == 3);
+						List parameterNameList = Arrays.asList(iM.getParameterNames());
+						assertTrue(parameterNameList.contains("x"));
+						assertTrue(parameterNameList.contains("y"));
+						assertTrue(parameterNameList.contains("z"));
+						methodVisit++;
+					}
+					else if(methodName.equals("getVal4")) {
+						assertTrue(iM.getParameterNames().length == 3);
+						List parameterNameList = Arrays.asList(iM.getParameterNames());
+						assertTrue(parameterNameList.contains("z"));
+						assertTrue(parameterNameList.contains("w"));
+						assertTrue(parameterNameList.contains("testParameter"));
+						methodVisit++;
+					}
+				}
+			}
+			assertTrue(methodVisit == 3);
+			ICompilationUnit newCompilationUnit = javaProjectUpdated.getPackageFragments()[LPLPkgIndex]
+					.getCompilationUnit("TestClass.java");
+			assertTrue(newCompilationUnit != null);
+			List<IField> fields = new ArrayList<IField>();
+			for (IType type : newCompilationUnit.getTypes()) {
+				for (IField field : type.getFields()) {
+					fields.add(field);
+				}
+			}
+			assertTrue(newCompilationUnit.exists() && fields.size() == 2);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("fail with Exception " + e);
+		} finally {
+			try {
+				closeLPLTab();
+				deleteTestProject();
+				testLPLProject.buildLPLProject();
+			} catch (Exception e) {
+			}
+		}
+	}
+	
 
 	@Test
 	public void testClassNameWarning() {
