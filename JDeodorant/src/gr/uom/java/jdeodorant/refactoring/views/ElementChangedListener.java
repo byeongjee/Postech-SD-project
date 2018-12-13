@@ -1,12 +1,12 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
-import gr.uom.java.ast.CompilationUnitCache;
-
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaElementDelta;
+
+import gr.uom.java.ast.CompilationUnitCache;
 
 public class ElementChangedListener implements IElementChangedListener {
 	private static ElementChangedListener instance;

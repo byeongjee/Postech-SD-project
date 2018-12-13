@@ -1,11 +1,20 @@
 package gr.uom.java.distance;
 
-import gr.uom.java.ast.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+
+import gr.uom.java.ast.ClassObject;
+import gr.uom.java.ast.FieldObject;
+import gr.uom.java.ast.MethodInvocationObject;
+import gr.uom.java.ast.MethodObject;
+import gr.uom.java.ast.SystemObject;
+import gr.uom.java.ast.TypeObject;
 import gr.uom.java.ast.association.Association;
 import gr.uom.java.ast.association.AssociationDetection;
 import gr.uom.java.ast.decomposition.MethodBodyObject;
-
-import java.util.*;
 
 public class MySystem {
 

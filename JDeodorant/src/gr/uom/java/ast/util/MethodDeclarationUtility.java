@@ -1,9 +1,5 @@
 package gr.uom.java.ast.util;
 
-import gr.uom.java.ast.decomposition.cfg.AbstractVariable;
-import gr.uom.java.ast.decomposition.cfg.CompositeVariable;
-import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +24,10 @@ import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.ThisExpression;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+
+import gr.uom.java.ast.decomposition.cfg.AbstractVariable;
+import gr.uom.java.ast.decomposition.cfg.CompositeVariable;
+import gr.uom.java.ast.decomposition.cfg.PlainVariable;
 
 public class MethodDeclarationUtility {
 

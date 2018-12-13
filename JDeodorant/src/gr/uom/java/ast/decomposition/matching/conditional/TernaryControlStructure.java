@@ -3,14 +3,14 @@ package gr.uom.java.ast.decomposition.matching.conditional;
 import java.util.ArrayList;
 import java.util.List;
 
-import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
-
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ConditionalExpression;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.Statement;
+
+import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
 
 public class TernaryControlStructure extends AbstractControlStructure
 {

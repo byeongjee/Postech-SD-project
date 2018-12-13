@@ -1,17 +1,17 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
-import gr.uom.java.ast.decomposition.cfg.mapping.CloneStructureNode;
-import gr.uom.java.ast.decomposition.cfg.mapping.PDGElseGap;
-import gr.uom.java.ast.decomposition.cfg.mapping.PDGElseMapping;
-import gr.uom.java.ast.decomposition.cfg.mapping.PDGNodeGap;
-import gr.uom.java.ast.decomposition.cfg.mapping.PDGNodeMapping;
-
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
+
+import gr.uom.java.ast.decomposition.cfg.mapping.CloneStructureNode;
+import gr.uom.java.ast.decomposition.cfg.mapping.PDGElseGap;
+import gr.uom.java.ast.decomposition.cfg.mapping.PDGElseMapping;
+import gr.uom.java.ast.decomposition.cfg.mapping.PDGNodeGap;
+import gr.uom.java.ast.decomposition.cfg.mapping.PDGNodeMapping;
 
 public class CloneDiffStyledLabelProvider extends StyledCellLabelProvider {
 	

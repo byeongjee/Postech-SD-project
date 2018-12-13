@@ -1,12 +1,12 @@
 package gr.uom.java.distance;
 
-import gr.uom.java.ast.util.TopicFinder;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+
+import gr.uom.java.ast.util.TopicFinder;
 
 public class ExtractedConcept implements Comparable<ExtractedConcept> {
 

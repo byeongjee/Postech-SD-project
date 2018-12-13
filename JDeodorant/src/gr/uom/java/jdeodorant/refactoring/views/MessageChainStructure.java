@@ -1,11 +1,10 @@
 package gr.uom.java.jdeodorant.refactoring.views;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jface.text.Position;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 public class MessageChainStructure {
 	private Integer startPos;
 	private MessageChainStructure parent;

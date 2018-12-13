@@ -1,14 +1,5 @@
 package gr.uom.java.ast.decomposition.cfg.mapping;
 
-import gr.uom.java.ast.decomposition.cfg.GraphEdge;
-import gr.uom.java.ast.decomposition.cfg.PDG;
-import gr.uom.java.ast.decomposition.cfg.PDGBlockNode;
-import gr.uom.java.ast.decomposition.cfg.PDGControlDependence;
-import gr.uom.java.ast.decomposition.cfg.PDGControlPredicateNode;
-import gr.uom.java.ast.decomposition.cfg.PDGDependence;
-import gr.uom.java.ast.decomposition.cfg.PDGMethodEntryNode;
-import gr.uom.java.ast.decomposition.cfg.PDGNode;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +8,15 @@ import java.util.TreeSet;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
+
+import gr.uom.java.ast.decomposition.cfg.GraphEdge;
+import gr.uom.java.ast.decomposition.cfg.PDG;
+import gr.uom.java.ast.decomposition.cfg.PDGBlockNode;
+import gr.uom.java.ast.decomposition.cfg.PDGControlDependence;
+import gr.uom.java.ast.decomposition.cfg.PDGControlPredicateNode;
+import gr.uom.java.ast.decomposition.cfg.PDGDependence;
+import gr.uom.java.ast.decomposition.cfg.PDGMethodEntryNode;
+import gr.uom.java.ast.decomposition.cfg.PDGNode;
 
 public class PDGSubTreeMapper extends DivideAndConquerMatcher {
 	

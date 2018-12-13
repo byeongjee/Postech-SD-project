@@ -4,13 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import gr.uom.java.ast.ASTReader;
-import gr.uom.java.ast.decomposition.cfg.mapping.CloneStructureNode;
-import gr.uom.java.ast.decomposition.cfg.mapping.DivideAndConquerMatcher;
-import gr.uom.java.ast.decomposition.cfg.mapping.VariableBindingPair;
-import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
-import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractCloneRefactoring;
-
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -43,6 +36,13 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Text;
+
+import gr.uom.java.ast.ASTReader;
+import gr.uom.java.ast.decomposition.cfg.mapping.CloneStructureNode;
+import gr.uom.java.ast.decomposition.cfg.mapping.DivideAndConquerMatcher;
+import gr.uom.java.ast.decomposition.cfg.mapping.VariableBindingPair;
+import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
+import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractCloneRefactoring;
 
 public class CloneDiffWizardPage extends UserInputWizardPage {
 

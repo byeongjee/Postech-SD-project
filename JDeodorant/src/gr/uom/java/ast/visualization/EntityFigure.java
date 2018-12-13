@@ -4,6 +4,7 @@ package gr.uom.java.ast.visualization;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.swt.graphics.Image;

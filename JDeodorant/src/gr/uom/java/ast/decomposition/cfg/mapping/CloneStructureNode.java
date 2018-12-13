@@ -1,16 +1,16 @@
 package gr.uom.java.ast.decomposition.cfg.mapping;
 
-import gr.uom.java.ast.decomposition.StatementType;
-import gr.uom.java.ast.decomposition.cfg.CFGBranchIfNode;
-import gr.uom.java.ast.decomposition.cfg.CFGThrowNode;
-import gr.uom.java.ast.decomposition.cfg.PDGExitNode;
-import gr.uom.java.ast.decomposition.cfg.PDGNode;
-
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.jdt.core.dom.IfStatement;
+
+import gr.uom.java.ast.decomposition.StatementType;
+import gr.uom.java.ast.decomposition.cfg.CFGBranchIfNode;
+import gr.uom.java.ast.decomposition.cfg.CFGThrowNode;
+import gr.uom.java.ast.decomposition.cfg.PDGExitNode;
+import gr.uom.java.ast.decomposition.cfg.PDGNode;
 
 public class CloneStructureNode implements Comparable<CloneStructureNode> {
 	private CloneStructureNode parent;

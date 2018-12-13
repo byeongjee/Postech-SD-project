@@ -1,5 +1,14 @@
 package gr.uom.java.ast.decomposition;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.eclipse.jdt.core.dom.Statement;
+
 import gr.uom.java.ast.AnonymousClassDeclarationObject;
 import gr.uom.java.ast.ArrayCreationObject;
 import gr.uom.java.ast.ClassInstanceCreationObject;
@@ -12,15 +21,6 @@ import gr.uom.java.ast.MethodInvocationObject;
 import gr.uom.java.ast.SuperFieldInstructionObject;
 import gr.uom.java.ast.SuperMethodInvocationObject;
 import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.eclipse.jdt.core.dom.Statement;
 
 /*
  * CompositeStatementObject represents the following AST Statement subclasses:

@@ -1,37 +1,20 @@
 package junittest.speculatviveGenerality;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.launching.IVMInstall;
-import org.eclipse.jdt.launching.JavaRuntime;
-import org.eclipse.jdt.launching.LibraryLocation;
 import org.junit.jupiter.api.Test;
 
-import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality;
-import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality.*;
 import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.ClassObjectCandidate;
 import gr.uom.java.ast.MethodObject;
+import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality;
+import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality.ViewContentProvider;
 
 public class SpeculativeGeneralityUnitTest {
 	SpeculativeGenerality _SG = new SpeculativeGenerality();

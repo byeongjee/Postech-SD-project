@@ -1,17 +1,5 @@
 package gr.uom.java.jdeodorant.refactoring.manipulators;
 
-import gr.uom.java.ast.ASTReader;
-import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-import gr.uom.java.ast.util.ExpressionExtractor;
-import gr.uom.java.ast.util.MethodDeclarationUtility;
-import gr.uom.java.ast.util.StatementExtractor;
-import gr.uom.java.ast.util.ThrownExceptionVisitor;
-import gr.uom.java.ast.util.TypeVisitor;
-import gr.uom.java.ast.util.math.AdjacencyList;
-import gr.uom.java.ast.util.math.Edge;
-import gr.uom.java.ast.util.math.Node;
-import gr.uom.java.ast.util.math.TarjanAlgorithm;
-
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,6 +91,18 @@ import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.TextEdit;
 import org.eclipse.text.edits.TextEditGroup;
+
+import gr.uom.java.ast.ASTReader;
+import gr.uom.java.ast.decomposition.cfg.PlainVariable;
+import gr.uom.java.ast.util.ExpressionExtractor;
+import gr.uom.java.ast.util.MethodDeclarationUtility;
+import gr.uom.java.ast.util.StatementExtractor;
+import gr.uom.java.ast.util.ThrownExceptionVisitor;
+import gr.uom.java.ast.util.TypeVisitor;
+import gr.uom.java.ast.util.math.AdjacencyList;
+import gr.uom.java.ast.util.math.Edge;
+import gr.uom.java.ast.util.math.Node;
+import gr.uom.java.ast.util.math.TarjanAlgorithm;
 
 @SuppressWarnings("restriction")
 public class ExtractClassRefactoring extends Refactoring {

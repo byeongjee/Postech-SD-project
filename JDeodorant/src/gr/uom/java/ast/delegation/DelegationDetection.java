@@ -1,12 +1,12 @@
 package gr.uom.java.ast.delegation;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
+
 import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.SystemObject;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.ListIterator;
 
 public class DelegationDetection {
     private List<DelegationPath> delegationPathList;

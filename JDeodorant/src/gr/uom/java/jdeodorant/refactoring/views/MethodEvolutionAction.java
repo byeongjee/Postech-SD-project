@@ -2,9 +2,6 @@ package gr.uom.java.jdeodorant.refactoring.views;
 
 import java.lang.reflect.InvocationTargetException;
 
-import gr.uom.java.history.MethodEvolution;
-import gr.uom.java.history.ProjectEvolution;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
@@ -18,6 +15,9 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.IProgressService;
+
+import gr.uom.java.history.MethodEvolution;
+import gr.uom.java.history.ProjectEvolution;
 
 public class MethodEvolutionAction implements IObjectActionDelegate {
 	private IWorkbenchPart part;

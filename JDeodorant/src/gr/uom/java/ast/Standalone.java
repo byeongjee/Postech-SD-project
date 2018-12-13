@@ -1,24 +1,5 @@
 package gr.uom.java.ast;
 
-import gr.uom.java.ast.decomposition.cfg.CFG;
-import gr.uom.java.ast.decomposition.cfg.PDG;
-import gr.uom.java.ast.decomposition.cfg.PDGObjectSliceUnion;
-import gr.uom.java.ast.decomposition.cfg.PDGObjectSliceUnionCollection;
-import gr.uom.java.ast.decomposition.cfg.PDGSliceUnion;
-import gr.uom.java.ast.decomposition.cfg.PDGSliceUnionCollection;
-import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-import gr.uom.java.ast.util.StatementExtractor;
-import gr.uom.java.distance.DistanceMatrix;
-import gr.uom.java.distance.ExtractClassCandidateRefactoring;
-import gr.uom.java.distance.ExtractClassCandidateGroup;
-import gr.uom.java.distance.MoveMethodCandidateRefactoring;
-import gr.uom.java.distance.MySystem;
-import gr.uom.java.jdeodorant.preferences.PreferenceConstants;
-import gr.uom.java.jdeodorant.refactoring.Activator;
-import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSlice;
-import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSliceGroup;
-import gr.uom.java.jdeodorant.refactoring.manipulators.TypeCheckEliminationGroup;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +13,25 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jface.preference.IPreferenceStore;
+
+import gr.uom.java.ast.decomposition.cfg.CFG;
+import gr.uom.java.ast.decomposition.cfg.PDG;
+import gr.uom.java.ast.decomposition.cfg.PDGObjectSliceUnion;
+import gr.uom.java.ast.decomposition.cfg.PDGObjectSliceUnionCollection;
+import gr.uom.java.ast.decomposition.cfg.PDGSliceUnion;
+import gr.uom.java.ast.decomposition.cfg.PDGSliceUnionCollection;
+import gr.uom.java.ast.decomposition.cfg.PlainVariable;
+import gr.uom.java.ast.util.StatementExtractor;
+import gr.uom.java.distance.DistanceMatrix;
+import gr.uom.java.distance.ExtractClassCandidateGroup;
+import gr.uom.java.distance.ExtractClassCandidateRefactoring;
+import gr.uom.java.distance.MoveMethodCandidateRefactoring;
+import gr.uom.java.distance.MySystem;
+import gr.uom.java.jdeodorant.preferences.PreferenceConstants;
+import gr.uom.java.jdeodorant.refactoring.Activator;
+import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSlice;
+import gr.uom.java.jdeodorant.refactoring.manipulators.ASTSliceGroup;
+import gr.uom.java.jdeodorant.refactoring.manipulators.TypeCheckEliminationGroup;
 
 public class Standalone {
 

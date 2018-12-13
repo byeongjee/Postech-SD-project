@@ -1,17 +1,12 @@
 package gr.uom.java.history;
 
-import gr.uom.java.ast.ASTReader;
-import gr.uom.java.ast.TypeCheckCodeFragmentAnalyzer;
-import gr.uom.java.ast.util.StatementExtractor;
-import gr.uom.java.jdeodorant.refactoring.manipulators.TypeCheckElimination;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -34,6 +29,11 @@ import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.SwitchStatement;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+
+import gr.uom.java.ast.ASTReader;
+import gr.uom.java.ast.TypeCheckCodeFragmentAnalyzer;
+import gr.uom.java.ast.util.StatementExtractor;
+import gr.uom.java.jdeodorant.refactoring.manipulators.TypeCheckElimination;
 
 public class TypeCheckingEvolution implements Evolution {
 	private Map<ProjectVersionPair, Double> typeCheckSimilarityMap;

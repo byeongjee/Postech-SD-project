@@ -1,12 +1,12 @@
 package gr.uom.java.ast.decomposition.matching.conditional;
 
-import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.Statement;
+
+import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
 
 public class IfControlCase extends AbstractControlCase
 {

@@ -1,9 +1,5 @@
 package gr.uom.java.history;
 
-import gr.uom.java.ast.ASTInformationGenerator;
-import gr.uom.java.ast.ASTReader;
-import gr.uom.java.ast.decomposition.MethodBodyObject;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +17,10 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+
+import gr.uom.java.ast.ASTInformationGenerator;
+import gr.uom.java.ast.ASTReader;
+import gr.uom.java.ast.decomposition.MethodBodyObject;
 
 public class MethodEvolution implements Evolution {
 	private Map<ProjectVersionPair, Double> methodSimilarityMap;

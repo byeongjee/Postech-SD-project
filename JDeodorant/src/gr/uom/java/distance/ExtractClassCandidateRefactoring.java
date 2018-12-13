@@ -1,11 +1,5 @@
 package gr.uom.java.distance;
 
-import gr.uom.java.ast.FieldObject;
-import gr.uom.java.ast.MethodObject;
-import gr.uom.java.ast.TypeObject;
-import gr.uom.java.ast.util.TopicFinder;
-import gr.uom.java.ast.visualization.GodClassVisualizationData;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -20,6 +14,12 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jface.text.Position;
+
+import gr.uom.java.ast.FieldObject;
+import gr.uom.java.ast.MethodObject;
+import gr.uom.java.ast.TypeObject;
+import gr.uom.java.ast.util.TopicFinder;
+import gr.uom.java.ast.visualization.GodClassVisualizationData;
 
 public class ExtractClassCandidateRefactoring extends CandidateRefactoring implements Comparable<ExtractClassCandidateRefactoring> {
 

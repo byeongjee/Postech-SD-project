@@ -1,16 +1,16 @@
 package gr.uom.java.ast.association;
 
-import gr.uom.java.ast.ClassObject;
-import gr.uom.java.ast.FieldInstructionObject;
-import gr.uom.java.ast.FieldObject;
-import gr.uom.java.ast.MethodObject;
-import gr.uom.java.ast.SystemObject;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+
+import gr.uom.java.ast.ClassObject;
+import gr.uom.java.ast.FieldInstructionObject;
+import gr.uom.java.ast.FieldObject;
+import gr.uom.java.ast.MethodObject;
+import gr.uom.java.ast.SystemObject;
 
 public class AssociationDetection {
 	private List<Association> associationList;

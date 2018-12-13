@@ -1,11 +1,14 @@
 package gr.uom.java.ast.delegation;
 
-import gr.uom.java.ast.*;
-
-import javax.swing.tree.DefaultMutableTreeNode;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.ArrayList;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+
+import gr.uom.java.ast.MethodInvocationObject;
+import gr.uom.java.ast.MethodObject;
+import gr.uom.java.ast.SystemObject;
 
 
 public class DelegationTree {

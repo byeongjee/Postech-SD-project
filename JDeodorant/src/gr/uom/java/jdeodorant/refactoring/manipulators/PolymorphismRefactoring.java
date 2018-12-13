@@ -1,8 +1,5 @@
 package gr.uom.java.jdeodorant.refactoring.manipulators;
 
-import gr.uom.java.ast.util.ExpressionExtractor;
-import gr.uom.java.ast.util.MethodDeclarationUtility;
-
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -55,6 +52,9 @@ import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.TextEdit;
 import org.eclipse.text.edits.TextEditGroup;
+
+import gr.uom.java.ast.util.ExpressionExtractor;
+import gr.uom.java.ast.util.MethodDeclarationUtility;
 
 public abstract class PolymorphismRefactoring extends Refactoring {
 	protected IFile sourceFile;

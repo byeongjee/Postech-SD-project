@@ -1,13 +1,5 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
-import gr.uom.java.jdeodorant.refactoring.manipulators.DeleteClassRefactoring;
-import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractClassRefactoring;
-import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractCloneRefactoring;
-import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
-import gr.uom.java.jdeodorant.refactoring.manipulators.MoveMethodRefactoring;
-import gr.uom.java.jdeodorant.refactoring.manipulators.ReplaceConditionalWithPolymorphism;
-import gr.uom.java.jdeodorant.refactoring.manipulators.ReplaceTypeCodeWithStateStrategy;
-
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -21,6 +13,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.PartInitException;
+
+import gr.uom.java.jdeodorant.refactoring.manipulators.DeleteClassRefactoring;
+import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractClassRefactoring;
+import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractCloneRefactoring;
+import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
+import gr.uom.java.jdeodorant.refactoring.manipulators.MoveMethodRefactoring;
+import gr.uom.java.jdeodorant.refactoring.manipulators.ReplaceConditionalWithPolymorphism;
+import gr.uom.java.jdeodorant.refactoring.manipulators.ReplaceTypeCodeWithStateStrategy;
 
 public class MyRefactoringWizard extends RefactoringWizard {
 	

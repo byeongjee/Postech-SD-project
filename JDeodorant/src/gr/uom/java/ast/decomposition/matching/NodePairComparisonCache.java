@@ -1,10 +1,10 @@
 package gr.uom.java.ast.decomposition.matching;
 
-import gr.uom.java.ast.decomposition.AbstractMethodFragment;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import gr.uom.java.ast.decomposition.AbstractMethodFragment;
 
 public class NodePairComparisonCache {
 	private static NodePairComparisonCache instance;

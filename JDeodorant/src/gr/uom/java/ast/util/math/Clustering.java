@@ -1,9 +1,9 @@
 package gr.uom.java.ast.util.math;
 
-import gr.uom.java.distance.Entity;
-
 import java.util.ArrayList;
 import java.util.HashSet;
+
+import gr.uom.java.distance.Entity;
 
 public abstract class Clustering {
 

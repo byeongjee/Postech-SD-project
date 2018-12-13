@@ -4,9 +4,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import gr.uom.java.ast.ASTReader;
-import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
-
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
@@ -21,6 +18,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+
+import gr.uom.java.ast.ASTReader;
+import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractMethodRefactoring;
 
 public class ExtractMethodInputPage extends UserInputWizardPage {
 	

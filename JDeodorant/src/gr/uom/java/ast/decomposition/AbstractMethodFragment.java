@@ -1,27 +1,5 @@
 package gr.uom.java.ast.decomposition;
 
-import gr.uom.java.ast.Access;
-import gr.uom.java.ast.AnonymousClassDeclarationObject;
-import gr.uom.java.ast.ArrayCreationObject;
-import gr.uom.java.ast.ClassInstanceCreationObject;
-import gr.uom.java.ast.ConstructorInvocationObject;
-import gr.uom.java.ast.ConstructorObject;
-import gr.uom.java.ast.CreationObject;
-import gr.uom.java.ast.FieldInstructionObject;
-import gr.uom.java.ast.FieldObject;
-import gr.uom.java.ast.LiteralObject;
-import gr.uom.java.ast.LocalVariableDeclarationObject;
-import gr.uom.java.ast.LocalVariableInstructionObject;
-import gr.uom.java.ast.MethodInvocationObject;
-import gr.uom.java.ast.MethodObject;
-import gr.uom.java.ast.ParameterObject;
-import gr.uom.java.ast.SuperFieldInstructionObject;
-import gr.uom.java.ast.SuperMethodInvocationObject;
-import gr.uom.java.ast.TypeObject;
-import gr.uom.java.ast.decomposition.cfg.AbstractVariable;
-import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-import gr.uom.java.ast.util.MethodDeclarationUtility;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -59,6 +37,28 @@ import org.eclipse.jdt.core.dom.ThrowStatement;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
+
+import gr.uom.java.ast.Access;
+import gr.uom.java.ast.AnonymousClassDeclarationObject;
+import gr.uom.java.ast.ArrayCreationObject;
+import gr.uom.java.ast.ClassInstanceCreationObject;
+import gr.uom.java.ast.ConstructorInvocationObject;
+import gr.uom.java.ast.ConstructorObject;
+import gr.uom.java.ast.CreationObject;
+import gr.uom.java.ast.FieldInstructionObject;
+import gr.uom.java.ast.FieldObject;
+import gr.uom.java.ast.LiteralObject;
+import gr.uom.java.ast.LocalVariableDeclarationObject;
+import gr.uom.java.ast.LocalVariableInstructionObject;
+import gr.uom.java.ast.MethodInvocationObject;
+import gr.uom.java.ast.MethodObject;
+import gr.uom.java.ast.ParameterObject;
+import gr.uom.java.ast.SuperFieldInstructionObject;
+import gr.uom.java.ast.SuperMethodInvocationObject;
+import gr.uom.java.ast.TypeObject;
+import gr.uom.java.ast.decomposition.cfg.AbstractVariable;
+import gr.uom.java.ast.decomposition.cfg.PlainVariable;
+import gr.uom.java.ast.util.MethodDeclarationUtility;
 
 public abstract class AbstractMethodFragment {
 	private AbstractMethodFragment parent;

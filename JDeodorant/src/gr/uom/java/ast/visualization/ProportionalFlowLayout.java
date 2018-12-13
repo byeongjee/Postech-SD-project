@@ -1,6 +1,7 @@
 package gr.uom.java.ast.visualization;
 
 import java.util.List;
+
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Dimension;

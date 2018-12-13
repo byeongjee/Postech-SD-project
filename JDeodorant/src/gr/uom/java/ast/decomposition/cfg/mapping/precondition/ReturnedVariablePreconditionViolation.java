@@ -1,10 +1,10 @@
 package gr.uom.java.ast.decomposition.cfg.mapping.precondition;
 
-import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-
 import java.util.Set;
 
 import org.eclipse.jface.viewers.StyledString;
+
+import gr.uom.java.ast.decomposition.cfg.PlainVariable;
 
 public class ReturnedVariablePreconditionViolation extends PreconditionViolation {
 	private Set<PlainVariable> returnedVariablesG1;

@@ -1,8 +1,8 @@
 package gr.uom.java.ast.decomposition.cfg.mapping.precondition;
 
-import gr.uom.java.ast.decomposition.AbstractStatement;
-
 import org.eclipse.jface.viewers.StyledString;
+
+import gr.uom.java.ast.decomposition.AbstractStatement;
 
 public class StatementPreconditionViolation extends PreconditionViolation {
 	private AbstractStatement statement;

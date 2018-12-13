@@ -1,14 +1,14 @@
 package gr.uom.java.ast.decomposition.cfg.mapping;
 
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 import gr.uom.java.ast.decomposition.AbstractMethodFragment;
 import gr.uom.java.ast.decomposition.matching.ASTNodeDifference;
 import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
 import gr.uom.java.ast.decomposition.matching.Difference;
 import gr.uom.java.ast.decomposition.matching.DifferenceType;
-
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 
 public class ControlDependenceTreeNodeMatchPair implements Comparable<ControlDependenceTreeNodeMatchPair> {
 	private ControlDependenceTreeNode node1;

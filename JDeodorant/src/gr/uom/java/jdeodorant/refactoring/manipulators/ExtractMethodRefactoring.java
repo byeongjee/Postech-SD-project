@@ -1,13 +1,5 @@
 package gr.uom.java.jdeodorant.refactoring.manipulators;
 
-import gr.uom.java.ast.decomposition.cfg.CFGBranchDoLoopNode;
-import gr.uom.java.ast.decomposition.cfg.CFGNode;
-import gr.uom.java.ast.decomposition.cfg.PDGControlPredicateNode;
-import gr.uom.java.ast.decomposition.cfg.PDGNode;
-import gr.uom.java.ast.decomposition.cfg.PDGTryNode;
-import gr.uom.java.ast.util.StatementExtractor;
-import gr.uom.java.ast.util.TypeVisitor;
-
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,6 +50,14 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.TextEdit;
 import org.eclipse.text.edits.TextEditGroup;
+
+import gr.uom.java.ast.decomposition.cfg.CFGBranchDoLoopNode;
+import gr.uom.java.ast.decomposition.cfg.CFGNode;
+import gr.uom.java.ast.decomposition.cfg.PDGControlPredicateNode;
+import gr.uom.java.ast.decomposition.cfg.PDGNode;
+import gr.uom.java.ast.decomposition.cfg.PDGTryNode;
+import gr.uom.java.ast.util.StatementExtractor;
+import gr.uom.java.ast.util.TypeVisitor;
 
 public class ExtractMethodRefactoring extends ExtractMethodFragmentRefactoring {
 	private ASTSlice slice;

@@ -1,7 +1,5 @@
 package gr.uom.java.ast.decomposition.matching.conditional;
 
-import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,8 +9,10 @@ import org.eclipse.jdt.core.dom.ContinueStatement;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.jdt.core.dom.SwitchStatement;
 import org.eclipse.jdt.core.dom.SwitchCase;
+import org.eclipse.jdt.core.dom.SwitchStatement;
+
+import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
 
 @SuppressWarnings("unchecked")
 public class SwitchControlStructure extends AbstractControlStructure

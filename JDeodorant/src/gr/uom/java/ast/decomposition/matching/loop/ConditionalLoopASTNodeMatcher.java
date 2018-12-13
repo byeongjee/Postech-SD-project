@@ -1,12 +1,5 @@
 package gr.uom.java.ast.decomposition.matching.loop;
 
-import gr.uom.java.ast.ASTInformationGenerator;
-import gr.uom.java.ast.decomposition.AbstractExpression;
-import gr.uom.java.ast.decomposition.matching.ASTNodeDifference;
-import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
-import gr.uom.java.ast.decomposition.matching.Difference;
-import gr.uom.java.ast.decomposition.matching.DifferenceType;
-
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Expression;
@@ -15,6 +8,13 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.SimpleName;
+
+import gr.uom.java.ast.ASTInformationGenerator;
+import gr.uom.java.ast.decomposition.AbstractExpression;
+import gr.uom.java.ast.decomposition.matching.ASTNodeDifference;
+import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
+import gr.uom.java.ast.decomposition.matching.Difference;
+import gr.uom.java.ast.decomposition.matching.DifferenceType;
 
 public class ConditionalLoopASTNodeMatcher extends ASTNodeMatcher {
 

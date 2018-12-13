@@ -4,20 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-import gr.uom.java.ast.visualization.DecorationConstants;
-import gr.uom.java.ast.visualization.GodClassInformationControlCreator;
-import gr.uom.java.ast.visualization.ICustomInformationControlCreator;
-import gr.uom.java.ast.visualization.IInformationProvider;
-import gr.uom.java.ast.visualization.FeatureEnviedMethodInformationControlCreator;
-import gr.uom.java.ast.visualization.InformationControlManager;
-import gr.uom.java.ast.visualization.SearchInputAction;
-import gr.uom.java.ast.visualization.ZoomInputAction;
-import gr.uom.java.ast.visualization.PackageMapDiagramInformationProvider;
-import gr.uom.java.ast.visualization.PackageMapDiagram;
-import gr.uom.java.ast.visualization.ZoomAction;
-import gr.uom.java.distance.CandidateRefactoring;
-import gr.uom.java.jdeodorant.refactoring.Activator;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.FigureCanvas;
@@ -51,6 +37,20 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.IProgressService;
+
+import gr.uom.java.ast.visualization.DecorationConstants;
+import gr.uom.java.ast.visualization.FeatureEnviedMethodInformationControlCreator;
+import gr.uom.java.ast.visualization.GodClassInformationControlCreator;
+import gr.uom.java.ast.visualization.ICustomInformationControlCreator;
+import gr.uom.java.ast.visualization.IInformationProvider;
+import gr.uom.java.ast.visualization.InformationControlManager;
+import gr.uom.java.ast.visualization.PackageMapDiagram;
+import gr.uom.java.ast.visualization.PackageMapDiagramInformationProvider;
+import gr.uom.java.ast.visualization.SearchInputAction;
+import gr.uom.java.ast.visualization.ZoomAction;
+import gr.uom.java.ast.visualization.ZoomInputAction;
+import gr.uom.java.distance.CandidateRefactoring;
+import gr.uom.java.jdeodorant.refactoring.Activator;
 
 public class CodeSmellPackageExplorer extends ViewPart {
 	public static final String ID = "gr.uom.java.jdeodorant.views.CodeSmellPackageExplorer";

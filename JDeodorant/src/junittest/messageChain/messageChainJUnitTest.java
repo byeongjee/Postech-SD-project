@@ -1,5 +1,13 @@
 package junittest.messageChain;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.InputStream;
+import java.io.Reader;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -43,13 +51,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.text.edits.TextEdit;
 import org.eclipse.text.edits.UndoEdit;
 import org.junit.Test;
-
-import java.io.InputStream;
-import java.io.Reader;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.SystemObject;

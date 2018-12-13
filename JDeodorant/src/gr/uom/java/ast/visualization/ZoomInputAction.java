@@ -1,14 +1,14 @@
 package gr.uom.java.ast.visualization;
-import gr.uom.java.jdeodorant.refactoring.views.ZoomValueValidator;
-
 import org.eclipse.draw2d.ScalableFreeformLayeredPane;
 import org.eclipse.draw2d.ScalableLayeredPane;
-import org.eclipse.jface.action.Action;  
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.window.Window;
-import org.eclipse.swt.widgets.Shell;  
-import org.eclipse.ui.PlatformUI;  
-import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;  
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
+
+import gr.uom.java.jdeodorant.refactoring.views.ZoomValueValidator;  
 
 public class ZoomInputAction extends Action implements IWorkbenchAction{  
 

@@ -1,11 +1,11 @@
 package gr.uom.java.distance;
 
-import gr.uom.java.ast.decomposition.AbstractStatement;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+
+import gr.uom.java.ast.decomposition.AbstractStatement;
 
 public class MyCompositeStatement extends MyAbstractStatement {
 	

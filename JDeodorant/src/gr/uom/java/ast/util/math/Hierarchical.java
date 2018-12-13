@@ -5,10 +5,10 @@ import static gr.uom.java.ast.util.math.DoubleArray.deleteRows;
 import static gr.uom.java.ast.util.math.DoubleArray.insertColumns;
 import static gr.uom.java.ast.util.math.DoubleArray.insertRows;
 
-import gr.uom.java.distance.Entity;
-
 import java.util.ArrayList;
 import java.util.HashSet;
+
+import gr.uom.java.distance.Entity;
 
 public class Hierarchical extends Clustering {
 	

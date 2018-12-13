@@ -1,14 +1,5 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
-import gr.uom.java.ast.visualization.FeatureEnvyDiagram;
-import gr.uom.java.ast.visualization.FeatureEnvyVisualizationData;
-import gr.uom.java.ast.visualization.GodClassDiagram2;
-import gr.uom.java.ast.visualization.GodClassVisualizationData;
-import gr.uom.java.ast.visualization.ZoomInputAction;
-import gr.uom.java.ast.visualization.VisualizationData;
-import gr.uom.java.ast.visualization.ZoomAction;
-import gr.uom.java.jdeodorant.refactoring.Activator;
-
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.FreeformViewport;
@@ -32,6 +23,15 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.part.ViewPart;
+
+import gr.uom.java.ast.visualization.FeatureEnvyDiagram;
+import gr.uom.java.ast.visualization.FeatureEnvyVisualizationData;
+import gr.uom.java.ast.visualization.GodClassDiagram2;
+import gr.uom.java.ast.visualization.GodClassVisualizationData;
+import gr.uom.java.ast.visualization.VisualizationData;
+import gr.uom.java.ast.visualization.ZoomAction;
+import gr.uom.java.ast.visualization.ZoomInputAction;
+import gr.uom.java.jdeodorant.refactoring.Activator;
 
 public class CodeSmellVisualization extends ViewPart {
 

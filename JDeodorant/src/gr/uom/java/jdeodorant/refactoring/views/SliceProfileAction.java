@@ -1,14 +1,5 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
-import gr.uom.java.ast.ASTReader;
-import gr.uom.java.ast.AbstractMethodDeclaration;
-import gr.uom.java.ast.ClassObject;
-import gr.uom.java.ast.CompilationErrorDetectedException;
-import gr.uom.java.ast.CompilationUnitCache;
-import gr.uom.java.ast.SystemObject;
-import gr.uom.java.ast.decomposition.cfg.CFG;
-import gr.uom.java.ast.decomposition.cfg.PDG;
-
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -27,6 +18,15 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.IProgressService;
+
+import gr.uom.java.ast.ASTReader;
+import gr.uom.java.ast.AbstractMethodDeclaration;
+import gr.uom.java.ast.ClassObject;
+import gr.uom.java.ast.CompilationErrorDetectedException;
+import gr.uom.java.ast.CompilationUnitCache;
+import gr.uom.java.ast.SystemObject;
+import gr.uom.java.ast.decomposition.cfg.CFG;
+import gr.uom.java.ast.decomposition.cfg.PDG;
 
 public class SliceProfileAction implements IObjectActionDelegate {
 

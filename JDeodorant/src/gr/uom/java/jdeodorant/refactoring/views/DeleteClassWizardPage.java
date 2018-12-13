@@ -4,8 +4,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import gr.uom.java.jdeodorant.refactoring.manipulators.DeleteClassRefactoring;
-
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -18,6 +16,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+
+import gr.uom.java.jdeodorant.refactoring.manipulators.DeleteClassRefactoring;
 
 public class DeleteClassWizardPage extends UserInputWizardPage {
 

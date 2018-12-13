@@ -1,7 +1,5 @@
 package gr.uom.java.ast.decomposition.matching.loop;
 
-import gr.uom.java.ast.util.ExpressionExtractor;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +34,8 @@ import org.eclipse.jdt.core.dom.TryStatement;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
+
+import gr.uom.java.ast.util.ExpressionExtractor;
 
 @SuppressWarnings("unchecked")
 public class ControlVariable extends AbstractControlVariable

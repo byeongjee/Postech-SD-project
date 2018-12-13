@@ -1,11 +1,11 @@
 package gr.uom.java.ast.decomposition.matching.conditional;
 
-import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
-
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Statement;
+
+import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
 
 public abstract class AbstractControlStructure
 {

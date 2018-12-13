@@ -2,12 +2,12 @@ package gr.uom.java.jdeodorant.refactoring.manipulators;
 
 import java.util.List;
 
-import gr.uom.java.ast.decomposition.cfg.mapping.DivideAndConquerMatcher;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.core.refactoring.RefactoringDescriptor;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
+
+import gr.uom.java.ast.decomposition.cfg.mapping.DivideAndConquerMatcher;
 
 public class ExtractCloneRefactoringDescriptor extends RefactoringDescriptor {
 

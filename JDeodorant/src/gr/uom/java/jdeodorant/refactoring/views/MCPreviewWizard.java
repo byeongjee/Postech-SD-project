@@ -1,17 +1,9 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
-import java.util.ArrayList;
-
-import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jface.wizard.Wizard;
-
-import gr.uom.java.ast.LPLMethodObject;
 
 /**
  * Preview Wizard Page to open preview dialog

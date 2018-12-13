@@ -1,11 +1,5 @@
 package gr.uom.java.jdeodorant.refactoring.manipulators;
 
-import gr.uom.java.ast.ASTReader;
-import gr.uom.java.ast.inheritance.InheritanceTree;
-import gr.uom.java.ast.util.ExpressionExtractor;
-import gr.uom.java.ast.util.StatementExtractor;
-import gr.uom.java.ast.util.TypeVisitor;
-
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,6 +66,12 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.TextEdit;
 import org.eclipse.text.edits.TextEditGroup;
+
+import gr.uom.java.ast.ASTReader;
+import gr.uom.java.ast.inheritance.InheritanceTree;
+import gr.uom.java.ast.util.ExpressionExtractor;
+import gr.uom.java.ast.util.StatementExtractor;
+import gr.uom.java.ast.util.TypeVisitor;
 
 public class ReplaceConditionalWithPolymorphism extends PolymorphismRefactoring {
 	private VariableDeclaration returnedVariable;

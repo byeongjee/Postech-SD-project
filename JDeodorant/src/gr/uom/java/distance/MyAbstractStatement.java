@@ -1,16 +1,16 @@
 package gr.uom.java.distance;
 
-import gr.uom.java.ast.ASTReader;
-import gr.uom.java.ast.FieldInstructionObject;
-import gr.uom.java.ast.MethodInvocationObject;
-import gr.uom.java.ast.SystemObject;
-import gr.uom.java.ast.decomposition.AbstractStatement;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+
+import gr.uom.java.ast.ASTReader;
+import gr.uom.java.ast.FieldInstructionObject;
+import gr.uom.java.ast.MethodInvocationObject;
+import gr.uom.java.ast.SystemObject;
+import gr.uom.java.ast.decomposition.AbstractStatement;
 
 public abstract class MyAbstractStatement {
 	

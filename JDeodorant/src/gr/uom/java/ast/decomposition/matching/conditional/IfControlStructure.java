@@ -3,13 +3,13 @@ package gr.uom.java.ast.decomposition.matching.conditional;
 import java.util.ArrayList;
 import java.util.List;
 
-import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
-
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.Statement;
+
+import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
 
 public class IfControlStructure extends AbstractControlStructure
 {

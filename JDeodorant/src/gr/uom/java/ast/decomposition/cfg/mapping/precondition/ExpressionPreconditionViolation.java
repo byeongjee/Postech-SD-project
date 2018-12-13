@@ -1,10 +1,10 @@
 package gr.uom.java.ast.decomposition.cfg.mapping.precondition;
 
-import gr.uom.java.ast.decomposition.AbstractExpression;
-import gr.uom.java.ast.decomposition.matching.ASTNodeDifference;
-
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jface.viewers.StyledString;
+
+import gr.uom.java.ast.decomposition.AbstractExpression;
+import gr.uom.java.ast.decomposition.matching.ASTNodeDifference;
 
 public class ExpressionPreconditionViolation extends PreconditionViolation {
 	private AbstractExpression expression;

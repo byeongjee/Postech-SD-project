@@ -1,8 +1,9 @@
 package gr.uom.java.ast.visualization;
 
-import gr.uom.java.jdeodorant.refactoring.views.CodeSmellPackageExplorer;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+
+import gr.uom.java.jdeodorant.refactoring.views.CodeSmellPackageExplorer;
 
 
 public class PackageMapDiagramInformationProvider implements IInformationProvider {

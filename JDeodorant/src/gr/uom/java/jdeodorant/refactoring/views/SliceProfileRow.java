@@ -1,10 +1,10 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
-import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+
+import gr.uom.java.ast.decomposition.cfg.PlainVariable;
 
 public class SliceProfileRow {
 

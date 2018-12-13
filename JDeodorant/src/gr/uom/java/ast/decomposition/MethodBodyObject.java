@@ -1,21 +1,5 @@
 package gr.uom.java.ast.decomposition;
 
-import gr.uom.java.ast.AnonymousClassDeclarationObject;
-import gr.uom.java.ast.ConstructorInvocationObject;
-import gr.uom.java.ast.CreationObject;
-import gr.uom.java.ast.FieldInstructionObject;
-import gr.uom.java.ast.LiteralObject;
-import gr.uom.java.ast.LocalVariableDeclarationObject;
-import gr.uom.java.ast.LocalVariableInstructionObject;
-import gr.uom.java.ast.MethodInvocationObject;
-import gr.uom.java.ast.SuperFieldInstructionObject;
-import gr.uom.java.ast.SuperMethodInvocationObject;
-import gr.uom.java.ast.decomposition.cfg.AbstractVariable;
-import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-import gr.uom.java.ast.util.ExpressionExtractor;
-import gr.uom.java.ast.util.StatementExtractor;
-import gr.uom.java.jdeodorant.refactoring.manipulators.TypeCheckElimination;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -50,6 +34,22 @@ import org.eclipse.jdt.core.dom.UnionType;
 import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
+
+import gr.uom.java.ast.AnonymousClassDeclarationObject;
+import gr.uom.java.ast.ConstructorInvocationObject;
+import gr.uom.java.ast.CreationObject;
+import gr.uom.java.ast.FieldInstructionObject;
+import gr.uom.java.ast.LiteralObject;
+import gr.uom.java.ast.LocalVariableDeclarationObject;
+import gr.uom.java.ast.LocalVariableInstructionObject;
+import gr.uom.java.ast.MethodInvocationObject;
+import gr.uom.java.ast.SuperFieldInstructionObject;
+import gr.uom.java.ast.SuperMethodInvocationObject;
+import gr.uom.java.ast.decomposition.cfg.AbstractVariable;
+import gr.uom.java.ast.decomposition.cfg.PlainVariable;
+import gr.uom.java.ast.util.ExpressionExtractor;
+import gr.uom.java.ast.util.StatementExtractor;
+import gr.uom.java.jdeodorant.refactoring.manipulators.TypeCheckElimination;
 
 public class MethodBodyObject {
 	
