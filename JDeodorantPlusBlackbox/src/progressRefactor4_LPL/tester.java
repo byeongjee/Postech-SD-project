@@ -219,6 +219,8 @@ public class tester {
 			refactoringWizard.bot().button("Next >").click();
 			// now in package selection page
 			refactoringWizard.bot().table().getTableItem(0).check();
+			refactoringWizard.bot().button("Next >").click();
+			refactoringWizard.bot().button("< Back").click();
 			refactoringWizard.bot().button("Finish").click();
 
 			IJavaProject javaProjectUpdated = JavaCore.create(project);

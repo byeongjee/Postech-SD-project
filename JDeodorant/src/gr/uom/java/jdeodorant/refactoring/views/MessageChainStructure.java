@@ -64,7 +64,7 @@ public class MessageChainStructure {
     public Object[] getHighlightPositions() {
         Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
         Position position = new Position(startPos, length);
-       annotationMap.put(position, "HELLO");
+       annotationMap.put(position, "Message Chain found!");
        return new Object[] {annotationMap};
        
      }

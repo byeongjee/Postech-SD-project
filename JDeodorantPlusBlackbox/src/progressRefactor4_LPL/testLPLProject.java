@@ -83,7 +83,8 @@ public class testLPLProject {
 	    				"	 			b = 2;\r\n" + 
 	    				"	 			c = 'a';\r\n" + 
 	    				"	 		}\r\n" + 
-	    				"	 		public int getVal1 (int x) {\r\n" + 
+	    				"	 		public int getVal1 (int x) {\r\n" +
+	    				"				getVal4(1, 1, 1, 1);\n"+
 	    				"	 			return a + x;\r\n" + 
 	    				"	 		}\r\n" + 
 	    				"	 		public int getVal2 (int x, int y) {\r\n" + 

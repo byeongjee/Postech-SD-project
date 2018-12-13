@@ -76,12 +76,6 @@ public class DeleteClassWizardPage extends UserInputWizardPage {
 		
 		delegateButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				Button source = (Button)event.getSource();
-				
-				/*if(source.getSelection())
-					refactoring.setLeaveDelegate(true);
-				else
-					refactoring.setLeaveDelegate(false);*/
 			}
 		});
 		

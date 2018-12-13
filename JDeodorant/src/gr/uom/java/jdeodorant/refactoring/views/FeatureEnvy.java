@@ -489,9 +489,7 @@ public class FeatureEnvy extends ViewPart {
 				candidateRefactoringTable = getTable();
 				tableViewer.setContentProvider(new ViewContentProvider());
 
-				//applyRefactoringAction.setEnabled(true);
 				saveResultsAction.setEnabled(true);
-				//evolutionAnalysisAction.setEnabled(true);
 				packageExplorerAction.setEnabled(true);
 				if(wasAlreadyOpen)
 					openPackageExplorerViewPart();
@@ -510,7 +508,6 @@ public class FeatureEnvy extends ViewPart {
 		};
 		ImageDescriptor refactoringButtonImage = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/search_button.png");
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
-		//identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		identifyBadSmellsAction.setImageDescriptor(refactoringButtonImage);
 		identifyBadSmellsAction.setEnabled(false);
 

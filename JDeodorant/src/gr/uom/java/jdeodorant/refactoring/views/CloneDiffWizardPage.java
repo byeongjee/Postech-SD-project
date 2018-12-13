@@ -71,10 +71,6 @@ public class CloneDiffWizardPage extends UserInputWizardPage {
 		Composite result= new Composite(parent, SWT.NONE);
 		setControl(result);
 		GridLayout gridLayout = new GridLayout(6, true);
-		//gridLayout.numColumns = 6;
-		//gridLayout.horizontalSpacing = 15;
-		//gridLayout.marginLeft = 15;
-		//gridLayout.marginRight = 15;
 		result.setLayout(gridLayout);
 	
 		Label methodLeftName = new Label(result, SWT.WRAP);
@@ -161,7 +157,6 @@ public class CloneDiffWizardPage extends UserInputWizardPage {
 		treeRightGridData.horizontalAlignment = SWT.FILL;
 		treeRightGridData.verticalAlignment = SWT.FILL;
 		treeRightGridData.horizontalSpan = 3;
-		//treeRightGridData.verticalSpan = 2;
 		treeViewerRight.getTree().setLayoutData(treeRightGridData);
 	
 		comboViewer.addSelectionChangedListener(new ISelectionChangedListener() {
