@@ -58,16 +58,7 @@ public class MessageChainStructure {
 		length = _length;
 		childList = new ArrayList<MessageChainStructure>();
 	}
-	
-	
-    public Object[] getHighlightPositions() {
-        Map<Position, String> annotationMap = new LinkedHashMap<Position, String>();
-        Position position = new Position(startPos, length);
-       annotationMap.put(position, "Message Chain found!");
-       return new Object[] {annotationMap};
-       
-     }
-	
+		
 	/**
 	 * Function for getting start position of detected code
 	 * **/
