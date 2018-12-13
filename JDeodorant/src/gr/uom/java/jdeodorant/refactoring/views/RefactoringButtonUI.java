@@ -60,13 +60,10 @@ public class RefactoringButtonUI {
 	}
 	
 	public void pressRefactorButton(int index) {
-		//System.out.println(index);
 		/**
 		 * Implement function to run when high level refactoring button is pressed
 		 */
 		
-		//Example : Print text of column 1 of pressed button
-		System.out.println(tree.getItem(index).getText(1));
 	}
 	
 	/**
@@ -75,15 +72,9 @@ public class RefactoringButtonUI {
 	 * @param childIndex index of child smell in parent smell
 	 */
 	public void pressChildRefactorButton(int parentIndex, int childIndex) {
-		System.out.println("Child refactor button pressed");
-		System.out.println("Parent index is " + parentIndex);
-		System.out.println("Child index is " + childIndex);
 	}
 	
 	public void pressGrandChildRefactorButton(int parentIndex, int childIndex, int grandchildIndex) {
-		System.out.println("Grand Child refactor button pressed");
-		System.out.println("Parent index is " + parentIndex);
-		System.out.println("Child index is " + childIndex);
 	}
 
 	

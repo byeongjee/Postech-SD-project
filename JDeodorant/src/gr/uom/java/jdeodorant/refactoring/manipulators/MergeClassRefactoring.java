@@ -283,13 +283,11 @@ public class MergeClassRefactoring extends Refactoring {
             List<String> newImportList = new ArrayList<String>();
             for(String s : myContent){
                 if(s.length() > 5 && s.substring(0,6).equals("import")){
-                	System.out.println(s);
                     newImportList.add(s);
                 }
             }
             for(String s : childContent){
                 if(s.length() > 5 && s.substring(0,6).equals("import")){
-                	System.out.println(s);
                     newImportList.add(s);
                 }
             }
@@ -300,7 +298,6 @@ public class MergeClassRefactoring extends Refactoring {
 			List<String> childMethodObjectList = stringMethodList(childClass);
 			for (String s : myMethodObjectList) {
 				if (childMethodObjectList.contains(s) || s.contains("abstract") || s.contains(dotParser(parentClass.getName()))) {
-					// overriden method
 					if (s.contains("abstract")) {
 						int index = s.indexOf("abstract");
 						String former = s.substring(0, index - 1);
@@ -329,17 +326,12 @@ public class MergeClassRefactoring extends Refactoring {
 						s = s.substring(0,sidx) + dotParser(childClass.getName()) + s.substring(fidx, s.length());
 
 					}
-					// System.out.println("overriden method... grabbing " + s);
 					for (String t : this.methodContentCreator(childContent, s)) {
-						// System.out.println(t);
 						newMethodList.add(t);
 					}
 					childMethodObjectList.remove(s);
 				} else {
-					// merge parent's
-					// System.out.println("parent's new method... grabbing " + s);
 					for (String t : this.methodContentCreator(myContent, s)) {
-						// System.out.println(t);
 						newMethodList.add(t);
 					}
 				}
@@ -348,16 +340,12 @@ public class MergeClassRefactoring extends Refactoring {
 				if (s.contains(dotParser(childClass.getName()))) {
 					continue;
 				} else if (!myMethodObjectList.contains(s)) {
-					// merge child's
-					// System.out.println("child's new method... grabbing " + s);
 					for (String t : this.methodContentCreator(childContent, s)) {
-						// System.out.println(t);
 						newMethodList.add(t);
 					}
 				}
 			}
 
-			// Refactor Child
 			this.childRefactoredContentList.add(childContent.get(0) + "\n");
             this.childRefactoredContentList.addAll(newImportList);
 			this.childRefactoredContentList.add("public class " + dotParser(childClass.getName()) + "{");
@@ -365,7 +353,6 @@ public class MergeClassRefactoring extends Refactoring {
 			this.childRefactoredContentList.addAll(newMethodList);
 			this.childRefactoredContentList.add("}");
 
-			// Refactor Parent
 			this.parentRefactoredContentList.add("/*");
 			for(String c : this.parentOriginalContentList) {
 				this.parentRefactoredContentList.add(c);
@@ -375,7 +362,6 @@ public class MergeClassRefactoring extends Refactoring {
 
 		// Interface Class with One Child
 		if(this.parentClass.isInterface()) {
-			// Find the Initial Part
 			String blank = " ";
 			String childName = dotParser(childClass.getName());
 			String parentName = dotParser(parentClass.getName());

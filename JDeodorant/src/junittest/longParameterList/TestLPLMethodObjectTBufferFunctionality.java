@@ -607,7 +607,6 @@ public class TestLPLMethodObjectTBufferFunctionality {
 			}
 
 			public String getElementName() {
-				// for test
 				return "testPackage";
 			}
 

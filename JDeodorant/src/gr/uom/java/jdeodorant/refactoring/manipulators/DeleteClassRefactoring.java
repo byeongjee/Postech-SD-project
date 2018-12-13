@@ -94,22 +94,6 @@ public class DeleteClassRefactoring extends Refactoring {
 		}
 		newContent += "\r\n*/";
 		this.refactoredContent = newContent;
-
-		/*		
- 		IFile _file = targetClass.getIFile();
-		ICompilationUnit sourceICompilationUnit = (ICompilationUnit) JavaCore.create(_file);
-		CompilationUnit _cu = null;
-		ASTRewrite sourceRewriter = null;
-		try {
-			_cu = sourceICompilationUnit.reconcile(ICompilationUnit.ENABLE_STATEMENTS_RECOVERY, true, null, null);
-			sourceRewriter = ASTRewrite.create( _cu.getAST() );
-		} catch (JavaModelException e1) {
-			e1.printStackTrace();
-		}
-		IDocument document = new Document("");
-		sourceRewriter.rewriteAST(document, null);
-		System.out.println( document.get() );
-		*/
 		
 		// Preview
 		try {

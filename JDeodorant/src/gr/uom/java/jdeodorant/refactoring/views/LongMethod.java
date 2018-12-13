@@ -130,8 +130,6 @@ public class LongMethod extends ViewPart {
 	private IType selectedType;
 	private IMethod selectedMethod;
 	private ASTSliceGroup[] sliceGroupTable;
-	//private MethodEvolution methodEvolution;
-	//private List<Button> buttonList = new ArrayList<Button>();
 	
 	private String PLUGIN_ID = "gr.uom.java.jdeodorant";
 	
@@ -141,7 +139,6 @@ public class LongMethod extends ViewPart {
 			refactorLongMethodSmell(index, -1);
 		}
 		
-		//To be implemented
 		public void pressChildRefactorButton(int parentIndex, int childIndex) {
 			refactorLongMethodSmell(parentIndex, childIndex);
 		}
@@ -191,12 +188,6 @@ public class LongMethod extends ViewPart {
 				switch(index){
 				case 0:
 					return "Extract Method";
-				/*case 1:
-					String declaringClass = entry.getSourceTypeDeclaration().resolveBinding().getQualifiedName();
-					String methodName = entry.getSourceMethodDeclaration().resolveBinding().toString();
-					return declaringClass + "::" + methodName;
-				case 2:
-					return entry.getLocalVariableCriterion().getName().getIdentifier();*/
 				case 3:
 					return "B" + entry.getBoundaryBlock().getId();
 				case 4:
@@ -259,7 +250,6 @@ public class LongMethod extends ViewPart {
 			else {
 				ASTSlice slice1 = (ASTSlice)obj1;
 				ASTSlice slice2 = (ASTSlice)obj2;
-				//slices belong to the same group
 				return Integer.valueOf(slice1.getBoundaryBlock().getId()).compareTo(Integer.valueOf(slice2.getBoundaryBlock().getId()));
 			}
 		}
@@ -495,10 +485,7 @@ public class LongMethod extends ViewPart {
 	
 	
 	private void refactorLongMethodSmell(int parentIndex, int childIndex) {
-		//IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
-		//Tree selectionTree = treeViewer.getTree();
 		if(childIndex == -1 && parentIndex == -1) {
-			//selectionTree.setSelection(selectionTree.getItem(parentIndex));
 			treeViewer.getTree().setSelection(treeViewer.getTree().getItem(parentIndex));
 		}
 		else {
@@ -508,7 +495,6 @@ public class LongMethod extends ViewPart {
 		if(selection != null && selection.getFirstElement() instanceof ASTSlice) {
 			ASTSlice slice = (ASTSlice)selection.getFirstElement();
 			TypeDeclaration sourceTypeDeclaration = slice.getSourceTypeDeclaration();
-			System.out.println(sourceTypeDeclaration.getName());
 			CompilationUnit sourceCompilationUnit = (CompilationUnit)sourceTypeDeclaration.getRoot();
 			IFile sourceFile = slice.getIFile();
 			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
@@ -594,10 +580,6 @@ public class LongMethod extends ViewPart {
 	
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(identifyBadSmellsAction);
-		//uncomment below line to make refactor button appear
-		//manager.add(applyRefactoringAction);
-	//	manager.add(saveResultsAction);
-		//manager.add(evolutionAnalysisAction);
 	}
 
 	private void makeActions() {
@@ -625,7 +607,6 @@ public class LongMethod extends ViewPart {
 		};
 		ImageDescriptor refactoringButtonImage = AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, "/icons/search_button.png");
 		identifyBadSmellsAction.setToolTipText("Identify Bad Smells");
-		//identifyBadSmellsAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		identifyBadSmellsAction.setImageDescriptor(refactoringButtonImage);
 		identifyBadSmellsAction.setEnabled(false);
 
@@ -640,52 +621,12 @@ public class LongMethod extends ViewPart {
 			getImageDescriptor(ISharedImages.IMG_ETOOL_SAVE_EDIT));
 		saveResultsAction.setEnabled(false);
 		
-		/*evolutionAnalysisAction = new Action() {
-			public void run() {
-				methodEvolution = null;
-				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
-				if(selection.getFirstElement() instanceof ASTSlice) {
-					final ASTSlice slice = (ASTSlice)selection.getFirstElement();
-					try {
-						IWorkbench wb = PlatformUI.getWorkbench();
-						IProgressService ps = wb.getProgressService();
-						ps.busyCursorWhile(new IRunnableWithProgress() {
-							public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-								ProjectEvolution projectEvolution = new ProjectEvolution(selectedProject);
-								if(projectEvolution.getProjectEntries().size() > 1) {
-									methodEvolution = new MethodEvolution(projectEvolution, (IMethod)slice.getSourceMethodDeclaration().resolveBinding().getJavaElement(), monitor);
-								}
-							}
-						});
-						if(methodEvolution != null) {
-							EvolutionDialog dialog = new EvolutionDialog(getSite().getWorkbenchWindow(), methodEvolution, "Method Evolution", false);
-							dialog.open();
-						}
-						else
-							MessageDialog.openInformation(getSite().getShell(), "Method Evolution",
-							"Method evolution analysis cannot be performed, since only a single version of the examined project is loaded in the workspace.");
-					} catch (InvocationTargetException e) {
-						e.printStackTrace();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		};
-		evolutionAnalysisAction.setToolTipText("Evolution Analysis");
-		evolutionAnalysisAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-			getImageDescriptor(ISharedImages.IMG_OBJ_ELEMENT));
-		evolutionAnalysisAction.setEnabled(false);*/
-		
 		applyRefactoringAction = new Action() {
 			public void run() {
-				//System.out.println(111);
 				 IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
-				// System.out.println(selection.toString());
 				if(selection != null && selection.getFirstElement() instanceof ASTSlice) {
 					ASTSlice slice = (ASTSlice)selection.getFirstElement();
 					TypeDeclaration sourceTypeDeclaration = slice.getSourceTypeDeclaration();
-					System.out.println(sourceTypeDeclaration.getName());
 					CompilationUnit sourceCompilationUnit = (CompilationUnit)sourceTypeDeclaration.getRoot();
 					IFile sourceFile = slice.getIFile();
 					IPreferenceStore store = Activator.getDefault().getPreferenceStore();
@@ -858,7 +799,7 @@ public class LongMethod extends ViewPart {
 						}
 					}
 				});
-			}//아마 UI 관련 코드로 예상된다. 대부분의 smell code가 동일하게 가지고 있음
+			}
 			
 			
 			final SystemObject systemObject = ASTReader.getSystemObject();
@@ -866,23 +807,18 @@ public class LongMethod extends ViewPart {
 				final Set<ClassObject> classObjectsToBeExamined = new LinkedHashSet<ClassObject>();
 				final Set<AbstractMethodDeclaration> methodObjectsToBeExamined = new LinkedHashSet<AbstractMethodDeclaration>();
 				if(selectedPackageFragmentRoot != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Prj");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragmentRoot));
 				}
 				else if(selectedPackageFragment != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Pac");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedPackageFragment));
 				}
 				else if(selectedCompilationUnit != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Compi");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedCompilationUnit));
 				}
 				else if(selectedType != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Type");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects(selectedType));
 				}
 				else if(selectedMethod != null) {
-					System.out.println("In GetTable : classObjectsToBeExamined Method");
 					AbstractMethodDeclaration methodObject = systemObject.getMethodObject(selectedMethod);
 					if(methodObject != null) {
 						ClassObject declaringClass = systemObject.getClassObject(methodObject.getClassName());
@@ -891,7 +827,6 @@ public class LongMethod extends ViewPart {
 					}
 				}
 				else {
-					System.out.println("In GetTable : classObjectsToBeExamined else");
 					classObjectsToBeExamined.addAll(systemObject.getClassObjects());
 				}
 				
@@ -1037,14 +972,6 @@ public class LongMethod extends ViewPart {
         	try {
         		BufferedWriter out = new BufferedWriter(new FileWriter(selected));
         		Tree tree = treeViewer.getTree();
-        		/*TreeColumn[] columns = tree.getColumns();
-        		for(int i=0; i<columns.length; i++) {
-        			if(i == columns.length-1)
-        				out.write(columns[i].getText());
-        			else
-        				out.write(columns[i].getText() + "\t");
-        		}
-        		out.newLine();*/
         		for(int i=0; i<tree.getItemCount(); i++) {
 					TreeItem treeItem = tree.getItem(i);
 					ASTSliceGroup group = (ASTSliceGroup)treeItem.getData();
