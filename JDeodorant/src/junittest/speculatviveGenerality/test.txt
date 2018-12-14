@@ -1,0 +1,10 @@
+package plugin_test;
+public interface NoChildInterface {
+	int NoChildInterface_Method(int input);
+}
+
+/*
+false
+*/
+
+// true
