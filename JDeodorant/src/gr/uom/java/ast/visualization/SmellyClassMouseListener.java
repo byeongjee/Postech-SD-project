@@ -1,12 +1,14 @@
 package gr.uom.java.ast.visualization;
 
-import gr.uom.java.distance.CandidateRefactoring;
-import gr.uom.java.distance.MoveMethodCandidateRefactoring;
 import java.util.List;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
+
+import gr.uom.java.distance.CandidateRefactoring;
+import gr.uom.java.distance.MoveMethodCandidateRefactoring;
 
 
 public class SmellyClassMouseListener implements MouseListener {

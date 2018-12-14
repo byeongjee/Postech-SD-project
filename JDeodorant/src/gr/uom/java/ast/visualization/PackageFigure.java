@@ -1,6 +1,7 @@
 package gr.uom.java.ast.visualization;
 
 import java.util.TreeSet;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.CompoundBorder;
 import org.eclipse.draw2d.Label;

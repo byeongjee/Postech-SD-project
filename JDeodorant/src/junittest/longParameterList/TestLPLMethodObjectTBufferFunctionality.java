@@ -1,6 +1,7 @@
 package junittest.longParameterList;
 
-import java.util.ArrayList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,19 +30,10 @@ import org.eclipse.jdt.core.ITypeParameter;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
-import org.junit.BeforeClass;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
-import gr.uom.java.ast.ConstructorObject;
+
 import gr.uom.java.ast.LPLMethodObject;
 import gr.uom.java.ast.LPLSmellContent;
-import gr.uom.java.ast.MethodObject;
-import gr.uom.java.ast.TypeObject;
-import gr.uom.java.jdeodorant.refactoring.views.LPLRefactorWizard;
-import gr.uom.java.jdeodorant.refactoring.views.LongParameterList;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class TestLPLMethodObjectTBufferFunctionality {
 

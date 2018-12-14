@@ -2,11 +2,11 @@ package gr.uom.java.ast.decomposition;
 
 import java.util.List;
 
+import org.eclipse.jdt.core.dom.Expression;
+
 import gr.uom.java.ast.ASTInformation;
 import gr.uom.java.ast.ASTInformationGenerator;
 import gr.uom.java.ast.util.ExpressionExtractor;
-
-import org.eclipse.jdt.core.dom.Expression;
 
 public class AbstractExpression extends AbstractMethodFragment {
 

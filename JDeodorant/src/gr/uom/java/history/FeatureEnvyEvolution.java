@@ -1,19 +1,11 @@
 package gr.uom.java.history;
 
-import gr.uom.java.ast.ASTInformationGenerator;
-import gr.uom.java.ast.ASTReader;
-import gr.uom.java.ast.MethodInvocationObject;
-import gr.uom.java.ast.decomposition.MethodBodyObject;
-import gr.uom.java.ast.decomposition.cfg.AbstractVariable;
-import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-import gr.uom.java.distance.MoveMethodCandidateRefactoring;
-
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -28,6 +20,14 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+
+import gr.uom.java.ast.ASTInformationGenerator;
+import gr.uom.java.ast.ASTReader;
+import gr.uom.java.ast.MethodInvocationObject;
+import gr.uom.java.ast.decomposition.MethodBodyObject;
+import gr.uom.java.ast.decomposition.cfg.AbstractVariable;
+import gr.uom.java.ast.decomposition.cfg.PlainVariable;
+import gr.uom.java.distance.MoveMethodCandidateRefactoring;
 
 public class FeatureEnvyEvolution implements Evolution {
 	private Map<ProjectVersionPair, Double> featureEnvySimilarityMap;

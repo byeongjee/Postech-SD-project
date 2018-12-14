@@ -1,7 +1,5 @@
 package gr.uom.java.ast.decomposition.matching;
 
-import gr.uom.java.ast.decomposition.AbstractExpression;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +17,8 @@ import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TryStatement;
 import org.eclipse.jdt.core.dom.Type;
+
+import gr.uom.java.ast.decomposition.AbstractExpression;
 
 public class ASTNodeDifference {
 	private AbstractExpression expression1;

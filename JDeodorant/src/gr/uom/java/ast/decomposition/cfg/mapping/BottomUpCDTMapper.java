@@ -1,8 +1,5 @@
 package gr.uom.java.ast.decomposition.cfg.mapping;
 
-import gr.uom.java.ast.decomposition.cfg.PDGMethodEntryNode;
-import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,6 +9,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.jdt.core.ICompilationUnit;
+
+import gr.uom.java.ast.decomposition.cfg.PDGMethodEntryNode;
+import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
 
 public class BottomUpCDTMapper {
 	private ICompilationUnit iCompilationUnit1;

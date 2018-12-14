@@ -1,7 +1,7 @@
 package gr.uom.java.ast.util.math;
 
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HumaniseCamelCase {
     //----------------------------------------------------------------------- Static Properties and Constants

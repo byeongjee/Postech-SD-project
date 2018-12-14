@@ -1,10 +1,11 @@
 package gr.uom.java.ast.inheritance;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeMap;
+
+import javax.swing.tree.DefaultMutableTreeNode;
 
 public class InheritanceTree {
     private DefaultMutableTreeNode rootNode;

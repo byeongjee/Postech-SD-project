@@ -1,7 +1,11 @@
 package gr.uom.java.ast.visualization;
 
 
-import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.CompoundBorder;
+import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.LineBorder;
+import org.eclipse.draw2d.MarginBorder;
+import org.eclipse.draw2d.ToolbarLayout;
 
 
 

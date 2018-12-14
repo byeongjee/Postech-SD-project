@@ -1,7 +1,5 @@
 package gr.uom.java.jdeodorant.refactoring.manipulators;
 
-import gr.uom.java.ast.inheritance.InheritanceTree;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -9,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.core.dom.SimpleName;
+
+import gr.uom.java.ast.inheritance.InheritanceTree;
 
 public class TypeCheckEliminationGroup implements Comparable<TypeCheckEliminationGroup> {
 	private List<TypeCheckElimination> candidates;

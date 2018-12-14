@@ -1,17 +1,23 @@
 package gr.uom.java.ast.visualization;
 
 
-import gr.uom.java.ast.FieldInstructionObject;
-import gr.uom.java.ast.MethodInvocationObject;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.eclipse.draw2d.*;
-import org.eclipse.draw2d.geometry.*;
+import org.eclipse.draw2d.ConnectionLayer;
+import org.eclipse.draw2d.FreeformLayer;
+import org.eclipse.draw2d.FreeformLayout;
+import org.eclipse.draw2d.Label;
+import org.eclipse.draw2d.ScalableFreeformLayeredPane;
+import org.eclipse.draw2d.SimpleRaisedBorder;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
+
+import gr.uom.java.ast.FieldInstructionObject;
+import gr.uom.java.ast.MethodInvocationObject;
 
 public class FeatureEnvyDiagram {
 

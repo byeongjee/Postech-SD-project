@@ -1,10 +1,10 @@
 package gr.uom.java.ast.delegation;
 
-import gr.uom.java.ast.MethodObject;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ListIterator;
+
+import gr.uom.java.ast.MethodObject;
 
 public class DelegationPath {
     private List<MethodObject> path;

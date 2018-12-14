@@ -1,10 +1,10 @@
 package gr.uom.java.ast.decomposition.cfg.mapping;
 
-import gr.uom.java.ast.decomposition.cfg.PDGNode;
-import gr.uom.java.ast.decomposition.matching.ASTNodeDifference;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import gr.uom.java.ast.decomposition.cfg.PDGNode;
+import gr.uom.java.ast.decomposition.matching.ASTNodeDifference;
 
 public class PDGElseGap extends IdBasedGap {
 	private volatile int hashCode = 0;

@@ -1,32 +1,5 @@
 package gr.uom.java.ast.decomposition.matching;
 
-import gr.uom.java.ast.ASTInformationGenerator;
-import gr.uom.java.ast.ASTReader;
-import gr.uom.java.ast.ClassObject;
-import gr.uom.java.ast.MethodObject;
-import gr.uom.java.ast.decomposition.AbstractExpression;
-import gr.uom.java.ast.decomposition.AbstractMethodFragment;
-import gr.uom.java.ast.decomposition.StatementObject;
-import gr.uom.java.ast.decomposition.StatementType;
-import gr.uom.java.ast.decomposition.cfg.PDGNode;
-import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-import gr.uom.java.ast.decomposition.matching.conditional.AbstractControlStructure;
-import gr.uom.java.ast.decomposition.matching.conditional.AbstractControlStructureUtilities;
-import gr.uom.java.ast.decomposition.matching.conditional.IfControlStructure;
-import gr.uom.java.ast.decomposition.matching.conditional.SwitchControlStructure;
-import gr.uom.java.ast.decomposition.matching.conditional.TernaryControlStructure;
-import gr.uom.java.ast.decomposition.matching.loop.AbstractControlVariable;
-import gr.uom.java.ast.decomposition.matching.loop.AbstractLoop;
-import gr.uom.java.ast.decomposition.matching.loop.AbstractLoopUtilities;
-import gr.uom.java.ast.decomposition.matching.loop.ConditionalLoop;
-import gr.uom.java.ast.decomposition.matching.loop.ConditionalLoopASTNodeMatcher;
-import gr.uom.java.ast.decomposition.matching.loop.ControlVariable;
-import gr.uom.java.ast.decomposition.matching.loop.EnhancedForLoop;
-import gr.uom.java.ast.inheritance.TypeBindingInheritanceDetection;
-import gr.uom.java.ast.util.ExpressionExtractor;
-import gr.uom.java.ast.util.MethodDeclarationUtility;
-import gr.uom.java.ast.util.math.LevenshteinDistance;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -87,6 +60,33 @@ import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
+
+import gr.uom.java.ast.ASTInformationGenerator;
+import gr.uom.java.ast.ASTReader;
+import gr.uom.java.ast.ClassObject;
+import gr.uom.java.ast.MethodObject;
+import gr.uom.java.ast.decomposition.AbstractExpression;
+import gr.uom.java.ast.decomposition.AbstractMethodFragment;
+import gr.uom.java.ast.decomposition.StatementObject;
+import gr.uom.java.ast.decomposition.StatementType;
+import gr.uom.java.ast.decomposition.cfg.PDGNode;
+import gr.uom.java.ast.decomposition.cfg.PlainVariable;
+import gr.uom.java.ast.decomposition.matching.conditional.AbstractControlStructure;
+import gr.uom.java.ast.decomposition.matching.conditional.AbstractControlStructureUtilities;
+import gr.uom.java.ast.decomposition.matching.conditional.IfControlStructure;
+import gr.uom.java.ast.decomposition.matching.conditional.SwitchControlStructure;
+import gr.uom.java.ast.decomposition.matching.conditional.TernaryControlStructure;
+import gr.uom.java.ast.decomposition.matching.loop.AbstractControlVariable;
+import gr.uom.java.ast.decomposition.matching.loop.AbstractLoop;
+import gr.uom.java.ast.decomposition.matching.loop.AbstractLoopUtilities;
+import gr.uom.java.ast.decomposition.matching.loop.ConditionalLoop;
+import gr.uom.java.ast.decomposition.matching.loop.ConditionalLoopASTNodeMatcher;
+import gr.uom.java.ast.decomposition.matching.loop.ControlVariable;
+import gr.uom.java.ast.decomposition.matching.loop.EnhancedForLoop;
+import gr.uom.java.ast.inheritance.TypeBindingInheritanceDetection;
+import gr.uom.java.ast.util.ExpressionExtractor;
+import gr.uom.java.ast.util.MethodDeclarationUtility;
+import gr.uom.java.ast.util.math.LevenshteinDistance;
 
 public class ASTNodeMatcher extends ASTMatcher{
 

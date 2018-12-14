@@ -23,12 +23,9 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ltk.core.refactoring.Refactoring;
-import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 
 import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.ClassObjectCandidate;
-import gr.uom.java.ast.LPLMethodObject;
-import gr.uom.java.ast.LPLSmellContent;
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.TypeObject;
 import gr.uom.java.jdeodorant.refactoring.manipulators.DeleteClassRefactoring;

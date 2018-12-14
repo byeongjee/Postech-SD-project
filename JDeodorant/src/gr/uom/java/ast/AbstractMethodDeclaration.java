@@ -7,11 +7,11 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+
 import gr.uom.java.ast.decomposition.MethodBodyObject;
 import gr.uom.java.ast.decomposition.cfg.AbstractVariable;
 import gr.uom.java.ast.decomposition.cfg.PlainVariable;
-
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 public interface AbstractMethodDeclaration {
 

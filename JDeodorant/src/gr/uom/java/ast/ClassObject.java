@@ -1,10 +1,7 @@
 package gr.uom.java.ast;
 
-import gr.uom.java.ast.decomposition.MethodBodyObject;
-import gr.uom.java.jdeodorant.refactoring.manipulators.TypeCheckElimination;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ListIterator;
 
 import org.eclipse.core.resources.IFile;
@@ -12,6 +9,9 @@ import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+
+import gr.uom.java.ast.decomposition.MethodBodyObject;
+import gr.uom.java.jdeodorant.refactoring.manipulators.TypeCheckElimination;
 
 public class ClassObject extends ClassDeclarationObject {
 	protected List<ConstructorObject> constructorList;

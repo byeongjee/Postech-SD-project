@@ -8,17 +8,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.TreeSet;
 
-import gr.uom.java.ast.ASTReader;
-import gr.uom.java.ast.AbstractMethodDeclaration;
-import gr.uom.java.ast.ClassDeclarationObject;
-import gr.uom.java.ast.CompilationUnitCache;
-import gr.uom.java.ast.SystemObject;
-import gr.uom.java.ast.decomposition.cfg.CFG;
-import gr.uom.java.ast.decomposition.cfg.PDG;
-import gr.uom.java.ast.decomposition.cfg.PDGMethodEntryNode;
-import gr.uom.java.ast.decomposition.cfg.PDGNode;
-import gr.uom.java.ast.decomposition.matching.NodePairComparisonCache;
-
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -49,6 +38,16 @@ import ca.concordia.jdeodorant.clone.parsers.CloneInstance;
 import ca.concordia.jdeodorant.clone.parsers.JavaModelUtility;
 import ca.concordia.jdeodorant.clone.parsers.TextDiff;
 import ca.concordia.jdeodorant.clone.parsers.TextDiff.Diff;
+import gr.uom.java.ast.ASTReader;
+import gr.uom.java.ast.AbstractMethodDeclaration;
+import gr.uom.java.ast.ClassDeclarationObject;
+import gr.uom.java.ast.CompilationUnitCache;
+import gr.uom.java.ast.SystemObject;
+import gr.uom.java.ast.decomposition.cfg.CFG;
+import gr.uom.java.ast.decomposition.cfg.PDG;
+import gr.uom.java.ast.decomposition.cfg.PDGMethodEntryNode;
+import gr.uom.java.ast.decomposition.cfg.PDGNode;
+import gr.uom.java.ast.decomposition.matching.NodePairComparisonCache;
 
 @SuppressWarnings("restriction")
 public class CloneInstanceMapper {

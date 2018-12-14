@@ -1,7 +1,5 @@
 package gr.uom.java.ast.decomposition.matching.conditional;
 
-import gr.uom.java.ast.util.ExpressionExtractor;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +15,8 @@ import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.Statement;
+
+import gr.uom.java.ast.util.ExpressionExtractor;
 
 @SuppressWarnings("unchecked")
 public class AbstractControlStructureUtilities

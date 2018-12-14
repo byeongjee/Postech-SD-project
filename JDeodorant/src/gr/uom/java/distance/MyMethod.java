@@ -1,9 +1,13 @@
 package gr.uom.java.distance;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
+
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.decomposition.AbstractStatement;
-
-import java.util.*;
 
 public class MyMethod extends Entity {
 

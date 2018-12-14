@@ -1,7 +1,5 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
-import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractClassRefactoring;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,6 +21,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+
+import gr.uom.java.jdeodorant.refactoring.manipulators.ExtractClassRefactoring;
 
 public class ExtractClassInputPage extends UserInputWizardPage {
 	

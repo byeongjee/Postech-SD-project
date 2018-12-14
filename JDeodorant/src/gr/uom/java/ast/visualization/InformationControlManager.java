@@ -1,6 +1,7 @@
 package gr.uom.java.ast.visualization;
 
 import java.util.List;
+
 import org.eclipse.jface.text.AbstractInformationControlManager;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;

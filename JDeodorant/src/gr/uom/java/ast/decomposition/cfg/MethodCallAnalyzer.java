@@ -1,27 +1,5 @@
 package gr.uom.java.ast.decomposition.cfg;
 
-import gr.uom.java.ast.ASTInformationGenerator;
-import gr.uom.java.ast.ASTReader;
-import gr.uom.java.ast.AbstractMethodDeclaration;
-import gr.uom.java.ast.ClassObject;
-import gr.uom.java.ast.CompilationUnitCache;
-import gr.uom.java.ast.ConstructorInvocationObject;
-import gr.uom.java.ast.ConstructorObject;
-import gr.uom.java.ast.LibraryClassStorage;
-import gr.uom.java.ast.MethodInvocationObject;
-import gr.uom.java.ast.MethodObject;
-import gr.uom.java.ast.ParameterObject;
-import gr.uom.java.ast.SuperMethodInvocationObject;
-import gr.uom.java.ast.SystemObject;
-import gr.uom.java.ast.VariableDeclarationObject;
-import gr.uom.java.ast.decomposition.AbstractStatement;
-import gr.uom.java.ast.decomposition.MethodBodyObject;
-import gr.uom.java.ast.decomposition.StatementType;
-import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
-import gr.uom.java.ast.util.ExpressionExtractor;
-import gr.uom.java.jdeodorant.preferences.PreferenceConstants;
-import gr.uom.java.jdeodorant.refactoring.Activator;
-
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
@@ -52,6 +30,28 @@ import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jface.preference.IPreferenceStore;
+
+import gr.uom.java.ast.ASTInformationGenerator;
+import gr.uom.java.ast.ASTReader;
+import gr.uom.java.ast.AbstractMethodDeclaration;
+import gr.uom.java.ast.ClassObject;
+import gr.uom.java.ast.CompilationUnitCache;
+import gr.uom.java.ast.ConstructorInvocationObject;
+import gr.uom.java.ast.ConstructorObject;
+import gr.uom.java.ast.LibraryClassStorage;
+import gr.uom.java.ast.MethodInvocationObject;
+import gr.uom.java.ast.MethodObject;
+import gr.uom.java.ast.ParameterObject;
+import gr.uom.java.ast.SuperMethodInvocationObject;
+import gr.uom.java.ast.SystemObject;
+import gr.uom.java.ast.VariableDeclarationObject;
+import gr.uom.java.ast.decomposition.AbstractStatement;
+import gr.uom.java.ast.decomposition.MethodBodyObject;
+import gr.uom.java.ast.decomposition.StatementType;
+import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
+import gr.uom.java.ast.util.ExpressionExtractor;
+import gr.uom.java.jdeodorant.preferences.PreferenceConstants;
+import gr.uom.java.jdeodorant.refactoring.Activator;
 
 public class MethodCallAnalyzer {
 	private Set<AbstractVariable> definedVariables;

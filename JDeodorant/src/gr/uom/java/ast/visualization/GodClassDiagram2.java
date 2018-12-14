@@ -1,16 +1,11 @@
 package gr.uom.java.ast.visualization;
 
-import gr.uom.java.ast.FieldInstructionObject;
-import gr.uom.java.ast.FieldObject;
-import gr.uom.java.ast.MethodInvocationObject;
-import gr.uom.java.ast.MethodObject;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.FreeformLayer;
@@ -19,6 +14,11 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.ScalableFreeformLayeredPane;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.widgets.Display;
+
+import gr.uom.java.ast.FieldInstructionObject;
+import gr.uom.java.ast.FieldObject;
+import gr.uom.java.ast.MethodInvocationObject;
+import gr.uom.java.ast.MethodObject;
 
 public class GodClassDiagram2 {
 	private ScalableFreeformLayeredPane root;

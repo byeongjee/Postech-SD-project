@@ -1,10 +1,8 @@
 package gr.uom.java.ast.visualization;
 
-import gr.uom.java.distance.CandidateRefactoring;
-import gr.uom.java.distance.MoveMethodCandidateRefactoring;
-import gr.uom.java.jdeodorant.refactoring.views.FeatureEnvy;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.Label;
@@ -25,6 +23,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+
+import gr.uom.java.distance.CandidateRefactoring;
+import gr.uom.java.distance.MoveMethodCandidateRefactoring;
+import gr.uom.java.jdeodorant.refactoring.views.FeatureEnvy;
 
 public class FeatureEnviedMethodInformationControl extends AbstractInformationControl implements IInformationControlExtension2 {
 

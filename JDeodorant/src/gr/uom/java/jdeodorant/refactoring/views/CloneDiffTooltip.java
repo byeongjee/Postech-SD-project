@@ -1,13 +1,5 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
-import gr.uom.java.ast.decomposition.cfg.mapping.CloneStructureNode;
-import gr.uom.java.ast.decomposition.cfg.mapping.NodeMapping;
-import gr.uom.java.ast.decomposition.cfg.mapping.PDGNodeMapping;
-import gr.uom.java.ast.decomposition.cfg.mapping.precondition.PreconditionViolation;
-import gr.uom.java.ast.decomposition.cfg.mapping.precondition.Suggestion;
-import gr.uom.java.ast.decomposition.matching.ASTNodeDifference;
-import gr.uom.java.ast.decomposition.matching.Difference;
-
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -38,6 +30,14 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+
+import gr.uom.java.ast.decomposition.cfg.mapping.CloneStructureNode;
+import gr.uom.java.ast.decomposition.cfg.mapping.NodeMapping;
+import gr.uom.java.ast.decomposition.cfg.mapping.PDGNodeMapping;
+import gr.uom.java.ast.decomposition.cfg.mapping.precondition.PreconditionViolation;
+import gr.uom.java.ast.decomposition.cfg.mapping.precondition.Suggestion;
+import gr.uom.java.ast.decomposition.matching.ASTNodeDifference;
+import gr.uom.java.ast.decomposition.matching.Difference;
 
 
 @SuppressWarnings("restriction")

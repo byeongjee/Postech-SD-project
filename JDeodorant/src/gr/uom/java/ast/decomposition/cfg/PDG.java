@@ -1,13 +1,5 @@
 package gr.uom.java.ast.decomposition.cfg;
 
-import gr.uom.java.ast.AbstractMethodDeclaration;
-import gr.uom.java.ast.FieldObject;
-import gr.uom.java.ast.LocalVariableDeclarationObject;
-import gr.uom.java.ast.ParameterObject;
-import gr.uom.java.ast.VariableDeclarationObject;
-import gr.uom.java.jdeodorant.preferences.PreferenceConstants;
-import gr.uom.java.jdeodorant.refactoring.Activator;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -27,6 +19,14 @@ import org.eclipse.jdt.core.dom.LabeledStatement;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jface.preference.IPreferenceStore;
+
+import gr.uom.java.ast.AbstractMethodDeclaration;
+import gr.uom.java.ast.FieldObject;
+import gr.uom.java.ast.LocalVariableDeclarationObject;
+import gr.uom.java.ast.ParameterObject;
+import gr.uom.java.ast.VariableDeclarationObject;
+import gr.uom.java.jdeodorant.preferences.PreferenceConstants;
+import gr.uom.java.jdeodorant.refactoring.Activator;
 
 public class PDG extends Graph {
 	private CFG cfg;

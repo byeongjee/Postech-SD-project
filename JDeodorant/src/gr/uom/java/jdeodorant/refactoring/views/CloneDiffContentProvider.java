@@ -1,11 +1,11 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
-import gr.uom.java.ast.decomposition.cfg.mapping.CloneStructureNode;
-
 import java.util.Set;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+
+import gr.uom.java.ast.decomposition.cfg.mapping.CloneStructureNode;
 
 public class CloneDiffContentProvider extends ArrayContentProvider
 		implements ITreeContentProvider {

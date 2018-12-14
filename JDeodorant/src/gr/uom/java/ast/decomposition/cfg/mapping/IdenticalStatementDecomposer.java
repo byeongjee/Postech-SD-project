@@ -1,11 +1,11 @@
 package gr.uom.java.ast.decomposition.cfg.mapping;
 
-import gr.uom.java.ast.decomposition.cfg.PDGNode;
-
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
+import gr.uom.java.ast.decomposition.cfg.PDGNode;
 
 public class IdenticalStatementDecomposer {
 

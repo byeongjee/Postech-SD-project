@@ -1,13 +1,13 @@
 package gr.uom.java.ast.decomposition.cfg.mapping;
 
-import gr.uom.java.ast.decomposition.cfg.PDGNode;
-
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jdt.core.dom.SwitchCase;
+
+import gr.uom.java.ast.decomposition.cfg.PDGNode;
 
 public class SwitchBodyDecomposer {
 	private Map<PDGNode, Set<PDGNode>> switchCaseNodeMap;

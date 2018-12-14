@@ -2,7 +2,7 @@ package gr.uom.java.ast.visualization;
 
 import java.util.ArrayList;
 import java.util.List;
-import gr.uom.java.distance.CandidateRefactoring;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.Label;
@@ -10,6 +10,8 @@ import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.ToolbarLayout;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.swt.graphics.Color;
+
+import gr.uom.java.distance.CandidateRefactoring;
 
 public class PMClassFigure extends PackageMapFigure{
 	

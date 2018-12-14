@@ -1,10 +1,5 @@
 package gr.uom.java.ast.visualization;
 
-import gr.uom.java.ast.FieldInstructionObject;
-import gr.uom.java.ast.FieldObject;
-import gr.uom.java.ast.MethodInvocationObject;
-import gr.uom.java.ast.MethodObject;
-
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -20,6 +15,11 @@ import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+
+import gr.uom.java.ast.FieldInstructionObject;
+import gr.uom.java.ast.FieldObject;
+import gr.uom.java.ast.MethodInvocationObject;
+import gr.uom.java.ast.MethodObject;
 
 public class GodClassDiagram {
 	private LayeredPane root;

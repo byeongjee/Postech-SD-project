@@ -1,46 +1,20 @@
 package junittest.speculatviveGenerality;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.Reader;
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFileState;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IPathVariableManager;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IResourceProxy;
-import org.eclipse.core.resources.IResourceProxyVisitor;
-import org.eclipse.core.resources.IResourceVisitor;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourceAttributes;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.QualifiedName;
-import org.eclipse.core.runtime.content.IContentDescription;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
-import gr.uom.java.jdeodorant.refactoring.views.MessageChainStructure;
-import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality;
-import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality.*;
 import gr.uom.java.ast.Access;
 import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.ClassObjectCandidate;
 import gr.uom.java.ast.ConstructorObject;
 import gr.uom.java.ast.MethodObject;
 import gr.uom.java.ast.TypeObject;
+import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality;
+import gr.uom.java.jdeodorant.refactoring.views.SpeculativeGenerality.ViewContentProvider;
 
 public class ClassObjectCandidateUnitTest {
 	public ViewContentProvider makeViewContentProvider() {

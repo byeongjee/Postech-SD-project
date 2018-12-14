@@ -1,6 +1,7 @@
 package gr.uom.java.ast.visualization;
 
 import java.util.ArrayList;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.window.Window;

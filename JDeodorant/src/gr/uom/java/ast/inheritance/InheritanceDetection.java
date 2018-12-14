@@ -1,12 +1,12 @@
 package gr.uom.java.ast.inheritance;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
+
 import gr.uom.java.ast.ClassObject;
 import gr.uom.java.ast.SystemObject;
 import gr.uom.java.ast.TypeObject;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.ListIterator;
 
 public class InheritanceDetection {
     private List<InheritanceTree> inheritanceTreeList;

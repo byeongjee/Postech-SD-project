@@ -1,12 +1,12 @@
 package gr.uom.java.ast.decomposition.cfg.mapping;
 
-import gr.uom.java.ast.decomposition.AbstractMethodFragment;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+
+import gr.uom.java.ast.decomposition.AbstractMethodFragment;
 
 public class CompleteSubTreeMatch {
 	private TreeSet<ControlDependenceTreeNodeMatchPair> matchPairs;

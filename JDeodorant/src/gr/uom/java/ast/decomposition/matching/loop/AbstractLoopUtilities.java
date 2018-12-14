@@ -1,9 +1,5 @@
 package gr.uom.java.ast.decomposition.matching.loop;
 
-import gr.uom.java.ast.decomposition.matching.conditional.AbstractControlStructureUtilities;
-import gr.uom.java.ast.util.ExpressionExtractor;
-import gr.uom.java.ast.util.StatementExtractor;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +33,10 @@ import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
+
+import gr.uom.java.ast.decomposition.matching.conditional.AbstractControlStructureUtilities;
+import gr.uom.java.ast.util.ExpressionExtractor;
+import gr.uom.java.ast.util.StatementExtractor;
 
 @SuppressWarnings("unchecked")
 public class AbstractLoopUtilities

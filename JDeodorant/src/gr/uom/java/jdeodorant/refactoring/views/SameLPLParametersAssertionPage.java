@@ -1,39 +1,19 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.eclipse.jdt.core.IBuffer;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
-
-import gr.uom.java.ast.LPLMethodObject;
 
 public class SameLPLParametersAssertionPage extends WizardPage {
-	private ArrayList<Integer> parameterIndexList;
     private Composite container;
-    private ArrayList<String> extractParameterNames;
-    private ArrayList<String> extractParameterTypes;
     private IMethod candidateMethod;
 
     /**
@@ -45,9 +25,6 @@ public class SameLPLParametersAssertionPage extends WizardPage {
         this.candidateMethod = candidateMethod;
         setTitle(candidateMethod.getElementName() + " has similar parameters.");
         setDescription("Would you also like to extract these parameters?");
-        extractParameterNames = new ArrayList<String>();
-        extractParameterTypes = new ArrayList<String>();
-        parameterIndexList = new ArrayList<Integer>();
     }
 
     /**

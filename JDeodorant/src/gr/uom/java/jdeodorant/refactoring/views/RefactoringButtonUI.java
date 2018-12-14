@@ -18,8 +18,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import gr.uom.java.jdeodorant.refactoring.Activator;
-
 public class RefactoringButtonUI {
 	protected Tree tree;
 	private Table table;

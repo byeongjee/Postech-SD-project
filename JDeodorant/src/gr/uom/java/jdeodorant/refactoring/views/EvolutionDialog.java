@@ -1,12 +1,8 @@
 package gr.uom.java.jdeodorant.refactoring.views;
 
 import java.text.DecimalFormat;
-import java.util.Set;
 import java.util.Map.Entry;
-
-import gr.uom.java.history.Evolution;
-import gr.uom.java.history.ProjectVersion;
-import gr.uom.java.history.ProjectVersionPair;
+import java.util.Set;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.CompareUI;
@@ -26,6 +22,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.TableColumn;
+
+import gr.uom.java.history.Evolution;
+import gr.uom.java.history.ProjectVersion;
+import gr.uom.java.history.ProjectVersionPair;
 
 public class EvolutionDialog extends Dialog {
 	private Evolution evolution;

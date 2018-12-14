@@ -1,7 +1,5 @@
 package ca.concordia.jdeodorant.clone.parsers;
 
-import gr.uom.java.ast.ASTReader;
-
 import java.util.Set;
 
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -10,6 +8,8 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+
+import gr.uom.java.ast.ASTReader;
 
 public class ResourceInfo {
 	

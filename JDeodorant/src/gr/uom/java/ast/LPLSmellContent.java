@@ -1,6 +1,5 @@
 package gr.uom.java.ast;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class LPLSmellContent {

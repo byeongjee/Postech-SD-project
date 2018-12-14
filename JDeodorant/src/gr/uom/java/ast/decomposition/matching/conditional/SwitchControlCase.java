@@ -1,7 +1,5 @@
 package gr.uom.java.ast.decomposition.matching.conditional;
 
-import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
-
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.BreakStatement;
@@ -16,6 +14,8 @@ import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.SwitchCase;
+
+import gr.uom.java.ast.decomposition.matching.ASTNodeMatcher;
 
 public class SwitchControlCase extends AbstractControlCase
 {	

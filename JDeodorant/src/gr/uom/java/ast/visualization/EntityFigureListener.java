@@ -2,7 +2,6 @@ package gr.uom.java.ast.visualization;
 
 import java.util.List;
 
-
 import org.eclipse.draw2d.ConnectionEndpointLocator;
 import org.eclipse.draw2d.ConnectionLocator;
 import org.eclipse.draw2d.Label;

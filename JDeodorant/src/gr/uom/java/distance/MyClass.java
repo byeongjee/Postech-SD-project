@@ -1,8 +1,12 @@
 package gr.uom.java.distance;
 
-import gr.uom.java.ast.ClassObject;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
-import java.util.*;
+import gr.uom.java.ast.ClassObject;
 
 public class MyClass {
 
