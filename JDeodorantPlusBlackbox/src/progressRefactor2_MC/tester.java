@@ -38,6 +38,7 @@ import org.junit.runner.*;
 import static org.eclipse.swtbot.swt.finder.waits.Conditions.shellCloses;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.concurrent.CyclicBarrier;
 
@@ -97,16 +98,19 @@ public class tester {
 			
 			bot.shell("Refactoring").activate();
 			bot.button("Finish").click();
-		} catch (Exception e) {
-
+		} catch(Exception e) {
+			fail("Fail with Exception :"+e);
 		}
+		
 		testProject.deleteProject();
 	}
 
 	@Test
 	public void testRefactorClickCancelWithoutAnyTyping() throws CoreException {
 		testProject.buildProject();
-		try {
+			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
+			IJavaProject javaProject = JavaCore.create(project);
+			
 			bot.menu("JDe5dorant").menu("Message Chain").click();
 			bot.viewByTitle("Message Chain");
 			SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
@@ -123,18 +127,18 @@ public class tester {
 			bot.shell("Refactoring").activate();
 			bot.button("Cancel").click();
 			
-			bot.shell("Refactoring").activate();
-			bot.button("Finish").click();
-		} catch (Exception e) {
-
-		}
+			IJavaProject javaProjectModified = JavaCore.create(project);
+			assertTrue(javaProject.equals(javaProjectModified));
+		
 		testProject.deleteProject();
 	}
 
 	@Test
 	public void testRefactorClickCancelWithTyping() throws CoreException {
 		testProject.buildProject();
-		try {
+
+			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("testProject");
+			IJavaProject javaProject = JavaCore.create(project);
 			bot.menu("JDe5dorant").menu("Message Chain").click();
 			bot.viewByTitle("Message Chain");
 			SWTBotView packageExplorer = bot.viewByTitle("Package Explorer");
@@ -152,9 +156,10 @@ public class tester {
 			bot.shell("Refactoring").activate();
 			bot.textWithLabel("New Method name :").setText("refactorMethod");
 			bot.button("Cancel").click();
-		} catch (Exception e) {
-
-		}
+			
+			IJavaProject javaProjectModified = JavaCore.create(project);
+			assertTrue(javaProject.equals(javaProjectModified));
+		
 		testProject.deleteProject();
 	}
 }
